@@ -64,28 +64,40 @@ const TournamentBracket = ({ matches }: TournamentBracketProps) => {
                     <Card className="p-3 w-60 hover:shadow-md transition-shadow hover:bg-gray-50">
                       <div className="flex justify-between mb-2">
                         <div className="flex items-center">
-                          <img
-                            src={match.homeTeam.logo || "/placeholder.svg"}
-                            alt={match.homeTeam.name}
-                            className="w-6 h-6 mr-2"
-                          />
-                          <span className={match.winner === match.homeTeam.id ? "font-bold" : ""}>
+                          <Link to={`/equipe/${match.homeTeam.id}`} onClick={(e) => e.stopPropagation()}>
+                            <img
+                              src={match.homeTeam.logo || "/placeholder.svg"}
+                              alt={match.homeTeam.name}
+                              className="w-6 h-6 mr-2 hover:scale-110 transition-transform"
+                            />
+                          </Link>
+                          <Link 
+                            to={`/equipe/${match.homeTeam.id}`} 
+                            onClick={(e) => e.stopPropagation()}
+                            className={`${match.winner === match.homeTeam.id ? "font-bold" : ""} hover:text-fmf-green transition-colors`}
+                          >
                             {match.homeTeam.name}
-                          </span>
+                          </Link>
                         </div>
                         <span>{match.isPlayed ? match.homeScore : "-"}</span>
                       </div>
                       
                       <div className="flex justify-between">
                         <div className="flex items-center">
-                          <img
-                            src={match.awayTeam.logo || "/placeholder.svg"}
-                            alt={match.awayTeam.name}
-                            className="w-6 h-6 mr-2"
-                          />
-                          <span className={match.winner === match.awayTeam.id ? "font-bold" : ""}>
+                          <Link to={`/equipe/${match.awayTeam.id}`} onClick={(e) => e.stopPropagation()}>
+                            <img
+                              src={match.awayTeam.logo || "/placeholder.svg"}
+                              alt={match.awayTeam.name}
+                              className="w-6 h-6 mr-2 hover:scale-110 transition-transform"
+                            />
+                          </Link>
+                          <Link 
+                            to={`/equipe/${match.awayTeam.id}`} 
+                            onClick={(e) => e.stopPropagation()}
+                            className={`${match.winner === match.awayTeam.id ? "font-bold" : ""} hover:text-fmf-green transition-colors`}
+                          >
                             {match.awayTeam.name}
-                          </span>
+                          </Link>
                         </div>
                         <span>{match.isPlayed ? match.awayScore : "-"}</span>
                       </div>

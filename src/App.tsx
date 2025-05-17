@@ -12,6 +12,7 @@ import CupPage from "./pages/CupPage";
 import ShopPage from "./pages/ShopPage";
 import AdminPage from "./pages/AdminPage";
 import MatchDetailPage from "./pages/MatchDetailPage";
+import TeamPage from "./pages/TeamPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="boutique" element={<ShopPage />} />
             <Route path="admin" element={<AdminPage />} />
             <Route path="match/:id" element={<MatchDetailPage />} />
+            <Route path="equipe/:id" element={<TeamPage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
