@@ -15,19 +15,21 @@ const BottomNavigation = () => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 px-2 z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 px-2 z-50 shadow-lg">
       {navItems.map((item) => {
         const isActive = location.pathname === item.path;
         return (
           <Link
             key={item.path}
             to={item.path}
-            className={`bottom-nav-item ${
-              isActive ? "bottom-nav-active" : "bottom-nav-inactive"
+            className={`flex flex-col items-center justify-center w-full h-full transition-colors ${
+              isActive 
+                ? "text-fmf-green font-medium" 
+                : "text-gray-500 hover:text-fmf-yellow"
             }`}
           >
-            <div className="mb-1">{item.icon}</div>
-            <span>{item.name}</span>
+            <div className={`mb-1 ${isActive ? 'animate-pulse' : ''}`}>{item.icon}</div>
+            <span className="text-xs">{item.name}</span>
           </Link>
         );
       })}
