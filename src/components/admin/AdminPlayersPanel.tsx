@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,8 @@ import { Player } from "@/types/adminTypes";
 const AdminPlayersPanel = () => {
   const [isAddingPlayer, setIsAddingPlayer] = useState(false);
   const [editingPlayerId, setEditingPlayerId] = useState<number | null>(null);
-  const [playersList, setPlayersList] = useState<Player[]>(mockPlayers);
+  // Convert existing players to Player type
+  const [playersList, setPlayersList] = useState<Player[]>(mockPlayers as unknown as Player[]);
   const [newPlayer, setNewPlayer] = useState({
     name: "",
     number: "",

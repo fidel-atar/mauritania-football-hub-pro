@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,11 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { teams } from "@/data/mockData";
 import { PlusCircle, Edit, Trash2, Save } from "lucide-react";
 import { toast } from "sonner";
+import { Team } from "@/types/adminTypes";
 
 const AdminTeamsPanel = () => {
   const [isAddingTeam, setIsAddingTeam] = useState(false);
   const [editingTeamId, setEditingTeamId] = useState<number | null>(null);
-  const [teamsList, setTeamsList] = useState(teams);
+  const [teamsList, setTeamsList] = useState<Team[]>(teams);
   const [newTeam, setNewTeam] = useState({
     name: "",
     logo: "",

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,12 +12,13 @@ import { Calendar as CalendarIcon, PlusCircle, Edit, Trash2, Clock, Save } from 
 import { matches, teams } from "@/data/mockData";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Match, MatchStatus } from "@/types/adminTypes";
+import { Match, MatchStatus, Team } from "@/types/adminTypes";
 
 const AdminMatchesPanel = () => {
   const [isAddingMatch, setIsAddingMatch] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [matchesList, setMatchesList] = useState<Match[]>(matches);
+  // Convert existing matches to Match type
+  const [matchesList, setMatchesList] = useState<Match[]>(matches as unknown as Match[]);
   const [editingMatchId, setEditingMatchId] = useState<number | null>(null);
   
   const [newMatch, setNewMatch] = useState({
@@ -71,9 +73,13 @@ const AdminMatchesPanel = () => {
       date: matchDate.toISOString(),
       stadium: newMatch.stadium,
       status: newMatch.status,
-      homeScore: parseInt(newMatch.homeScore),
-      awayScore: parseInt(newMatch.awayScore),
     };
+    
+    // Only add scores if not scheduled
+    if (newMatch.status !== "scheduled") {
+      matchToAdd.homeScore = parseInt(newMatch.homeScore);
+      matchToAdd.awayScore = parseInt(newMatch.awayScore);
+    }
     
     setMatchesList([...matchesList, matchToAdd]);
     setNewMatch({
@@ -124,27 +130,39 @@ const AdminMatchesPanel = () => {
       return;
     }
     
-    setMatchesList(matchesList.map(match => 
-      match.id === matchId ? 
-      {
-        ...match,
-        homeTeam: {
-          id: parseInt(editMatch.homeTeam),
-          name: teams.find(t => t.id === parseInt(editMatch.homeTeam))?.name || "",
-          logo: teams.find(t => t.id === parseInt(editMatch.homeTeam))?.logo || "",
-        },
-        awayTeam: {
-          id: parseInt(editMatch.awayTeam),
-          name: teams.find(t => t.id === parseInt(editMatch.awayTeam))?.name || "",
-          logo: teams.find(t => t.id === parseInt(editMatch.awayTeam))?.logo || "",
-        },
-        date: matchDate.toISOString(),
-        stadium: editMatch.stadium,
-        status: editMatch.status,
-        homeScore: parseInt(editMatch.homeScore),
-        awayScore: parseInt(editMatch.awayScore),
-      } : match
-    ));
+    setMatchesList(matchesList.map(match => {
+      if (match.id === matchId) {
+        const updatedMatch: Match = {
+          ...match,
+          homeTeam: {
+            id: parseInt(editMatch.homeTeam),
+            name: teams.find(t => t.id === parseInt(editMatch.homeTeam))?.name || "",
+            logo: teams.find(t => t.id === parseInt(editMatch.homeTeam))?.logo || "",
+          },
+          awayTeam: {
+            id: parseInt(editMatch.awayTeam),
+            name: teams.find(t => t.id === parseInt(editMatch.awayTeam))?.name || "",
+            logo: teams.find(t => t.id === parseInt(editMatch.awayTeam))?.logo || "",
+          },
+          date: matchDate.toISOString(),
+          stadium: editMatch.stadium,
+          status: editMatch.status,
+        };
+        
+        // Only add scores if not scheduled
+        if (editMatch.status !== "scheduled") {
+          updatedMatch.homeScore = parseInt(editMatch.homeScore);
+          updatedMatch.awayScore = parseInt(editMatch.awayScore);
+        } else {
+          // Remove scores if scheduled
+          delete updatedMatch.homeScore;
+          delete updatedMatch.awayScore;
+        }
+        
+        return updatedMatch;
+      }
+      return match;
+    }));
     
     toast.success("Modifications enregistrées");
     setEditingMatchId(null);

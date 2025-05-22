@@ -15,8 +15,8 @@ export interface Match {
   date: string;
   stadium: string;
   status: MatchStatus;
-  homeScore: number;
-  awayScore: number;
+  homeScore?: number;  // Making these optional for scheduled matches
+  awayScore?: number;  // Making these optional for scheduled matches
 }
 
 // Player Types
@@ -43,4 +43,13 @@ export interface Player {
   nationality: string;
   image: string;
   stats: PlayerStats;
+}
+
+// Team Types
+export interface Team {
+  id: number;
+  name: string;
+  logo: string;
+  stadium?: string;
+  description?: string;
 }
