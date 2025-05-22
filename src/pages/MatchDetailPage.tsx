@@ -512,14 +512,17 @@ const MatchDetailPage = () => {
         </Tabs>
       </div>
 
-      <style jsx="true">{`
+      {/* Fix the problematic style tag by removing jsx="true" and using a className approach instead */}
+      <style>
+        {`
         .bg-home-team {
           background-color: #15803d; /* green-700 */
         }
         .bg-away-team {
           background-color: #facc15; /* yellow-400 */
         }
-      `}</style>
+      `}
+      </style>
     </div>
   );
 };
