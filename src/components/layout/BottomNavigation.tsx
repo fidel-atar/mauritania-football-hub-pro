@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Trophy, BarChart2, ShoppingBag, User } from "lucide-react";
+import { Home, Trophy, BarChart2, ShoppingBag } from "lucide-react";
 
 const BottomNavigation = () => {
   const location = useLocation();
@@ -11,7 +11,6 @@ const BottomNavigation = () => {
     { name: "Classement", path: "/classement", icon: <BarChart2 size={20} /> },
     { name: "Coupe", path: "/coupe", icon: <Trophy size={20} /> },
     { name: "Boutique", path: "/boutique", icon: <ShoppingBag size={20} /> },
-    { name: "Admin", path: "/admin", icon: <User size={20} /> },
   ];
 
   return (
