@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,11 +11,12 @@ import { Calendar as CalendarIcon, PlusCircle, Edit, Trash2, Clock, Save } from 
 import { matches, teams } from "@/data/mockData";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Match, MatchStatus } from "@/types/adminTypes";
 
 const AdminMatchesPanel = () => {
   const [isAddingMatch, setIsAddingMatch] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [matchesList, setMatchesList] = useState(matches);
+  const [matchesList, setMatchesList] = useState<Match[]>(matches);
   const [editingMatchId, setEditingMatchId] = useState<number | null>(null);
   
   const [newMatch, setNewMatch] = useState({
@@ -25,7 +25,7 @@ const AdminMatchesPanel = () => {
     date: new Date(),
     time: "19:00",
     stadium: "",
-    status: "scheduled",
+    status: "scheduled" as MatchStatus,
     homeScore: "0",
     awayScore: "0",
   });
@@ -36,7 +36,7 @@ const AdminMatchesPanel = () => {
     date: new Date(),
     time: "",
     stadium: "",
-    status: "",
+    status: "" as MatchStatus,
     homeScore: "",
     awayScore: "",
   });
@@ -56,7 +56,7 @@ const AdminMatchesPanel = () => {
     
     const matchId = matchesList.length > 0 ? Math.max(...matchesList.map(m => m.id)) + 1 : 1;
     
-    const matchToAdd = {
+    const matchToAdd: Match = {
       id: matchId,
       homeTeam: {
         id: parseInt(newMatch.homeTeam),
@@ -82,7 +82,7 @@ const AdminMatchesPanel = () => {
       date: new Date(),
       time: "19:00",
       stadium: "",
-      status: "scheduled",
+      status: "scheduled" as MatchStatus,
       homeScore: "0",
       awayScore: "0",
     });
@@ -158,18 +158,26 @@ const AdminMatchesPanel = () => {
   };
 
   const handleNewMatchChange = (field: string, value: string | Date) => {
-    setNewMatch(prev => ({ ...prev, [field]: value }));
+    if (field === "status") {
+      setNewMatch(prev => ({ ...prev, [field]: value as MatchStatus }));
+    } else {
+      setNewMatch(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleEditMatchChange = (field: string, value: string | Date) => {
-    setEditMatch(prev => ({ ...prev, [field]: value }));
+    if (field === "status") {
+      setEditMatch(prev => ({ ...prev, [field]: value as MatchStatus }));
+    } else {
+      setEditMatch(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const matchStatusOptions = [
     { value: "scheduled", label: "Programmé" },
     { value: "live", label: "En direct" },
     { value: "finished", label: "Terminé" }
-  ];
+  ] as const;
 
   return (
     <div className="space-y-6">

@@ -32,6 +32,7 @@ import {
 import { teams } from "@/data/mockData";
 import { mockPlayers } from "@/data/teamMockData";
 import { LogOut, Users, User, Calendar, ShoppingBag } from "lucide-react";
+import { Match, Player } from "@/types/adminTypes";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();

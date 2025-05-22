@@ -9,11 +9,12 @@ import { PlusCircle, Edit, Trash2, Save } from "lucide-react";
 import { mockPlayers } from "@/data/teamMockData";
 import { teams } from "@/data/mockData";
 import { toast } from "sonner";
+import { Player } from "@/types/adminTypes";
 
 const AdminPlayersPanel = () => {
   const [isAddingPlayer, setIsAddingPlayer] = useState(false);
   const [editingPlayerId, setEditingPlayerId] = useState<number | null>(null);
-  const [playersList, setPlayersList] = useState(mockPlayers);
+  const [playersList, setPlayersList] = useState<Player[]>(mockPlayers);
   const [newPlayer, setNewPlayer] = useState({
     name: "",
     number: "",
@@ -41,7 +42,7 @@ const AdminPlayersPanel = () => {
     
     const playerId = playersList.length > 0 ? Math.max(...playersList.map(p => p.id)) + 1 : 1;
     
-    const playerToAdd = {
+    const playerToAdd: Player = {
       id: playerId,
       name: newPlayer.name,
       number: parseInt(newPlayer.number),
