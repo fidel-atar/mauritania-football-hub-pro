@@ -29,22 +29,22 @@ const MatchCard = ({ match }: { match: MatchProps }) => {
   const isLive = match.status === "live";
   
   return (
-    <Link to={`/match/${match.id}`}>
-      <div className="match-card mb-4 animate-fade-in">
-        <div className="flex justify-between items-center mb-3">
-          <div className="text-sm text-gray-600 flex items-center">
-            <Calendar size={14} className="mr-1" />
-            {formatDate(match.date)}
-          </div>
-          <div>
-            {isLive && (
-              <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold">
-                EN DIRECT
-              </span>
-            )}
-          </div>
+    <div className="match-card mb-4 animate-fade-in">
+      <div className="flex justify-between items-center mb-3">
+        <div className="text-sm text-gray-600 flex items-center">
+          <Calendar size={14} className="mr-1" />
+          {formatDate(match.date)}
         </div>
+        <div>
+          {isLive && (
+            <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold">
+              EN DIRECT
+            </span>
+          )}
+        </div>
+      </div>
 
+      <Link to={`/match/${match.id}`} className="block">
         <div className="flex items-center justify-between">
           <div className="w-2/5">
             <TeamLink team={match.homeTeam} />
@@ -73,8 +73,8 @@ const MatchCard = ({ match }: { match: MatchProps }) => {
         <div className="mt-3 text-sm text-gray-600 text-center">
           {match.stadium}
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 };
 
