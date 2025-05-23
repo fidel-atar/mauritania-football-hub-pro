@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface TeamLinkProps {
   team: {
@@ -12,11 +12,17 @@ interface TeamLinkProps {
 }
 
 const TeamLink = ({ team, className = "" }: TeamLinkProps) => {
+  const navigate = useNavigate();
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/equipe/${team.id}`);
+  };
+
   return (
-    <Link 
-      to={`/equipe/${team.id}`} 
-      className={`hover:text-fmf-green transition-colors ${className}`}
-      onClick={(e) => e.stopPropagation()}
+    <div 
+      className={`hover:text-fmf-green transition-colors cursor-pointer ${className}`}
+      onClick={handleClick}
     >
       <div className="flex flex-col items-center">
         <img
@@ -28,7 +34,7 @@ const TeamLink = ({ team, className = "" }: TeamLinkProps) => {
           {team.name}
         </span>
       </div>
-    </Link>
+    </div>
   );
 };
 

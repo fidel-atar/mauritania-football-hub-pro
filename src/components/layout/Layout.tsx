@@ -32,6 +32,9 @@ const Layout = () => {
     else if (location.pathname === '/boutique') {
       title = "Boutique Officielle - FMF";
     }
+    else if (location.pathname === '/actualites') {
+      title = "Actualités - FMF";
+    }
     else if (location.pathname.includes('/match/') && params.id) {
       title = `Match #${params.id} - FMF`;
     }

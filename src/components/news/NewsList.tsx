@@ -1,6 +1,8 @@
 
 import React from "react";
+import { Link } from "react-router-dom";
 import NewsCard from "./NewsCard";
+import { Button } from "@/components/ui/button";
 
 const newsData = [
   {
@@ -29,7 +31,14 @@ const newsData = [
 const NewsList = () => {
   return (
     <div>
-      <h2 className="section-title">Actualités</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="section-title">Actualités</h2>
+        <Link to="/actualites">
+          <Button variant="outline" size="sm">
+            Voir toutes les actualités
+          </Button>
+        </Link>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         {newsData.map((news) => (
           <NewsCard

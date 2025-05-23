@@ -10,6 +10,7 @@ import HomePage from "./pages/HomePage";
 import StandingsPage from "./pages/StandingsPage";
 import CupPage from "./pages/CupPage";
 import ShopPage from "./pages/ShopPage";
+import NewsPage from "./pages/NewsPage";
 import MatchDetailPage from "./pages/MatchDetailPage";
 import TeamPage from "./pages/TeamPage";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="classement" element={<StandingsPage />} />
             <Route path="coupe" element={<CupPage />} />
             <Route path="boutique" element={<ShopPage />} />
+            <Route path="actualites" element={<NewsPage />} />
             <Route path="match/:id" element={<MatchDetailPage />} />
             <Route path="equipe/:id" element={<TeamPage />} />
             <Route path="*" element={<NotFound />} />
