@@ -1,22 +1,22 @@
 
-// Mock data for players with enhanced statistics
+// Mock data for players with enhanced statistics and better photos
 export const mockPlayers = [
-  { id: 1, name: "Mohamed Diallo", position: "Gardien", number: 1, age: 28, nationality: "Mauritanie", image: "https://placehold.co/200x200/006847/FFF?text=MD", 
+  { id: 1, name: "Mohamed Diallo", position: "Gardien", number: 1, age: 28, nationality: "Mauritanie", image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=200&h=200&fit=crop&crop=faces", 
     stats: { matches: 22, cleanSheets: 8, saves: 67, assists: 1, yellowCards: 2, redCards: 0 } 
   },
-  { id: 2, name: "Ahmed Camara", position: "Défenseur", number: 4, age: 25, nationality: "Mauritanie", image: "https://placehold.co/200x200/006847/FFF?text=AC",
+  { id: 2, name: "Ahmed Camara", position: "Défenseur", number: 4, age: 25, nationality: "Mauritanie", image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=200&h=200&fit=crop&crop=faces",
     stats: { matches: 20, goals: 1, assists: 3, tackles: 45, yellowCards: 5, redCards: 0 }
   },
-  { id: 3, name: "Ibrahim Sow", position: "Défenseur", number: 5, age: 27, nationality: "Mauritanie", image: "https://placehold.co/200x200/006847/FFF?text=IS",
+  { id: 3, name: "Ibrahim Sow", position: "Défenseur", number: 5, age: 27, nationality: "Mauritanie", image: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=200&h=200&fit=crop&crop=faces",
     stats: { matches: 18, goals: 0, assists: 2, tackles: 38, yellowCards: 3, redCards: 1 }
   },
-  { id: 4, name: "Oumar Thiam", position: "Milieu", number: 8, age: 23, nationality: "Mauritanie", image: "https://placehold.co/200x200/006847/FFF?text=OT",
+  { id: 4, name: "Oumar Thiam", position: "Milieu", number: 8, age: 23, nationality: "Mauritanie", image: "https://images.unsplash.com/photo-1493962853295-0fd70327578a?w=200&h=200&fit=crop&crop=faces",
     stats: { matches: 21, goals: 3, assists: 7, passAccuracy: "87%", yellowCards: 4, redCards: 0 }
   },
-  { id: 5, name: "Aboubacar Sy", position: "Attaquant", number: 9, age: 24, nationality: "Mauritanie", image: "https://placehold.co/200x200/006847/FFF?text=AS",
+  { id: 5, name: "Aboubacar Sy", position: "Attaquant", number: 9, age: 24, nationality: "Mauritanie", image: "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=200&h=200&fit=crop&crop=faces",
     stats: { matches: 19, goals: 12, assists: 5, shotsOnTarget: 28, yellowCards: 2, redCards: 0 }
   },
-  { id: 6, name: "Mamadou Ba", position: "Attaquant", number: 10, age: 22, nationality: "Mauritanie", image: "https://placehold.co/200x200/006847/FFF?text=MB",
+  { id: 6, name: "Mamadou Ba", position: "Attaquant", number: 10, age: 22, nationality: "Mauritanie", image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=200&h=200&fit=crop&crop=faces",
     stats: { matches: 22, goals: 8, assists: 10, shotsOnTarget: 23, yellowCards: 3, redCards: 0 }
   },
 ];

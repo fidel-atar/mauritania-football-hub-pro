@@ -3,6 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Calendar } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import TeamLink from "./TeamLink";
 
 export interface MatchProps {
   id: number;
@@ -45,15 +46,8 @@ const MatchCard = ({ match }: { match: MatchProps }) => {
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="flex flex-col items-center w-2/5">
-            <img
-              src={match.homeTeam.logo || "/placeholder.svg"}
-              alt={match.homeTeam.name}
-              className="team-logo mb-2"
-            />
-            <span className="text-center font-medium text-sm">
-              {match.homeTeam.name}
-            </span>
+          <div className="w-2/5">
+            <TeamLink team={match.homeTeam} />
           </div>
 
           <div className="w-1/5 text-center">
@@ -71,15 +65,8 @@ const MatchCard = ({ match }: { match: MatchProps }) => {
             )}
           </div>
 
-          <div className="flex flex-col items-center w-2/5">
-            <img
-              src={match.awayTeam.logo || "/placeholder.svg"}
-              alt={match.awayTeam.name}
-              className="team-logo mb-2"
-            />
-            <span className="text-center font-medium text-sm">
-              {match.awayTeam.name}
-            </span>
+          <div className="w-2/5">
+            <TeamLink team={match.awayTeam} />
           </div>
         </div>
 

@@ -1,14 +1,13 @@
 
 import React from "react";
 import MatchList from "@/components/matches/MatchList";
+import NewsList from "@/components/news/NewsList";
 import { matches } from "@/data/mockData";
 import { Card, CardContent } from "@/components/ui/card";
 
 const HomePage = () => {
   return (
     <div className="page-container pb-20">
-      <h1 className="section-title">Matchs & Résultats</h1>
-      
       {/* Bannière promotionnelle */}
       <Card className="mb-6 bg-gradient-to-r from-fmf-green to-fmf-yellow text-white">
         <CardContent className="p-6">
@@ -20,6 +19,11 @@ const HomePage = () => {
         </CardContent>
       </Card>
       
+      {/* Section Actualités */}
+      <NewsList />
+      
+      {/* Section Matchs */}
+      <h1 className="section-title">Matchs & Résultats</h1>
       <MatchList matches={matches} />
     </div>
   );

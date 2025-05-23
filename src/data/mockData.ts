@@ -1,22 +1,21 @@
-
 // Données fictives pour le développement
 
-// Équipes
+// Équipes with updated logos and photos
 export const teams = [
-  { id: 1, name: "FC Nouakchott", logo: "https://placehold.co/200x200/006847/FFF?text=FCN" },
-  { id: 2, name: "AS Ksar", logo: "https://placehold.co/200x200/E3BC09/000?text=ASK" },
-  { id: 3, name: "FC Kaédi", logo: "https://placehold.co/200x200/006847/FFF?text=FCK" },
-  { id: 4, name: "Rosso FC", logo: "https://placehold.co/200x200/C8102E/FFF?text=RFC" },
-  { id: 5, name: "Tevragh-Zeina FC", logo: "https://placehold.co/200x200/006847/FFF?text=TZFC" },
-  { id: 6, name: "Tidjikja FC", logo: "https://placehold.co/200x200/1A1A1A/FFF?text=TFC" },
-  { id: 7, name: "AS Garde", logo: "https://placehold.co/200x200/006847/FFF?text=ASG" },
-  { id: 8, name: "FC Zouerate", logo: "https://placehold.co/200x200/E3BC09/000?text=FCZ" },
-  { id: 9, name: "ASAC Concorde", logo: "https://placehold.co/200x200/C8102E/FFF?text=ASAC" },
-  { id: 10, name: "Sélibaby FC", logo: "https://placehold.co/200x200/1A1A1A/FFF?text=SFC" },
-  { id: 11, name: "Atar Club", logo: "https://placehold.co/200x200/006847/FFF?text=AC" },
-  { id: 12, name: "Nouadhibou FC", logo: "https://placehold.co/200x200/E3BC09/000?text=NFC" },
-  { id: 13, name: "FC Kiffa", logo: "https://placehold.co/200x200/006847/FFF?text=FCK" },
-  { id: 14, name: "Akjoujt FC", logo: "https://placehold.co/200x200/C8102E/FFF?text=AFC" },
+  { id: 1, name: "FC Nouakchott", logo: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=200&h=200&fit=crop&crop=center" },
+  { id: 2, name: "AS Ksar", logo: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=200&h=200&fit=crop&crop=center" },
+  { id: 3, name: "FC Kaédi", logo: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=200&h=200&fit=crop&crop=center" },
+  { id: 4, name: "Rosso FC", logo: "https://images.unsplash.com/photo-1493962853295-0fd70327578a?w=200&h=200&fit=crop&crop=center" },
+  { id: 5, name: "Tevragh-Zeina FC", logo: "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=200&h=200&fit=crop&crop=center" },
+  { id: 6, name: "Tidjikja FC", logo: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=200&h=200&fit=crop&crop=center" },
+  { id: 7, name: "AS Garde", logo: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=200&h=200&fit=crop&crop=center" },
+  { id: 8, name: "FC Zouerate", logo: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=200&h=200&fit=crop&crop=center" },
+  { id: 9, name: "ASAC Concorde", logo: "https://images.unsplash.com/photo-1493962853295-0fd70327578a?w=200&h=200&fit=crop&crop=center" },
+  { id: 10, name: "Sélibaby FC", logo: "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=200&h=200&fit=crop&crop=center" },
+  { id: 11, name: "Atar Club", logo: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=200&h=200&fit=crop&crop=center" },
+  { id: 12, name: "Nouadhibou FC", logo: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=200&h=200&fit=crop&crop=center" },
+  { id: 13, name: "FC Kiffa", logo: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=200&h=200&fit=crop&crop=center" },
+  { id: 14, name: "Akjoujt FC", logo: "https://images.unsplash.com/photo-1493962853295-0fd70327578a?w=200&h=200&fit=crop&crop=center" },
 ];
 
 // Matchs
