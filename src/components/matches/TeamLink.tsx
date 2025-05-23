@@ -28,7 +28,7 @@ const TeamLink = ({ team, className = "" }: TeamLinkProps) => {
         <img
           src={team.logo || "/placeholder.svg"}
           alt={team.name}
-          className="team-logo mb-2"
+          className="team-logo mb-2 hover:scale-105 transition-transform cursor-pointer"
         />
         <span className="text-center font-medium text-sm hover:underline">
           {team.name}
