@@ -15,6 +15,7 @@ const TeamLink = ({ team, className = "" }: TeamLinkProps) => {
   const navigate = useNavigate();
 
   const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     navigate(`/equipe/${team.id}`);
   };
@@ -29,6 +30,7 @@ const TeamLink = ({ team, className = "" }: TeamLinkProps) => {
           src={team.logo || "/placeholder.svg"}
           alt={team.name}
           className="team-logo mb-2 hover:scale-105 transition-transform cursor-pointer"
+          onClick={handleClick}
         />
         <span className="text-center font-medium text-sm hover:underline">
           {team.name}
