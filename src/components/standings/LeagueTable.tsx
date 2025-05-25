@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -31,6 +32,12 @@ interface LeagueTableProps {
 }
 
 const LeagueTable = ({ standings }: LeagueTableProps) => {
+  const navigate = useNavigate();
+
+  const handleTeamClick = (teamId: number) => {
+    navigate(`/equipe/${teamId}`);
+  };
+
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -59,13 +66,16 @@ const LeagueTable = ({ standings }: LeagueTableProps) => {
               <TableRow key={team.id} className={rowClass}>
                 <TableCell className="p-2 font-bold">{team.position}</TableCell>
                 <TableCell className="p-2">
-                  <div className="flex items-center">
+                  <div 
+                    className="flex items-center cursor-pointer hover:text-fmf-green transition-colors"
+                    onClick={() => handleTeamClick(team.team.id)}
+                  >
                     <img
                       src={team.team.logo || "/placeholder.svg"}
                       alt={team.team.name}
-                      className="w-6 h-6 mr-2"
+                      className="w-6 h-6 mr-2 hover:scale-105 transition-transform"
                     />
-                    <span>{team.team.name}</span>
+                    <span className="hover:underline">{team.team.name}</span>
                   </div>
                 </TableCell>
                 <TableCell className="p-2 text-center">{team.played}</TableCell>
