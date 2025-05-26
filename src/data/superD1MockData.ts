@@ -4,7 +4,7 @@ export const standings = [
     position: 1,
     team: {
       id: 1,
-      name: "Al Hilal",
+      name: "FC Nouadhibou",
       logo: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=50&h=50&fit=crop&crop=center"
     },
     played: 28,
@@ -20,7 +20,7 @@ export const standings = [
     position: 2,
     team: {
       id: 2,
-      name: "Nouadhibou",
+      name: "ASC Douanes",
       logo: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=50&h=50&fit=crop&crop=center"
     },
     played: 29,
@@ -36,7 +36,7 @@ export const standings = [
     position: 3,
     team: {
       id: 3,
-      name: "AS Douane",
+      name: "FC Nouakchott Kings",
       logo: "https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=50&h=50&fit=crop&crop=center"
     },
     played: 29,
@@ -52,7 +52,7 @@ export const standings = [
     position: 4,
     team: {
       id: 4,
-      name: "Nouakchott Ki...",
+      name: "Chemal Nouakchott",
       logo: "https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=50&h=50&fit=crop&crop=center"
     },
     played: 29,
@@ -68,7 +68,7 @@ export const standings = [
     position: 5,
     team: {
       id: 5,
-      name: "Chemal",
+      name: "AS Garde Nationale",
       logo: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=50&h=50&fit=crop&crop=center"
     },
     played: 29,
@@ -84,7 +84,7 @@ export const standings = [
     position: 6,
     team: {
       id: 6,
-      name: "Al Merreikh",
+      name: "Tevragh-Zeina FC",
       logo: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=50&h=50&fit=crop&crop=center"
     },
     played: 29,
@@ -100,7 +100,7 @@ export const standings = [
     position: 7,
     team: {
       id: 7,
-      name: "Tevragh-Zeina",
+      name: "SNIM FC",
       logo: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=50&h=50&fit=crop&crop=center"
     },
     played: 29,
@@ -116,7 +116,7 @@ export const standings = [
     position: 8,
     team: {
       id: 8,
-      name: "Pompiers",
+      name: "Inter Nouakchott",
       logo: "https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=50&h=50&fit=crop&crop=center"
     },
     played: 29,
@@ -132,7 +132,7 @@ export const standings = [
     position: 9,
     team: {
       id: 9,
-      name: "Inter Nouakch...",
+      name: "AS Ksar",
       logo: "https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=50&h=50&fit=crop&crop=center"
     },
     played: 29,
@@ -148,7 +148,7 @@ export const standings = [
     position: 10,
     team: {
       id: 10,
-      name: "Gendrim",
+      name: "Kaédi FC",
       logo: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=50&h=50&fit=crop&crop=center"
     },
     played: 28,
@@ -164,7 +164,7 @@ export const standings = [
     position: 11,
     team: {
       id: 11,
-      name: "Moderne Kaédi",
+      name: "ACS Kiffan",
       logo: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=50&h=50&fit=crop&crop=center"
     },
     played: 29,
@@ -180,7 +180,7 @@ export const standings = [
     position: 12,
     team: {
       id: 12,
-      name: "SNIM",
+      name: "ASC Concorde",
       logo: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=50&h=50&fit=crop&crop=center"
     },
     played: 29,
@@ -196,7 +196,7 @@ export const standings = [
     position: 13,
     team: {
       id: 13,
-      name: "Nzidane",
+      name: "El Ittihad Zouerate",
       logo: "https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=50&h=50&fit=crop&crop=center"
     },
     played: 29,
@@ -212,7 +212,7 @@ export const standings = [
     position: 14,
     team: {
       id: 14,
-      name: "Ksar",
+      name: "ASC Nasr",
       logo: "https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=50&h=50&fit=crop&crop=center"
     },
     played: 29,
@@ -228,7 +228,7 @@ export const standings = [
     position: 15,
     team: {
       id: 15,
-      name: "Garde Nationale",
+      name: "Sahel FC",
       logo: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=50&h=50&fit=crop&crop=center"
     },
     played: 29,
@@ -244,7 +244,7 @@ export const standings = [
     position: 16,
     team: {
       id: 16,
-      name: "Touldé",
+      name: "Olympic Nouakchott",
       logo: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=50&h=50&fit=crop&crop=center"
     },
     played: 29,

@@ -4,7 +4,7 @@ import { Outlet, useLocation, useParams } from "react-router-dom";
 import Header from "./Header";
 import BottomNavigation from "./BottomNavigation";
 import { Toaster } from "@/components/ui/sonner";
-import { teams } from "@/data/mockData";
+import { teams } from "@/data/superD1MockData";
 
 const Layout = () => {
   const location = useLocation();
@@ -17,14 +17,14 @@ const Layout = () => {
     if (location.pathname.includes('/equipe/') && params.id) {
       const team = teams.find(t => t.id === Number(params.id));
       if (team) {
-        title = `${team.name} - FMF`;
+        title = `${team.name} - Super D1`;
       }
     }
     else if (location.pathname === '/') {
-      title = "FMF - Fédération Mauritanienne de Football";
+      title = "Super D1 - Fédération Mauritanienne de Football";
     }
     else if (location.pathname === '/classement') {
-      title = "Classement - FMF";
+      title = "Classement Super D1 - FMF";
     }
     else if (location.pathname === '/coupe') {
       title = "Coupe du Président - FMF";
@@ -36,7 +36,7 @@ const Layout = () => {
       title = "Actualités - FMF";
     }
     else if (location.pathname.includes('/match/') && params.id) {
-      title = `Match #${params.id} - FMF`;
+      title = `Match #${params.id} - Super D1`;
     }
     
     document.title = title;
