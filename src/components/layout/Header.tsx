@@ -10,11 +10,11 @@ const Header = () => {
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center p-1">
             <img 
               src="/lovable-uploads/ab2b0c67-0270-47b7-958a-30c825d9a30d.png" 
-              alt="FMF Logo" 
+              alt="Super D1 Logo" 
               className="w-full h-full object-contain"
             />
           </div>
-          <span className="font-bold text-lg">Fédération Mauritanienne de Football</span>
+          <span className="font-bold text-lg">Super D1</span>
         </Link>
       </div>
     </header>

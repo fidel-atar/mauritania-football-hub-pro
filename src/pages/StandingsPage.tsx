@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import LeagueTable from "@/components/standings/LeagueTable";
-import { standings } from "@/data/mockData";
+import { standings } from "@/data/superD1MockData";
 import { Button } from "@/components/ui/button";
 
 const StandingsPage = () => {
