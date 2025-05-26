@@ -273,34 +273,58 @@ export const teams = standings.map(standing => ({
 export const matches = [
   {
     id: 1,
-    homeTeam: teams[0],
-    awayTeam: teams[1],
+    homeTeam: {
+      id: teams[0].id,
+      name: teams[0].name,
+      logo: teams[0].logo
+    },
+    awayTeam: {
+      id: teams[1].id,
+      name: teams[1].name,
+      logo: teams[1].logo
+    },
     date: "2024-03-15T19:30:00",
     homeScore: 2,
     awayScore: 1,
-    status: "finished",
+    status: "finished" as const,
     stadium: "Stade Al Hilal",
     matchday: 28
   },
   {
     id: 2,
-    homeTeam: teams[2],
-    awayTeam: teams[3],
+    homeTeam: {
+      id: teams[2].id,
+      name: teams[2].name,
+      logo: teams[2].logo
+    },
+    awayTeam: {
+      id: teams[3].id,
+      name: teams[3].name,
+      logo: teams[3].logo
+    },
     date: "2024-03-15T17:00:00",
     homeScore: 1,
     awayScore: 0,
-    status: "finished",
+    status: "finished" as const,
     stadium: "Stade AS Douane",
     matchday: 28
   },
   {
     id: 3,
-    homeTeam: teams[4],
-    awayTeam: teams[5],
+    homeTeam: {
+      id: teams[4].id,
+      name: teams[4].name,
+      logo: teams[4].logo
+    },
+    awayTeam: {
+      id: teams[5].id,
+      name: teams[5].name,
+      logo: teams[5].logo
+    },
     date: "2024-03-16T19:00:00",
-    homeScore: null,
-    awayScore: null,
-    status: "scheduled",
+    homeScore: undefined,
+    awayScore: undefined,
+    status: "scheduled" as const,
     stadium: "Stade Chemal",
     matchday: 29
   }
