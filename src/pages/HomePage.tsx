@@ -1,7 +1,6 @@
 
 import React from "react";
 import MatchList from "@/components/matches/MatchList";
-import NewsList from "@/components/news/NewsList";
 import { matches } from "@/data/mockData";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -18,9 +17,6 @@ const HomePage = () => {
           </div>
         </CardContent>
       </Card>
-      
-      {/* Section Actualités */}
-      <NewsList />
       
       {/* Section Matchs */}
       <h1 className="section-title">Matchs & Résultats</h1>

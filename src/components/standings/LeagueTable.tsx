@@ -39,53 +39,47 @@ const LeagueTable = ({ standings }: LeagueTableProps) => {
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto bg-white">
       <Table>
         <TableHeader>
-          <TableRow className="bg-fmf-green text-white">
-            <TableCell className="p-2 w-10 text-white">Pos</TableCell>
-            <TableCell className="p-2 text-white">Équipe</TableCell>
-            <TableCell className="p-2 w-10 text-center text-white">J</TableCell>
-            <TableCell className="p-2 w-10 text-center text-white">V</TableCell>
-            <TableCell className="p-2 w-10 text-center text-white">N</TableCell>
-            <TableCell className="p-2 w-10 text-center text-white">D</TableCell>
-            <TableCell className="p-2 w-10 text-center text-white">BP</TableCell>
-            <TableCell className="p-2 w-10 text-center text-white">BC</TableCell>
-            <TableCell className="p-2 w-10 text-center text-white">Diff</TableCell>
-            <TableCell className="p-2 w-10 text-center text-white font-bold">Pts</TableCell>
+          <TableRow className="bg-gray-50 border-b">
+            <TableHead className="p-3 text-left text-gray-600 font-medium">Club</TableHead>
+            <TableHead className="p-3 w-12 text-center text-gray-600 font-medium">MJ</TableHead>
+            <TableHead className="p-3 w-12 text-center text-gray-600 font-medium">G</TableHead>
+            <TableHead className="p-3 w-12 text-center text-gray-600 font-medium">N</TableHead>
+            <TableHead className="p-3 w-12 text-center text-gray-600 font-medium">P</TableHead>
+            <TableHead className="p-3 w-12 text-center text-gray-600 font-medium">Pts</TableHead>
+            <TableHead className="p-3 w-12 text-center text-gray-600 font-medium">BP</TableHead>
+            <TableHead className="p-3 w-12 text-center text-gray-600 font-medium">BC</TableHead>
+            <TableHead className="p-3 w-12 text-center text-gray-600 font-medium">DB</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {standings.map((team) => {
-            // Déterminer la couleur de fond en fonction de la position
-            let rowClass = "";
-            if (team.position <= 3) rowClass = "bg-green-50";
-            else if (team.position >= standings.length - 2) rowClass = "bg-red-50";
-
+          {standings.map((team, index) => {
             return (
-              <TableRow key={team.id} className={rowClass}>
-                <TableCell className="p-2 font-bold">{team.position}</TableCell>
-                <TableCell className="p-2">
+              <TableRow key={team.id} className="border-b hover:bg-gray-50">
+                <TableCell className="p-3">
                   <div 
                     className="flex items-center cursor-pointer hover:text-fmf-green transition-colors"
                     onClick={() => handleTeamClick(team.team.id)}
                   >
+                    <span className="w-6 text-sm font-medium mr-3">{team.position}</span>
                     <img
                       src={team.team.logo || "/placeholder.svg"}
                       alt={team.team.name}
-                      className="w-6 h-6 mr-2 hover:scale-105 transition-transform"
+                      className="w-6 h-6 mr-3 hover:scale-105 transition-transform"
                     />
-                    <span className="hover:underline">{team.team.name}</span>
+                    <span className="hover:underline text-sm">{team.team.name}</span>
                   </div>
                 </TableCell>
-                <TableCell className="p-2 text-center">{team.played}</TableCell>
-                <TableCell className="p-2 text-center">{team.won}</TableCell>
-                <TableCell className="p-2 text-center">{team.drawn}</TableCell>
-                <TableCell className="p-2 text-center">{team.lost}</TableCell>
-                <TableCell className="p-2 text-center">{team.goalsFor}</TableCell>
-                <TableCell className="p-2 text-center">{team.goalsAgainst}</TableCell>
-                <TableCell className="p-2 text-center">{team.goalsFor - team.goalsAgainst}</TableCell>
-                <TableCell className="p-2 text-center font-bold">{team.points}</TableCell>
+                <TableCell className="p-3 text-center text-sm">{team.played}</TableCell>
+                <TableCell className="p-3 text-center text-sm">{team.won}</TableCell>
+                <TableCell className="p-3 text-center text-sm">{team.drawn}</TableCell>
+                <TableCell className="p-3 text-center text-sm">{team.lost}</TableCell>
+                <TableCell className="p-3 text-center text-sm font-bold">{team.points}</TableCell>
+                <TableCell className="p-3 text-center text-sm">{team.goalsFor}</TableCell>
+                <TableCell className="p-3 text-center text-sm">{team.goalsAgainst}</TableCell>
+                <TableCell className="p-3 text-center text-sm">{team.goalsFor - team.goalsAgainst}</TableCell>
               </TableRow>
             );
           })}

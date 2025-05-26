@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -63,14 +62,14 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Couleurs personnalisées pour la Fédération de Football
+				// Updated colors to match the logo design
 				fmf: {
-					green: '#006847', // Vert mauritanien
-					yellow: '#E3BC09', // Jaune mauritanien
+					green: '#228B22', // Forest green to match the logo
+					yellow: '#FF8C00', // Orange/golden yellow to match the logo
 					red: '#C8102E', // Rouge pour les accents
 					dark: '#1A1A1A', // Noir pour les textes
 					light: '#FFFFFF', // Blanc pour les fonds
-					gray: '#F2F2F2', // Gris clair pour les cartes
+					gray: '#F8F9FA', // Gris très clair pour les cartes
 				}
 			},
 			borderRadius: {
