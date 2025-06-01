@@ -21,7 +21,7 @@ const MatchTableRow: React.FC<MatchTableRowProps> = ({ match, teams, onEdit, onD
   if (match.status === "finished") statusText = "Terminé";
 
   return (
-    <TableRow key={match.id} className="hover:bg-gray-50">
+    <TableRow className="hover:bg-gray-50">
       <TableCell>
         {new Date(match.match_date).toLocaleDateString()} {new Date(match.match_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
       </TableCell>
