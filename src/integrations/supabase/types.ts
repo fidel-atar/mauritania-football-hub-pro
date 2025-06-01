@@ -9,7 +9,194 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      matches: {
+        Row: {
+          away_score: number | null
+          away_team_id: string | null
+          created_at: string
+          home_score: number | null
+          home_team_id: string | null
+          id: string
+          match_date: string
+          stadium: string
+          status: Database["public"]["Enums"]["match_status"] | null
+          updated_at: string
+        }
+        Insert: {
+          away_score?: number | null
+          away_team_id?: string | null
+          created_at?: string
+          home_score?: number | null
+          home_team_id?: string | null
+          id?: string
+          match_date: string
+          stadium: string
+          status?: Database["public"]["Enums"]["match_status"] | null
+          updated_at?: string
+        }
+        Update: {
+          away_score?: number | null
+          away_team_id?: string | null
+          created_at?: string
+          home_score?: number | null
+          home_team_id?: string | null
+          id?: string
+          match_date?: string
+          stadium?: string
+          status?: Database["public"]["Enums"]["match_status"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_away_team_id_fkey"
+            columns: ["away_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_home_team_id_fkey"
+            columns: ["home_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      players: {
+        Row: {
+          age: number
+          assists: number | null
+          created_at: string
+          goals: number | null
+          id: string
+          image: string | null
+          matches: number | null
+          name: string
+          nationality: string
+          number: number
+          position: string
+          red_cards: number | null
+          team_id: string | null
+          updated_at: string
+          yellow_cards: number | null
+        }
+        Insert: {
+          age: number
+          assists?: number | null
+          created_at?: string
+          goals?: number | null
+          id?: string
+          image?: string | null
+          matches?: number | null
+          name: string
+          nationality: string
+          number: number
+          position: string
+          red_cards?: number | null
+          team_id?: string | null
+          updated_at?: string
+          yellow_cards?: number | null
+        }
+        Update: {
+          age?: number
+          assists?: number | null
+          created_at?: string
+          goals?: number | null
+          id?: string
+          image?: string | null
+          matches?: number | null
+          name?: string
+          nationality?: string
+          number?: number
+          position?: string
+          red_cards?: number | null
+          team_id?: string | null
+          updated_at?: string
+          yellow_cards?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "players_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          image: string | null
+          in_stock: boolean | null
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image?: string | null
+          in_stock?: boolean | null
+          name: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image?: string | null
+          in_stock?: boolean | null
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      teams: {
+        Row: {
+          coach: string | null
+          created_at: string
+          description: string | null
+          founded_year: number | null
+          id: string
+          logo: string | null
+          name: string
+          stadium: string | null
+          updated_at: string
+        }
+        Insert: {
+          coach?: string | null
+          created_at?: string
+          description?: string | null
+          founded_year?: number | null
+          id?: string
+          logo?: string | null
+          name: string
+          stadium?: string | null
+          updated_at?: string
+        }
+        Update: {
+          coach?: string | null
+          created_at?: string
+          description?: string | null
+          founded_year?: number | null
+          id?: string
+          logo?: string | null
+          name?: string
+          stadium?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +205,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      match_status: "scheduled" | "live" | "finished"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +320,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      match_status: ["scheduled", "live", "finished"],
+    },
   },
 } as const
