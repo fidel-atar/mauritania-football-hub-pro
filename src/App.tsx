@@ -1,45 +1,43 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Layout from "@/components/layout/Layout";
-
-import HomePage from "./pages/HomePage";
-import StandingsPage from "./pages/StandingsPage";
-import CupPage from "./pages/CupPage";
-import ShopPage from "./pages/ShopPage";
-import NewsPage from "./pages/NewsPage";
-import MatchDetailPage from "./pages/MatchDetailPage";
-import TeamPage from "./pages/TeamPage";
-import AdminDashboard from "./pages/AdminDashboard";
-import NotFound from "./pages/NotFound";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Index from "./pages/Index";
+import { useEffect, useState } from "react";
+import AdminApp from "./pages/AdminApp";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<HomePage />} />
-            <Route path="classement" element={<StandingsPage />} />
-            <Route path="coupe" element={<CupPage />} />
-            <Route path="boutique" element={<ShopPage />} />
-            <Route path="actualites" element={<NewsPage />} />
-            <Route path="match/:id" element={<MatchDetailPage />} />
-            <Route path="equipe/:id" element={<TeamPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  const [isAdminApp, setIsAdminApp] = useState(false);
+
+  useEffect(() => {
+    // Check if this is the admin subdomain or path
+    const isAdmin = window.location.pathname.startsWith('/admin') || 
+                   window.location.hostname.startsWith('admin.');
+    setIsAdminApp(isAdmin);
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <BrowserRouter>
+          <Routes>
+            {/* Admin routes */}
+            <Route path="/admin/*" element={<AdminApp />} />
+            
+            {/* Main app routes */}
+            <Route path="/*" element={<Index />} />
+            
+            {/* Default redirect */}
+            <Route path="/" element={<Navigate to="/admin" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
