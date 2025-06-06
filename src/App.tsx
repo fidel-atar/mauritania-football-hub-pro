@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -17,6 +16,7 @@ import AdminPage from "./pages/AdminPage";
 import LiveScoresPage from "./pages/LiveScoresPage";
 import StatisticsPage from "./pages/StatisticsPage";
 import CalendarPage from "./pages/CalendarPage";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +40,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Route>
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
   </QueryClientProvider>
