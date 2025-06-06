@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -11,6 +12,7 @@ import ShopPage from "./pages/ShopPage";
 import NewsPage from "./pages/NewsPage";
 import MatchDetailPage from "./pages/MatchDetailPage";
 import TeamPage from "./pages/TeamPage";
+import TeamsPage from "./pages/TeamsPage";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/AdminPage";
 import LiveScoresPage from "./pages/LiveScoresPage";
@@ -29,6 +31,7 @@ const App = () => (
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="classement" element={<StandingsPage />} />
+          <Route path="equipes" element={<TeamsPage />} />
           <Route path="coupe" element={<CupPage />} />
           <Route path="boutique" element={<ShopPage />} />
           <Route path="actualites" element={<NewsPage />} />
