@@ -1,20 +1,44 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PlusCircle, Edit, Trash2, Save } from "lucide-react";
-import { mockPlayers } from "@/data/teamMockData";
-import { teams } from "@/data/mockData";
 import { toast } from "sonner";
-import { Player } from "@/types/adminTypes";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Player {
+  id: string;
+  name: string;
+  number: number;
+  age: number;
+  position: string;
+  teamId: string | null;
+  nationality: string;
+  image: string;
+  stats: {
+    matches: number;
+    goals: number;
+    assists: number;
+    yellowCards: number;
+    redCards: number;
+  };
+}
+
+interface Team {
+  id: string;
+  name: string;
+}
 
 const AdminPlayersPanel = () => {
   const [isAddingPlayer, setIsAddingPlayer] = useState(false);
-  const [editingPlayerId, setEditingPlayerId] = useState<number | null>(null);
-  // Convert existing players to Player type
-  const [playersList, setPlayersList] = useState<Player[]>(mockPlayers as unknown as Player[]);
+  const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
+  const [playersList, setPlayersList] = useState<Player[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [loading, setLoading] = useState(true);
+  
   const [newPlayer, setNewPlayer] = useState({
     name: "",
     number: "",
@@ -37,45 +61,110 @@ const AdminPlayersPanel = () => {
 
   const positions = ["Gardien", "Défenseur", "Milieu", "Attaquant"];
 
-  const handleAddPlayer = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const playerId = playersList.length > 0 ? Math.max(...playersList.map(p => p.id)) + 1 : 1;
-    
-    const playerToAdd: Player = {
-      id: playerId,
-      name: newPlayer.name,
-      number: parseInt(newPlayer.number),
-      age: parseInt(newPlayer.age),
-      position: newPlayer.position,
-      teamId: parseInt(newPlayer.team),
-      nationality: newPlayer.nationality,
-      image: newPlayer.image || "/placeholder.svg",
-      stats: {
-        matches: 0,
-        goals: 0,
-        assists: 0,
-        yellowCards: 0,
-        redCards: 0
-      }
-    };
-    
-    setPlayersList([...playersList, playerToAdd]);
-    setNewPlayer({
-      name: "",
-      number: "",
-      age: "",
-      position: "",
-      team: "",
-      nationality: "",
-      image: "",
-    });
-    
-    toast.success("Joueur ajouté avec succès");
-    setIsAddingPlayer(false);
+  const fetchTeams = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('teams')
+        .select('id, name')
+        .order('name');
+      
+      if (error) throw error;
+      setTeams(data || []);
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+      toast.error('Erreur lors du chargement des équipes');
+    }
   };
 
-  const handleEditPlayer = (playerId: number) => {
+  const fetchPlayers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('players')
+        .select(`
+          *,
+          teams (name)
+        `)
+        .order('name');
+      
+      if (error) throw error;
+      
+      const formattedPlayers: Player[] = (data || []).map((player) => ({
+        id: player.id,
+        name: player.name,
+        number: player.number,
+        age: player.age,
+        position: player.position,
+        teamId: player.team_id,
+        nationality: player.nationality,
+        image: player.image || "/placeholder.svg",
+        stats: {
+          matches: player.matches || 0,
+          goals: player.goals || 0,
+          assists: player.assists || 0,
+          yellowCards: player.yellow_cards || 0,
+          redCards: player.red_cards || 0
+        }
+      }));
+      
+      setPlayersList(formattedPlayers);
+    } catch (error) {
+      console.error('Error fetching players:', error);
+      toast.error('Erreur lors du chargement des joueurs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      await Promise.all([fetchTeams(), fetchPlayers()]);
+    };
+    loadData();
+  }, []);
+
+  const handleAddPlayer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const { error } = await supabase
+        .from('players')
+        .insert({
+          name: newPlayer.name,
+          number: parseInt(newPlayer.number),
+          age: parseInt(newPlayer.age),
+          position: newPlayer.position,
+          team_id: newPlayer.team || null,
+          nationality: newPlayer.nationality,
+          image: newPlayer.image || null,
+          goals: 0,
+          assists: 0,
+          matches: 0,
+          yellow_cards: 0,
+          red_cards: 0
+        });
+      
+      if (error) throw error;
+      
+      setNewPlayer({
+        name: "",
+        number: "",
+        age: "",
+        position: "",
+        team: "",
+        nationality: "",
+        image: "",
+      });
+      
+      toast.success("Joueur ajouté avec succès");
+      setIsAddingPlayer(false);
+      fetchPlayers();
+    } catch (error) {
+      console.error('Error adding player:', error);
+      toast.error("Erreur lors de l'ajout du joueur");
+    }
+  };
+
+  const handleEditPlayer = (playerId: string) => {
     const player = playersList.find(p => p.id === playerId);
     if (player) {
       setEditPlayer({
@@ -83,7 +172,7 @@ const AdminPlayersPanel = () => {
         number: player.number.toString(),
         age: player.age.toString(),
         position: player.position,
-        team: player.teamId.toString(),
+        team: player.teamId || "",
         nationality: player.nationality,
         image: player.image,
       });
@@ -91,29 +180,48 @@ const AdminPlayersPanel = () => {
     }
   };
 
-  const handleSaveEdit = (playerId: number) => {
-    setPlayersList(playersList.map(player => 
-      player.id === playerId ? 
-      { 
-        ...player, 
-        name: editPlayer.name,
-        number: parseInt(editPlayer.number),
-        age: parseInt(editPlayer.age),
-        position: editPlayer.position,
-        teamId: parseInt(editPlayer.team),
-        nationality: editPlayer.nationality,
-        image: editPlayer.image,
-      } : player
-    ));
-    
-    toast.success("Modifications enregistrées");
-    setEditingPlayerId(null);
+  const handleSaveEdit = async (playerId: string) => {
+    try {
+      const { error } = await supabase
+        .from('players')
+        .update({
+          name: editPlayer.name,
+          number: parseInt(editPlayer.number),
+          age: parseInt(editPlayer.age),
+          position: editPlayer.position,
+          team_id: editPlayer.team || null,
+          nationality: editPlayer.nationality,
+          image: editPlayer.image || null,
+        })
+        .eq('id', playerId);
+      
+      if (error) throw error;
+      
+      toast.success("Modifications enregistrées");
+      setEditingPlayerId(null);
+      fetchPlayers();
+    } catch (error) {
+      console.error('Error updating player:', error);
+      toast.error("Erreur lors de la mise à jour du joueur");
+    }
   };
 
-  const handleDeletePlayer = (playerId: number) => {
+  const handleDeletePlayer = async (playerId: string) => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer ce joueur?")) {
-      setPlayersList(playersList.filter(player => player.id !== playerId));
-      toast.success("Joueur supprimé avec succès");
+      try {
+        const { error } = await supabase
+          .from('players')
+          .delete()
+          .eq('id', playerId);
+        
+        if (error) throw error;
+        
+        toast.success("Joueur supprimé avec succès");
+        fetchPlayers();
+      } catch (error) {
+        console.error('Error deleting player:', error);
+        toast.error("Erreur lors de la suppression du joueur");
+      }
     }
   };
 
@@ -129,16 +237,21 @@ const AdminPlayersPanel = () => {
     }
   };
 
-  const getTeamNameById = (teamId: number) => {
+  const getTeamNameById = (teamId: string | null) => {
+    if (!teamId) return "Aucune équipe";
     const team = teams.find(t => t.id === teamId);
     return team ? team.name : "Équipe inconnue";
   };
+
+  if (loading) {
+    return <div className="text-center py-8">Chargement des joueurs...</div>;
+  }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Gérer les Joueurs</CardTitle>
+          <CardTitle>Gérer les Joueurs ({playersList.length} joueurs)</CardTitle>
           <Button 
             onClick={() => setIsAddingPlayer(!isAddingPlayer)} 
             className="bg-fmf-green hover:bg-fmf-green/90"
@@ -209,8 +322,9 @@ const AdminPlayersPanel = () => {
                       <SelectValue placeholder="Sélectionner une équipe" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="">Aucune équipe</SelectItem>
                       {teams.map((team) => (
-                        <SelectItem key={team.id} value={team.id.toString()}>{team.name}</SelectItem>
+                        <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -387,6 +501,13 @@ const AdminPlayersPanel = () => {
               </tbody>
             </table>
           </div>
+
+          {playersList.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <p>Aucun joueur trouvé dans la base de données.</p>
+              <p className="text-sm mt-2">Cliquez sur "Ajouter un joueur" pour créer votre premier joueur!</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

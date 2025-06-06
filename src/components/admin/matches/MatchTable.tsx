@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Match } from "@/types/adminTypes";
 import MatchTableRow from "./MatchTableRow";
 import {
   Table,
@@ -10,10 +9,29 @@ import {
   TableRow
 } from "@/components/ui/table";
 
+interface Match {
+  id: string;
+  homeTeam: {
+    id: string;
+    name: string;
+    logo: string;
+  };
+  awayTeam: {
+    id: string;
+    name: string;
+    logo: string;
+  };
+  date: string;
+  stadium: string;
+  status: 'scheduled' | 'live' | 'completed';
+  homeScore: number | null;
+  awayScore: number | null;
+}
+
 interface MatchTableProps {
   matches: Match[];
-  onEditMatch: (id: number) => void;
-  onDeleteMatch: (id: number) => void;
+  onEditMatch: (id: string) => void;
+  onDeleteMatch: (id: string) => void;
 }
 
 const MatchTable: React.FC<MatchTableProps> = ({
