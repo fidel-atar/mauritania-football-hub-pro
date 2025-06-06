@@ -29,7 +29,7 @@ const AdminCupsManager = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    status: "upcoming" as const,
+    status: "upcoming" as 'upcoming' | 'ongoing' | 'completed',
     start_date: "",
     end_date: "",
     prize_money: ""
@@ -227,7 +227,7 @@ const AdminCupsManager = () => {
               </div>
               <div>
                 <Label htmlFor="status">Statut</Label>
-                <Select value={formData.status} onValueChange={(value: any) => setFormData({...formData, status: value})}>
+                <Select value={formData.status} onValueChange={(value: 'upcoming' | 'ongoing' | 'completed') => setFormData({...formData, status: value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Choisir le statut" />
                   </SelectTrigger>
