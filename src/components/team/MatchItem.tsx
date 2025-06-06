@@ -4,62 +4,88 @@ import { formatDate } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
-import { Link } from "react-router-dom";
 
-type Match = {
-  id: number;
-  opponent: string;
-  date: string;
-  home: boolean;
-  result: string | null;
-  win: boolean | null;
-  stats: {
-    possession: string;
-    shots: number;
-    shotsOnTarget: number;
-    corners: number;
-    fouls: number;
+interface Match {
+  id: string;
+  match_date: string;
+  status: string;
+  home_score: number | null;
+  away_score: number | null;
+  stadium: string;
+  home_team: {
+    id: string;
+    name: string;
+    logo: string | null;
   } | null;
-  highlights: string | null;
-};
+  away_team: {
+    id: string;
+    name: string;
+    logo: string | null;
+  } | null;
+  home_team_id: string;
+  away_team_id: string;
+}
 
-type Team = {
+interface Team {
+  id: string;
   name: string;
   [key: string]: any;
-};
+}
 
 interface MatchItemProps {
   match: Match;
   team: Team;
-  selectedMatch: number | null;
-  onToggleDetails: (matchId: number | null) => void;
+  selectedMatch: string | null;
+  onToggleDetails: (matchId: string | null) => void;
 }
 
 const MatchItem = ({ match, team, selectedMatch, onToggleDetails }: MatchItemProps) => {
+  const isHome = match.home_team_id === team.id;
+  const opponent = isHome ? match.away_team : match.home_team;
+  const teamScore = isHome ? match.home_score : match.away_score;
+  const opponentScore = isHome ? match.away_score : match.home_score;
+  
+  let result = null;
+  let win = null;
+  
+  if (match.status === 'completed' && teamScore !== null && opponentScore !== null) {
+    result = `${teamScore}-${opponentScore}`;
+    if (teamScore > opponentScore) {
+      win = true;
+    } else if (teamScore < opponentScore) {
+      win = false;
+    } else {
+      win = null; // draw
+    }
+  }
+
   return (
-    <Card key={match.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <CardContent className="p-0">
         <div className="p-4 border-b">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-sm text-gray-500">{formatDate(match.date)}</p>
+              <p className="text-sm text-gray-500">{formatDate(match.match_date)}</p>
               <p className="font-bold">
-                {match.home ? `${team.name} vs ${match.opponent}` : `${match.opponent} vs ${team.name}`}
+                {isHome ? `${team.name} vs ${opponent?.name || 'TBD'}` : `${opponent?.name || 'TBD'} vs ${team.name}`}
               </p>
+              <p className="text-sm text-gray-600">{match.stadium}</p>
             </div>
             <div className="text-right">
-              {match.result ? (
-                <div className={`text-lg font-bold ${match.win === true ? 'text-green-600' : match.win === false ? 'text-red-600' : 'text-gray-600'}`}>
-                  {match.result}
+              {result ? (
+                <div className={`text-lg font-bold ${win === true ? 'text-green-600' : win === false ? 'text-red-600' : 'text-gray-600'}`}>
+                  {result}
                 </div>
               ) : (
-                <span className="bg-fmf-yellow text-fmf-dark py-1 px-2 rounded text-sm">À venir</span>
+                <span className="bg-fmf-yellow text-fmf-dark py-1 px-2 rounded text-sm">
+                  {match.status === 'live' ? 'En cours' : 'À venir'}
+                </span>
               )}
             </div>
           </div>
         </div>
         
-        {match.stats && (
+        {match.status === 'completed' && (
           <div className="p-4 bg-gray-50">
             <Button 
               variant="ghost" 
@@ -67,60 +93,16 @@ const MatchItem = ({ match, team, selectedMatch, onToggleDetails }: MatchItemPro
               className="w-full flex items-center justify-center mb-2"
               onClick={() => onToggleDetails(match.id === selectedMatch ? null : match.id)}
             >
-              Statistiques
+              Détails du match
               <ChevronDown className={`ml-1 h-4 w-4 transition-transform ${selectedMatch === match.id ? 'transform rotate-180' : ''}`} />
             </Button>
             
             {selectedMatch === match.id && (
               <div className="space-y-3 pt-3">
-                <div className="flex items-center">
-                  <span className="w-20 text-right text-sm">{match.stats.possession}</span>
-                  <div className="flex-1 mx-3 bg-gray-200 h-2 rounded-full overflow-hidden">
-                    <div
-                      className="bg-fmf-green h-full rounded-full"
-                      style={{ width: match.stats.possession }}
-                    ></div>
-                  </div>
-                  <span className="w-20 text-left text-sm">{100 - parseInt(match.stats.possession)}%</span>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Match terminé</p>
+                  <p className="font-semibold">{result}</p>
                 </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span>Possession</span>
-                  <span></span>
-                </div>
-                
-                <div className="flex items-center justify-between mt-2">
-                  <span>{match.stats.shots}</span>
-                  <span className="text-xs">Tirs</span>
-                  <span>{match.stats.shots - 2}</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span>{match.stats.shotsOnTarget}</span>
-                  <span className="text-xs">Tirs cadrés</span>
-                  <span>{match.stats.shotsOnTarget - 1}</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span>{match.stats.corners}</span>
-                  <span className="text-xs">Corners</span>
-                  <span>{match.stats.corners - 2}</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span>{match.stats.fouls}</span>
-                  <span className="text-xs">Fautes</span>
-                  <span>{match.stats.fouls + 2}</span>
-                </div>
-                
-                {match.highlights && (
-                  <div className="mt-3">
-                    <Button size="sm" variant="outline" className="w-full">
-                      <Link to={match.highlights} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
-                        Voir les temps forts
-                      </Link>
-                    </Button>
-                  </div>
-                )}
               </div>
             )}
           </div>

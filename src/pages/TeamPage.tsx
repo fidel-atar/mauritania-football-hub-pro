@@ -1,12 +1,12 @@
 
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { teams } from "@/data/superD1MockData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Calendar, Trophy, BarChart2, Star } from "lucide-react";
-import { mockPlayers, mockMatches, mockStaff } from "@/data/teamMockData";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-// Import our new components
+// Import our components
 import TeamHeader from "@/components/team/TeamHeader";
 import TeamPlayersTab from "@/components/team/TeamPlayersTab";
 import TeamCalendarTab from "@/components/team/TeamCalendarTab";
@@ -17,10 +17,73 @@ import PlayerDetailModal from "@/components/team/PlayerDetailModal";
 
 const TeamPage = () => {
   const { id } = useParams();
-  const teamId = Number(id);
-  const team = teams.find((t) => t.id === teamId);
   const [selectedPlayer, setSelectedPlayer] = useState<any | null>(null);
   const [selectedMatch, setSelectedMatch] = useState<number | null>(null);
+
+  // Fetch team data from Supabase
+  const { data: team, isLoading: teamLoading } = useQuery({
+    queryKey: ['team', id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data, error } = await supabase
+        .from('teams')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id
+  });
+
+  // Fetch players for this team
+  const { data: players = [], isLoading: playersLoading } = useQuery({
+    queryKey: ['team-players', id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data, error } = await supabase
+        .from('players')
+        .select('*')
+        .eq('team_id', id);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!id
+  });
+
+  // Fetch matches for this team
+  const { data: matches = [], isLoading: matchesLoading } = useQuery({
+    queryKey: ['team-matches', id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data, error } = await supabase
+        .from('matches')
+        .select(`
+          *,
+          home_team:teams!home_team_id(id, name, logo),
+          away_team:teams!away_team_id(id, name, logo)
+        `)
+        .or(`home_team_id.eq.${id},away_team_id.eq.${id}`)
+        .order('match_date', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!id
+  });
+
+  if (teamLoading) {
+    return (
+      <div className="page-container">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fmf-green mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement de l'équipe...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!team) {
     return (
@@ -33,31 +96,43 @@ const TeamPage = () => {
     );
   }
 
-  // Calculate team stats
+  // Calculate team stats from matches
   const teamStats = {
-    matches: mockMatches.length,
-    wins: mockMatches.filter(m => m.win === true).length,
-    draws: mockMatches.filter(m => m.win === null && m.result !== null).length,
-    losses: mockMatches.filter(m => m.win === false).length,
-    goalsScored: mockMatches.reduce((sum, m) => {
-      if (m.result) {
-        const goals = m.home ? parseInt(m.result.split('-')[0]) : parseInt(m.result.split('-')[1]);
-        return sum + goals;
-      }
-      return sum;
+    matches: matches.length,
+    wins: matches.filter(m => {
+      if (m.status !== 'completed' || !m.home_score !== null || m.away_score === null) return false;
+      const isHome = m.home_team_id === id;
+      return isHome ? m.home_score > m.away_score : m.away_score > m.home_score;
+    }).length,
+    draws: matches.filter(m => {
+      if (m.status !== 'completed' || m.home_score === null || m.away_score === null) return false;
+      return m.home_score === m.away_score;
+    }).length,
+    losses: matches.filter(m => {
+      if (m.status !== 'completed' || m.home_score === null || m.away_score === null) return false;
+      const isHome = m.home_team_id === id;
+      return isHome ? m.home_score < m.away_score : m.away_score < m.home_score;
+    }).length,
+    goalsScored: matches.reduce((sum, m) => {
+      if (m.status !== 'completed' || m.home_score === null || m.away_score === null) return sum;
+      const isHome = m.home_team_id === id;
+      return sum + (isHome ? m.home_score : m.away_score);
     }, 0),
-    goalsConceded: mockMatches.reduce((sum, m) => {
-      if (m.result) {
-        const goals = m.home ? parseInt(m.result.split('-')[1]) : parseInt(m.result.split('-')[0]);
-        return sum + goals;
-      }
-      return sum;
+    goalsConceded: matches.reduce((sum, m) => {
+      if (m.status !== 'completed' || m.home_score === null || m.away_score === null) return sum;
+      const isHome = m.home_team_id === id;
+      return sum + (isHome ? m.away_score : m.home_score);
     }, 0),
   };
 
   const showPlayerDetail = (player: any) => {
     setSelectedPlayer(player);
   };
+
+  // Mock staff data (this would need to be added to Supabase if needed)
+  const mockStaff = [
+    { id: 1, name: "Entraîneur Principal", role: "Entraîneur", image: "/placeholder.svg" },
+  ];
 
   return (
     <div className="page-container pb-20">
@@ -90,8 +165,13 @@ const TeamPage = () => {
         <TabsContent value="effectif">
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-bold mb-6">Effectif de l'équipe</h2>
-            {mockPlayers.length > 0 ? (
-              <TeamPlayersTab players={mockPlayers} onPlayerClick={showPlayerDetail} />
+            {playersLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fmf-green mx-auto"></div>
+                <p className="mt-2 text-gray-600">Chargement des joueurs...</p>
+              </div>
+            ) : players.length > 0 ? (
+              <TeamPlayersTab players={players} onPlayerClick={showPlayerDetail} />
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <Users size={48} className="mx-auto mb-4 text-gray-300" />
@@ -104,9 +184,14 @@ const TeamPage = () => {
         <TabsContent value="calendrier">
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-bold mb-6">Calendrier des matchs</h2>
-            {mockMatches.length > 0 ? (
+            {matchesLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fmf-green mx-auto"></div>
+                <p className="mt-2 text-gray-600">Chargement des matchs...</p>
+              </div>
+            ) : matches.length > 0 ? (
               <TeamCalendarTab 
-                matches={mockMatches} 
+                matches={matches} 
                 team={team} 
                 selectedMatch={selectedMatch} 
                 onToggleDetails={setSelectedMatch} 
@@ -127,8 +212,13 @@ const TeamPage = () => {
         <TabsContent value="stats">
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-bold mb-6">Statistiques de l'équipe</h2>
-            {mockMatches.length > 0 ? (
-              <TeamStatsTab matches={mockMatches} players={mockPlayers} />
+            {matchesLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fmf-green mx-auto"></div>
+                <p className="mt-2 text-gray-600">Chargement des statistiques...</p>
+              </div>
+            ) : matches.length > 0 ? (
+              <TeamStatsTab matches={matches} players={players} />
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <BarChart2 size={48} className="mx-auto mb-4 text-gray-300" />
