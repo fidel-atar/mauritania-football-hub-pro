@@ -20,6 +20,8 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("teams");
   const { user, isAdmin, adminRole, loading, signOut } = useAuth();
 
+  console.log('AdminDashboard render - User:', user?.email, 'IsAdmin:', isAdmin, 'AdminRole:', adminRole, 'Loading:', loading);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -31,7 +33,13 @@ const AdminDashboard = () => {
     );
   }
 
-  if (!user || !isAdmin) {
+  if (!user) {
+    console.log('No user found, showing login');
+    return <SecureAdminLogin />;
+  }
+
+  if (!isAdmin) {
+    console.log('User is not admin, showing login');
     return <SecureAdminLogin />;
   }
 
@@ -42,6 +50,8 @@ const AdminDashboard = () => {
       console.error('Logout error:', error);
     }
   };
+
+  console.log('Rendering admin dashboard for user:', user.email);
 
   return (
     <div className="container mx-auto p-4 min-h-screen bg-gray-50">
@@ -56,7 +66,7 @@ const AdminDashboard = () => {
           <div>
             <h1 className="text-3xl font-bold text-fmf-green">Panneau d'Administration</h1>
             <p className="text-gray-600">
-              Connecté en tant que {adminRole} • {user.email}
+              Connecté en tant que {adminRole || 'admin'} • {user.email}
             </p>
           </div>
         </div>
