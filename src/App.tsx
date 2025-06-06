@@ -13,8 +13,11 @@ import ShopPage from "./pages/ShopPage";
 import NewsPage from "./pages/NewsPage";
 import MatchDetailPage from "./pages/MatchDetailPage";
 import TeamPage from "./pages/TeamPage";
-import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
+import AdminPage from "./pages/AdminPage";
+import LiveScoresPage from "./pages/LiveScoresPage";
+import StatisticsPage from "./pages/StatisticsPage";
+import CalendarPage from "./pages/CalendarPage";
 
 const queryClient = new QueryClient();
 
@@ -31,11 +34,14 @@ const App = () => (
             <Route path="coupe" element={<CupPage />} />
             <Route path="boutique" element={<ShopPage />} />
             <Route path="actualites" element={<NewsPage />} />
+            <Route path="live" element={<LiveScoresPage />} />
+            <Route path="statistiques" element={<StatisticsPage />} />
+            <Route path="calendrier" element={<CalendarPage />} />
             <Route path="match/:id" element={<MatchDetailPage />} />
             <Route path="equipe/:id" element={<TeamPage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
