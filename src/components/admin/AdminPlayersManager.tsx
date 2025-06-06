@@ -56,6 +56,7 @@ const AdminPlayersManager = () => {
 
   const fetchData = async () => {
     try {
+      console.log('Fetching players and teams from database...');
       const [playersResponse, teamsResponse] = await Promise.all([
         supabase
           .from('players')
@@ -72,8 +73,17 @@ const AdminPlayersManager = () => {
           .order('name')
       ]);
 
-      if (playersResponse.error) throw playersResponse.error;
-      if (teamsResponse.error) throw teamsResponse.error;
+      console.log('Players response:', playersResponse);
+      console.log('Teams response:', teamsResponse);
+
+      if (playersResponse.error) {
+        console.error('Players error:', playersResponse.error);
+        throw playersResponse.error;
+      }
+      if (teamsResponse.error) {
+        console.error('Teams error:', teamsResponse.error);
+        throw teamsResponse.error;
+      }
 
       setPlayers(playersResponse.data || []);
       setTeams(teamsResponse.data || []);
@@ -113,6 +123,7 @@ const AdminPlayersManager = () => {
     }
 
     try {
+      console.log('Adding player:', formData);
       const { error } = await supabase
         .from('players')
         .insert({
@@ -130,7 +141,10 @@ const AdminPlayersManager = () => {
           red_cards: parseInt(formData.red_cards)
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding player:', error);
+        throw error;
+      }
       
       toast.success('Joueur ajouté avec succès');
       setIsAdding(false);
@@ -167,6 +181,7 @@ const AdminPlayersManager = () => {
     }
 
     try {
+      console.log('Updating player:', editingId, formData);
       const { error } = await supabase
         .from('players')
         .update({
@@ -185,7 +200,10 @@ const AdminPlayersManager = () => {
         })
         .eq('id', editingId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating player:', error);
+        throw error;
+      }
       
       toast.success('Joueur mis à jour avec succès');
       setEditingId(null);
@@ -203,12 +221,16 @@ const AdminPlayersManager = () => {
     }
 
     try {
+      console.log('Deleting player:', id);
       const { error } = await supabase
         .from('players')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting player:', error);
+        throw error;
+      }
       
       toast.success('Joueur supprimé avec succès');
       fetchData();
@@ -220,12 +242,16 @@ const AdminPlayersManager = () => {
 
   const handleTransferPlayer = async (playerId: string, newTeamId: string, playerName: string) => {
     try {
+      console.log('Transferring player:', playerId, 'to team:', newTeamId);
       const { error } = await supabase
         .from('players')
         .update({ team_id: newTeamId || null })
         .eq('id', playerId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error transferring player:', error);
+        throw error;
+      }
       
       const teamName = teams.find(t => t.id === newTeamId)?.name || "Aucune équipe";
       toast.success(`${playerName} transféré vers ${teamName}`);
@@ -237,13 +263,13 @@ const AdminPlayersManager = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Chargement...</div>;
+    return <div className="text-center py-8">Chargement des joueurs...</div>;
   }
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Gestion des Joueurs</CardTitle>
+        <CardTitle>Gestion des Joueurs ({players.length} joueurs)</CardTitle>
         <Button 
           onClick={() => setIsAdding(!isAdding)} 
           className="bg-fmf-green hover:bg-fmf-green/90"
@@ -392,6 +418,10 @@ const AdminPlayersManager = () => {
                   src={player.image || "/placeholder.svg"} 
                   alt={player.name} 
                   className="w-12 h-12 rounded-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/placeholder.svg";
+                  }}
                 />
                 <div>
                   <h3 className="font-semibold">{player.name} #{player.number}</h3>
@@ -441,7 +471,8 @@ const AdminPlayersManager = () => {
 
         {players.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            Aucun joueur trouvé. Ajoutez votre premier joueur!
+            <p>Aucun joueur trouvé dans la base de données.</p>
+            <p className="text-sm mt-2">Ajoutez d'abord des équipes, puis ajoutez des joueurs!</p>
           </div>
         )}
       </CardContent>

@@ -35,12 +35,19 @@ const AdminTeamsManager = () => {
 
   const fetchTeams = async () => {
     try {
+      console.log('Fetching teams from database...');
       const { data, error } = await supabase
         .from('teams')
         .select('*')
         .order('name');
       
-      if (error) throw error;
+      console.log('Teams data:', data);
+      console.log('Teams error:', error);
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
       setTeams(data || []);
     } catch (error) {
       console.error('Error fetching teams:', error);
@@ -72,6 +79,7 @@ const AdminTeamsManager = () => {
     }
 
     try {
+      console.log('Adding team:', formData);
       const { error } = await supabase
         .from('teams')
         .insert({
@@ -83,7 +91,10 @@ const AdminTeamsManager = () => {
           founded_year: formData.founded_year ? parseInt(formData.founded_year) : null
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding team:', error);
+        throw error;
+      }
       
       toast.success('Équipe ajoutée avec succès');
       setIsAdding(false);
@@ -114,6 +125,7 @@ const AdminTeamsManager = () => {
     }
 
     try {
+      console.log('Updating team:', editingId, formData);
       const { error } = await supabase
         .from('teams')
         .update({
@@ -126,7 +138,10 @@ const AdminTeamsManager = () => {
         })
         .eq('id', editingId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating team:', error);
+        throw error;
+      }
       
       toast.success('Équipe mise à jour avec succès');
       setEditingId(null);
@@ -144,12 +159,16 @@ const AdminTeamsManager = () => {
     }
 
     try {
+      console.log('Deleting team:', id);
       const { error } = await supabase
         .from('teams')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting team:', error);
+        throw error;
+      }
       
       toast.success('Équipe supprimée avec succès');
       fetchTeams();
@@ -160,13 +179,13 @@ const AdminTeamsManager = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Chargement...</div>;
+    return <div className="text-center py-8">Chargement des équipes...</div>;
   }
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Gestion des Équipes</CardTitle>
+        <CardTitle>Gestion des Équipes ({teams.length} équipes)</CardTitle>
         <Button 
           onClick={() => setIsAdding(!isAdding)} 
           className="bg-fmf-green hover:bg-fmf-green/90"
@@ -270,6 +289,10 @@ const AdminTeamsManager = () => {
                   src={team.logo || "/placeholder.svg"} 
                   alt={team.name} 
                   className="w-12 h-12 rounded-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/placeholder.svg";
+                  }}
                 />
                 <div>
                   <h3 className="font-semibold">{team.name}</h3>
@@ -305,7 +328,8 @@ const AdminTeamsManager = () => {
 
         {teams.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            Aucune équipe trouvée. Ajoutez votre première équipe!
+            <p>Aucune équipe trouvée dans la base de données.</p>
+            <p className="text-sm mt-2">Cliquez sur "Nouvelle Équipe" pour ajouter votre première équipe!</p>
           </div>
         )}
       </CardContent>
