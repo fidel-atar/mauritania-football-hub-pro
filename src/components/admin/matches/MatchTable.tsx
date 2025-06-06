@@ -8,25 +8,7 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-
-interface Match {
-  id: string;
-  homeTeam: {
-    id: string;
-    name: string;
-    logo: string;
-  };
-  awayTeam: {
-    id: string;
-    name: string;
-    logo: string;
-  };
-  date: string;
-  stadium: string;
-  status: 'scheduled' | 'live' | 'finished';
-  homeScore: number | null;
-  awayScore: number | null;
-}
+import { Match } from "@/types/adminTypes";
 
 interface MatchTableProps {
   matches: Match[];

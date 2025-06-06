@@ -3,13 +3,13 @@
 export type MatchStatus = "scheduled" | "live" | "finished";
 
 export interface MatchTeam {
-  id: number;
+  id: string;
   name: string;
   logo: string;
 }
 
 export interface Match {
-  id: number;
+  id: string;
   homeTeam: MatchTeam;
   awayTeam: MatchTeam;
   date: string;
@@ -34,12 +34,12 @@ export interface PlayerStats {
 }
 
 export interface Player {
-  id: number;
+  id: string;
   name: string;
   number: number;
   age: number;
   position: string;
-  teamId: number;
+  teamId: string;
   nationality: string;
   image: string;
   stats: PlayerStats;
@@ -47,7 +47,7 @@ export interface Player {
 
 // Team Types
 export interface Team {
-  id: number;
+  id: string;
   name: string;
   logo: string;
   stadium?: string;

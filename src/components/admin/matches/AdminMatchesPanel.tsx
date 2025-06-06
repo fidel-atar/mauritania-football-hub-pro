@@ -19,7 +19,7 @@ const AdminMatchesPanel = () => {
   const [isAddingMatch, setIsAddingMatch] = useState(false);
   const [matchesList, setMatchesList] = useState<Match[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
-  const [editingMatchId, setEditingMatchId] = useState<number | null>(null);
+  const [editingMatchId, setEditingMatchId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   
   const [newMatch, setNewMatch] = useState({
@@ -85,15 +85,15 @@ const AdminMatchesPanel = () => {
       console.log('Matches fetched:', data);
       
       // Convert to Match format
-      const formattedMatches: Match[] = (data || []).map((match, index) => ({
-        id: index + 1, // Using index as ID since we need number
+      const formattedMatches: Match[] = (data || []).map((match) => ({
+        id: match.id,
         homeTeam: {
-          id: parseInt(match.home_team?.id || '0'),
+          id: match.home_team?.id || '',
           name: match.home_team?.name || '',
           logo: match.home_team?.logo || '/placeholder.svg',
         },
         awayTeam: {
-          id: parseInt(match.away_team?.id || '0'),
+          id: match.away_team?.id || '',
           name: match.away_team?.name || '',
           logo: match.away_team?.logo || '/placeholder.svg',
         },
@@ -167,7 +167,7 @@ const AdminMatchesPanel = () => {
     }
   };
 
-  const handleEditMatch = (matchId: number) => {
+  const handleEditMatch = (matchId: string) => {
     const match = matchesList.find(m => m.id === matchId);
     if (match) {
       const matchDate = new Date(match.date);
@@ -207,17 +207,10 @@ const AdminMatchesPanel = () => {
         away_score: formData.status !== "scheduled" ? parseInt(formData.awayScore) : null,
       };
       
-      // Find the original match to get its database ID
-      const originalMatch = matchesList.find(m => m.id === editingMatchId);
-      if (!originalMatch) {
-        toast.error("Match introuvable");
-        return;
-      }
-      
       const { error } = await supabase
         .from('matches')
         .update(matchData)
-        .eq('id', originalMatch.id); // This would need the actual UUID from database
+        .eq('id', editingMatchId);
       
       if (error) {
         console.error('Error updating match:', error);
@@ -233,7 +226,7 @@ const AdminMatchesPanel = () => {
     }
   };
 
-  const handleDeleteMatch = async (matchId: number) => {
+  const handleDeleteMatch = async (matchId: string) => {
     if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce match?")) {
       return;
     }
@@ -241,17 +234,10 @@ const AdminMatchesPanel = () => {
     try {
       console.log('Deleting match:', matchId);
       
-      // Find the original match to get its database ID
-      const originalMatch = matchesList.find(m => m.id === matchId);
-      if (!originalMatch) {
-        toast.error("Match introuvable");
-        return;
-      }
-      
       const { error } = await supabase
         .from('matches')
         .delete()
-        .eq('id', originalMatch.id); // This would need the actual UUID from database
+        .eq('id', matchId);
       
       if (error) {
         console.error('Error deleting match:', error);
