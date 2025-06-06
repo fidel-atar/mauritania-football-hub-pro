@@ -4,7 +4,6 @@ import { Outlet, useLocation, useParams } from "react-router-dom";
 import Header from "./Header";
 import BottomNavigation from "./BottomNavigation";
 import { Toaster } from "@/components/ui/sonner";
-import { teams } from "@/data/superD1MockData";
 
 const Layout = () => {
   const location = useLocation();
@@ -15,10 +14,7 @@ const Layout = () => {
     let title = "FMF - Fédération Mauritanienne de Football";
     
     if (location.pathname.includes('/equipe/') && params.id) {
-      const team = teams.find(t => t.id === Number(params.id));
-      if (team) {
-        title = `${team.name} - Super D1`;
-      }
+      title = `Équipe - Super D1`;
     }
     else if (location.pathname === '/') {
       title = "Super D1 - Fédération Mauritanienne de Football";

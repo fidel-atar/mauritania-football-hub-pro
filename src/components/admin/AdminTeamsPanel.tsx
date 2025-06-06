@@ -1,18 +1,27 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { teams } from "@/data/mockData";
 import { PlusCircle, Edit, Trash2, Save } from "lucide-react";
 import { toast } from "sonner";
-import { Team } from "@/types/adminTypes";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Team {
+  id: string;
+  name: string;
+  logo: string | null;
+  stadium: string | null;
+  description: string | null;
+}
 
 const AdminTeamsPanel = () => {
   const [isAddingTeam, setIsAddingTeam] = useState(false);
-  const [editingTeamId, setEditingTeamId] = useState<number | null>(null);
-  const [teamsList, setTeamsList] = useState<Team[]>(teams);
+  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+  const [teamsList, setTeamsList] = useState<Team[]>([]);
+  const [loading, setLoading] = useState(true);
   const [newTeam, setNewTeam] = useState({
     name: "",
     logo: "",
@@ -26,58 +35,103 @@ const AdminTeamsPanel = () => {
     description: ""
   });
 
-  const handleAddTeam = (e: React.FormEvent) => {
-    e.preventDefault();
-    const teamId = teamsList.length > 0 ? Math.max(...teamsList.map(t => t.id)) + 1 : 1;
-    
-    const teamToAdd = {
-      id: teamId,
-      name: newTeam.name,
-      logo: newTeam.logo || "/placeholder.svg",
-      stadium: newTeam.stadium,
-      description: newTeam.description,
-    };
-    
-    setTeamsList([...teamsList, teamToAdd]);
-    setNewTeam({ name: "", logo: "", stadium: "", description: "" });
-    toast.success("Équipe ajoutée avec succès");
-    setIsAddingTeam(false);
-  };
-
-  const handleEditTeam = (teamId: number) => {
-    const team = teamsList.find(t => t.id === teamId);
-    if (team) {
-      setEditTeam({
-        name: team.name,
-        logo: team.logo,
-        stadium: team.stadium || "",
-        description: team.description || "",
-      });
-      setEditingTeamId(teamId);
+  const fetchTeams = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('teams')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      setTeamsList(data || []);
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+      toast.error('Erreur lors du chargement des équipes');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSaveEdit = () => {
-    if (editingTeamId === null) return;
+  useEffect(() => {
+    fetchTeams();
+  }, []);
+
+  const handleAddTeam = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    setTeamsList(teamsList.map(team => 
-      team.id === editingTeamId ? 
-      { ...team, 
-        name: editTeam.name, 
-        logo: editTeam.logo, 
-        stadium: editTeam.stadium,
-        description: editTeam.description 
-      } : team
-    ));
-    
-    toast.success("Modifications enregistrées");
-    setEditingTeamId(null);
+    try {
+      const { error } = await supabase
+        .from('teams')
+        .insert({
+          name: newTeam.name,
+          logo: newTeam.logo || null,
+          stadium: newTeam.stadium || null,
+          description: newTeam.description || null,
+        });
+      
+      if (error) throw error;
+      
+      setNewTeam({ name: "", logo: "", stadium: "", description: "" });
+      toast.success("Équipe ajoutée avec succès");
+      setIsAddingTeam(false);
+      fetchTeams();
+    } catch (error) {
+      console.error('Error adding team:', error);
+      toast.error("Erreur lors de l'ajout de l'équipe");
+    }
   };
 
-  const handleDeleteTeam = (teamId: number) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette équipe?")) {
-      setTeamsList(teamsList.filter(team => team.id !== teamId));
-      toast.success("Équipe supprimée avec succès");
+  const handleEditTeam = (team: Team) => {
+    setEditTeam({
+      name: team.name,
+      logo: team.logo || "",
+      stadium: team.stadium || "",
+      description: team.description || "",
+    });
+    setEditingTeamId(team.id);
+  };
+
+  const handleSaveEdit = async () => {
+    if (editingTeamId === null) return;
+    
+    try {
+      const { error } = await supabase
+        .from('teams')
+        .update({
+          name: editTeam.name,
+          logo: editTeam.logo || null,
+          stadium: editTeam.stadium || null,
+          description: editTeam.description || null,
+        })
+        .eq('id', editingTeamId);
+      
+      if (error) throw error;
+      
+      toast.success("Modifications enregistrées");
+      setEditingTeamId(null);
+      fetchTeams();
+    } catch (error) {
+      console.error('Error updating team:', error);
+      toast.error("Erreur lors de la mise à jour de l'équipe");
+    }
+  };
+
+  const handleDeleteTeam = async (teamId: string, teamName: string) => {
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer l'équipe "${teamName}"?`)) {
+      try {
+        const { error } = await supabase
+          .from('teams')
+          .delete()
+          .eq('id', teamId);
+        
+        if (error) throw error;
+        
+        toast.success("Équipe supprimée avec succès");
+        fetchTeams();
+      } catch (error) {
+        console.error('Error deleting team:', error);
+        toast.error("Erreur lors de la suppression de l'équipe");
+      }
     }
   };
 
@@ -94,6 +148,10 @@ const AdminTeamsPanel = () => {
       setNewTeam(prev => ({ ...prev, [fieldName]: value }));
     }
   };
+
+  if (loading) {
+    return <div className="text-center py-8">Chargement des équipes...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -129,7 +187,6 @@ const AdminTeamsPanel = () => {
                   type="url" 
                   value={newTeam.logo}
                   onChange={(e) => handleInputChange(e)}
-                  required 
                 />
                 <div className="text-xs text-gray-500">Si laissé vide, un placeholder sera utilisé</div>
               </div>
@@ -176,7 +233,7 @@ const AdminTeamsPanel = () => {
                 {teamsList.map((team) => (
                   <tr key={team.id} className="border-b hover:bg-gray-50">
                     <td className="py-3 px-4">
-                      <img src={team.logo} alt={team.name} className="w-10 h-10 rounded-full" />
+                      <img src={team.logo || "/placeholder.svg"} alt={team.name} className="w-10 h-10 rounded-full" />
                     </td>
                     <td className="py-3 px-4">{team.name}</td>
                     <td className="py-3 px-4">{team.stadium || "Non spécifié"}</td>
@@ -198,7 +255,6 @@ const AdminTeamsPanel = () => {
                               id={`edit-logo-${team.id}`}
                               value={editTeam.logo}
                               onChange={(e) => handleInputChange(e, true)}
-                              required
                             />
                           </div>
                           <div className="space-y-2">
@@ -238,7 +294,7 @@ const AdminTeamsPanel = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handleEditTeam(team.id)}
+                            onClick={() => handleEditTeam(team)}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -246,7 +302,7 @@ const AdminTeamsPanel = () => {
                             variant="outline" 
                             size="sm" 
                             className="text-red-600 hover:text-red-700"
-                            onClick={() => handleDeleteTeam(team.id)}
+                            onClick={() => handleDeleteTeam(team.id, team.name)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

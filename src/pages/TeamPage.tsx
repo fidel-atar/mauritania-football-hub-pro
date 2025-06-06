@@ -15,10 +15,24 @@ import TeamStatsTab from "@/components/team/TeamStatsTab";
 import TeamStaffTab from "@/components/team/TeamStaffTab";
 import PlayerDetailModal from "@/components/team/PlayerDetailModal";
 
+interface StaffMember {
+  id: number;
+  name: string;
+  role: string;
+  image: string;
+  info: {
+    age: number;
+    experience: string;
+    previousClubs?: string;
+    specialization?: string;
+    [key: string]: any;
+  };
+}
+
 const TeamPage = () => {
   const { id } = useParams();
   const [selectedPlayer, setSelectedPlayer] = useState<any | null>(null);
-  const [selectedMatch, setSelectedMatch] = useState<number | null>(null);
+  const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
 
   // Fetch team data from Supabase
   const { data: team, isLoading: teamLoading } = useQuery({
@@ -129,9 +143,20 @@ const TeamPage = () => {
     setSelectedPlayer(player);
   };
 
-  // Mock staff data (this would need to be added to Supabase if needed)
-  const mockStaff = [
-    { id: 1, name: "Entraîneur Principal", role: "Entraîneur", image: "/placeholder.svg" },
+  // Mock staff data with proper interface
+  const mockStaff: StaffMember[] = [
+    { 
+      id: 1, 
+      name: "Entraîneur Principal", 
+      role: "Entraîneur", 
+      image: "/placeholder.svg",
+      info: {
+        age: 45,
+        experience: "10 ans",
+        previousClubs: "FC Nouakchott",
+        specialization: "Tactique offensive"
+      }
+    },
   ];
 
   return (

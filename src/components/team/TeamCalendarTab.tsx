@@ -2,50 +2,52 @@
 import React from "react";
 import MatchItem from "./MatchItem";
 
-type Match = {
-  id: number;
-  opponent: string;
-  date: string;
-  home: boolean;
-  result: string | null;
-  win: boolean | null;
-  stats: {
-    possession: string;
-    shots: number;
-    shotsOnTarget: number;
-    corners: number;
-    fouls: number;
+interface Match {
+  id: string;
+  match_date: string;
+  status: string;
+  home_score: number | null;
+  away_score: number | null;
+  stadium: string;
+  home_team: {
+    id: string;
+    name: string;
+    logo: string | null;
   } | null;
-  highlights: string | null;
-};
+  away_team: {
+    id: string;
+    name: string;
+    logo: string | null;
+  } | null;
+  home_team_id: string;
+  away_team_id: string;
+}
 
-type Team = {
+interface Team {
+  id: string;
   name: string;
   [key: string]: any;
-};
+}
 
 interface TeamCalendarTabProps {
   matches: Match[];
   team: Team;
-  selectedMatch: number | null;
-  onToggleDetails: (matchId: number | null) => void;
+  selectedMatch: string | null;
+  onToggleDetails: (matchId: string | null) => void;
 }
 
 const TeamCalendarTab = ({ matches, team, selectedMatch, onToggleDetails }: TeamCalendarTabProps) => {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-bold mb-6">Calendrier des matchs</h2>
-      <div className="space-y-4">
-        {matches.map(match => (
-          <MatchItem 
-            key={match.id}
-            match={match}
-            team={team}
-            selectedMatch={selectedMatch}
-            onToggleDetails={onToggleDetails}
-          />
-        ))}
-      </div>
+    <div className="space-y-4">
+      {matches.map(match => (
+        <MatchItem 
+          key={match.id}
+          match={match}
+          team={team}
+          selectedMatch={selectedMatch}
+          onToggleDetails={onToggleDetails}
+        />
+      ))}
     </div>
   );
 };
