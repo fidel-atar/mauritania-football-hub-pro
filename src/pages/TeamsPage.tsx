@@ -37,9 +37,9 @@ const TeamsPage = () => {
                   <Badge variant="secondary" className="text-xs">
                     Super D1
                   </Badge>
-                  {team.founded_year && (
+                  {team.founded && (
                     <Badge variant="outline" className="text-xs">
-                      Fondé en {team.founded_year}
+                      Fondé en {team.founded}
                     </Badge>
                   )}
                 </div>
