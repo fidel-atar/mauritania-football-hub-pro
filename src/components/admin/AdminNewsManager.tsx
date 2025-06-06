@@ -15,8 +15,8 @@ interface NewsArticle {
   id: string;
   title: string;
   content: string;
-  author: string;
   category: string;
+  author: string | null;
   image: string | null;
   published: boolean;
   created_at: string;
@@ -30,78 +30,38 @@ const AdminNewsManager = () => {
   const [formData, setFormData] = useState({
     title: "",
     content: "",
+    category: "Actualités",
     author: "",
-    category: "Championnat",
     image: "",
-    published: true
+    published: false
   });
 
   const categories = [
-    "Championnat",
+    "Actualités",
+    "Résultats",
     "Transferts",
-    "Équipe Nationale",
-    "Coupe",
-    "International",
-    "Autres"
+    "Interviews",
+    "Événements",
+    "Communiqués"
   ];
-
-  const validateInput = (data: typeof formData) => {
-    if (!data.title.trim()) {
-      return 'Le titre est requis';
-    }
-    
-    if (data.title.trim().length < 5) {
-      return 'Le titre doit contenir au moins 5 caractères';
-    }
-    
-    if (!data.content.trim()) {
-      return 'Le contenu est requis';
-    }
-    
-    if (data.content.trim().length < 20) {
-      return 'Le contenu doit contenir au moins 20 caractères';
-    }
-    
-    if (!data.author.trim()) {
-      return 'L\'auteur est requis';
-    }
-    
-    if (data.image && !isValidUrl(data.image)) {
-      return 'L\'URL de l\'image n\'est pas valide';
-    }
-    
-    return null;
-  };
-
-  const isValidUrl = (string: string) => {
-    try {
-      const url = new URL(string);
-      return url.protocol === 'http:' || url.protocol === 'https:';
-    } catch (_) {
-      return false;
-    }
-  };
-
-  const sanitizeInput = (input: string) => {
-    return input.trim().replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-  };
 
   const fetchArticles = async () => {
     try {
+      console.log('Fetching news from database...');
       const { data, error } = await supabase
         .from('news')
         .select('*')
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('Error fetching articles:', error);
-        toast.error('Erreur lors du chargement des articles');
+        console.error('Supabase error:', error);
+        toast.error('Erreur lors du chargement des actualités');
         return;
       }
       setArticles(data || []);
     } catch (error) {
-      console.error('Error fetching articles:', error);
-      toast.error('Erreur lors du chargement des articles');
+      console.error('Error fetching news:', error);
+      toast.error('Erreur lors du chargement des actualités');
     } finally {
       setLoading(false);
     }
@@ -115,52 +75,54 @@ const AdminNewsManager = () => {
     setFormData({
       title: "",
       content: "",
+      category: "Actualités",
       author: "",
-      category: "Championnat",
       image: "",
-      published: true
+      published: false
     });
   };
 
-  const handleAdd = async () => {
-    const sanitizedData = {
-      ...formData,
-      title: sanitizeInput(formData.title),
-      content: sanitizeInput(formData.content),
-      author: sanitizeInput(formData.author)
-    };
-
-    const validationError = validateInput(sanitizedData);
-    if (validationError) {
-      toast.error(validationError);
-      return;
+  const validateForm = () => {
+    if (!formData.title.trim()) {
+      toast.error('Le titre est requis');
+      return false;
     }
+    if (!formData.content.trim()) {
+      toast.error('Le contenu est requis');
+      return false;
+    }
+    return true;
+  };
+
+  const handleAdd = async () => {
+    if (!validateForm()) return;
 
     try {
+      console.log('Adding news article:', formData);
       const { error } = await supabase
         .from('news')
         .insert({
-          title: sanitizedData.title,
-          content: sanitizedData.content,
-          author: sanitizedData.author,
-          category: sanitizedData.category,
-          image: sanitizedData.image || null,
-          published: sanitizedData.published
+          title: formData.title.trim(),
+          content: formData.content.trim(),
+          category: formData.category,
+          author: formData.author.trim() || null,
+          image: formData.image.trim() || null,
+          published: formData.published
         });
 
       if (error) {
-        console.error('Error adding article:', error);
-        toast.error('Erreur lors de l\'ajout de l\'article');
+        console.error('Error adding news:', error);
+        toast.error('Erreur lors de l\'ajout de l\'actualité');
         return;
       }
       
-      toast.success('Article ajouté avec succès');
+      toast.success('Actualité ajoutée avec succès');
       setIsAdding(false);
       resetForm();
       fetchArticles();
     } catch (error) {
-      console.error('Error adding article:', error);
-      toast.error('Erreur lors de l\'ajout de l\'article');
+      console.error('Error adding news:', error);
+      toast.error('Erreur lors de l\'ajout de l\'actualité');
     }
   };
 
@@ -169,170 +131,125 @@ const AdminNewsManager = () => {
     setFormData({
       title: article.title,
       content: article.content,
-      author: article.author,
       category: article.category,
+      author: article.author || "",
       image: article.image || "",
       published: article.published
     });
   };
 
   const handleUpdate = async () => {
-    const sanitizedData = {
-      ...formData,
-      title: sanitizeInput(formData.title),
-      content: sanitizeInput(formData.content),
-      author: sanitizeInput(formData.author)
-    };
-
-    const validationError = validateInput(sanitizedData);
-    if (validationError) {
-      toast.error(validationError);
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
+      console.log('Updating news article:', editingId, formData);
       const { error } = await supabase
         .from('news')
         .update({
-          title: sanitizedData.title,
-          content: sanitizedData.content,
-          author: sanitizedData.author,
-          category: sanitizedData.category,
-          image: sanitizedData.image || null,
-          published: sanitizedData.published
+          title: formData.title.trim(),
+          content: formData.content.trim(),
+          category: formData.category,
+          author: formData.author.trim() || null,
+          image: formData.image.trim() || null,
+          published: formData.published
         })
         .eq('id', editingId);
 
       if (error) {
-        console.error('Error updating article:', error);
-        toast.error('Erreur lors de la mise à jour de l\'article');
+        console.error('Error updating news:', error);
+        toast.error('Erreur lors de la mise à jour de l\'actualité');
         return;
       }
       
-      toast.success('Article mis à jour avec succès');
+      toast.success('Actualité mise à jour avec succès');
       setEditingId(null);
       resetForm();
       fetchArticles();
     } catch (error) {
-      console.error('Error updating article:', error);
-      toast.error('Erreur lors de la mise à jour de l\'article');
+      console.error('Error updating news:', error);
+      toast.error('Erreur lors de la mise à jour de l\'actualité');
     }
   };
 
   const handleDelete = async (id: string, title: string) => {
-    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer l'article "${title}"?`)) {
+    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer l'actualité "${title}"?`)) {
       return;
     }
 
     try {
+      console.log('Deleting news article:', id);
       const { error } = await supabase
         .from('news')
         .delete()
         .eq('id', id);
 
       if (error) {
-        console.error('Error deleting article:', error);
-        toast.error('Erreur lors de la suppression de l\'article');
+        console.error('Error deleting news:', error);
+        toast.error('Erreur lors de la suppression de l\'actualité');
         return;
       }
       
-      toast.success('Article supprimé avec succès');
+      toast.success('Actualité supprimée avec succès');
       fetchArticles();
     } catch (error) {
-      console.error('Error deleting article:', error);
-      toast.error('Erreur lors de la suppression de l\'article');
-    }
-  };
-
-  const togglePublished = async (id: string, currentStatus: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('news')
-        .update({ published: !currentStatus })
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error toggling published status:', error);
-        toast.error('Erreur lors de la modification du statut');
-        return;
-      }
-      
-      toast.success(`Article ${!currentStatus ? 'publié' : 'retiré de la publication'}`);
-      fetchArticles();
-    } catch (error) {
-      console.error('Error toggling published status:', error);
-      toast.error('Erreur lors de la modification du statut');
+      console.error('Error deleting news:', error);
+      toast.error('Erreur lors de la suppression de l\'actualité');
     }
   };
 
   if (loading) {
-    return <div className="text-center py-8">Chargement...</div>;
+    return <div className="text-center py-8">Chargement des actualités...</div>;
   }
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Gestion des Actualités</CardTitle>
+        <CardTitle>Gestion des Actualités ({articles.length} articles)</CardTitle>
         <Button 
           onClick={() => setIsAdding(!isAdding)} 
           className="bg-fmf-green hover:bg-fmf-green/90"
         >
           <PlusCircle className="mr-2 h-4 w-4" />
-          Nouvel Article
+          Nouvelle Actualité
         </Button>
       </CardHeader>
       <CardContent>
         {(isAdding || editingId) && (
           <div className="mb-6 p-4 border rounded-lg bg-gray-50">
             <h3 className="font-semibold mb-4">
-              {isAdding ? 'Ajouter un nouvel article' : 'Modifier l\'article'}
+              {isAdding ? 'Ajouter une nouvelle actualité' : 'Modifier l\'actualité'}
             </h3>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="title">Titre *</Label>
                 <Input 
                   id="title"
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  placeholder="Titre de l'article"
-                  maxLength={200}
+                  placeholder="Titre de l'actualité"
                 />
               </div>
               <div>
-                <Label htmlFor="content">Contenu *</Label>
-                <Textarea 
-                  id="content"
-                  value={formData.content}
-                  onChange={(e) => setFormData({...formData, content: e.target.value})}
-                  placeholder="Contenu de l'article"
-                  rows={6}
-                  maxLength={5000}
-                />
+                <Label htmlFor="category">Catégorie</Label>
+                <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="author">Auteur *</Label>
-                  <Input 
-                    id="author"
-                    value={formData.author}
-                    onChange={(e) => setFormData({...formData, author: e.target.value})}
-                    placeholder="Nom de l'auteur"
-                    maxLength={100}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="category">Catégorie</Label>
-                  <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>{category}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div>
+                <Label htmlFor="author">Auteur</Label>
+                <Input 
+                  id="author"
+                  value={formData.author}
+                  onChange={(e) => setFormData({...formData, author: e.target.value})}
+                  placeholder="Nom de l'auteur"
+                />
               </div>
               <div>
                 <Label htmlFor="image">URL de l'image</Label>
@@ -340,18 +257,28 @@ const AdminNewsManager = () => {
                   id="image"
                   value={formData.image}
                   onChange={(e) => setFormData({...formData, image: e.target.value})}
-                  placeholder="https://example.com/image.jpg (optionnel)"
+                  placeholder="https://example.com/image.jpg"
                   type="url"
                 />
               </div>
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  id="published"
-                  checked={formData.published}
-                  onCheckedChange={(checked) => setFormData({...formData, published: checked})}
-                />
-                <Label htmlFor="published">Publier immédiatement</Label>
-              </div>
+            </div>
+            <div className="mt-4">
+              <Label htmlFor="content">Contenu *</Label>
+              <Textarea 
+                id="content"
+                value={formData.content}
+                onChange={(e) => setFormData({...formData, content: e.target.value})}
+                placeholder="Contenu de l'actualité"
+                rows={8}
+              />
+            </div>
+            <div className="flex items-center space-x-2 mt-4">
+              <Switch 
+                id="published"
+                checked={formData.published}
+                onCheckedChange={(checked) => setFormData({...formData, published: checked})}
+              />
+              <Label htmlFor="published">Publier immédiatement</Label>
             </div>
             <div className="flex gap-2 mt-4">
               <Button 
@@ -359,7 +286,7 @@ const AdminNewsManager = () => {
                 className="bg-fmf-green hover:bg-fmf-green/90"
               >
                 <Save className="w-4 h-4 mr-2" />
-                {isAdding ? 'Publier' : 'Modifier'}
+                {isAdding ? 'Ajouter' : 'Modifier'}
               </Button>
               <Button 
                 variant="outline" 
@@ -379,29 +306,35 @@ const AdminNewsManager = () => {
         <div className="space-y-4">
           {articles.map((article) => (
             <div key={article.id} className="flex items-start justify-between p-4 border rounded-lg">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-semibold">{article.title}</h3>
-                  <span className={`px-2 py-1 rounded text-xs ${
+              <div className="flex items-start gap-4 flex-1">
+                <img 
+                  src={article.image || "/placeholder.svg"} 
+                  alt={article.title} 
+                  className="w-16 h-16 rounded object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/placeholder.svg";
+                  }}
+                />
+                <div className="flex-1">
+                  <h3 className="font-semibold line-clamp-2">{article.title}</h3>
+                  <p className="text-sm text-gray-600">{article.category}</p>
+                  {article.author && (
+                    <p className="text-sm text-gray-500">Par {article.author}</p>
+                  )}
+                  <p className="text-xs text-gray-400 mt-1">
+                    {new Date(article.created_at).toLocaleDateString('fr-FR')}
+                  </p>
+                  <span className={`inline-block mt-2 px-2 py-1 rounded text-xs ${
                     article.published 
                       ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
+                      : 'bg-yellow-100 text-yellow-800'
                   }`}>
                     {article.published ? 'Publié' : 'Brouillon'}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 mb-2">
-                  {article.content.substring(0, 150)}...
-                </p>
-                <p className="text-xs text-gray-500">
-                  Par {article.author} • {new Date(article.created_at).toLocaleDateString('fr-FR')} • {article.category}
-                </p>
               </div>
-              <div className="flex items-center gap-2 ml-4">
-                <Switch 
-                  checked={article.published}
-                  onCheckedChange={() => togglePublished(article.id, article.published)}
-                />
+              <div className="flex gap-2">
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -424,7 +357,8 @@ const AdminNewsManager = () => {
 
         {articles.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            Aucun article trouvé. Rédigez votre premier article!
+            <p>Aucune actualité trouvée dans la base de données.</p>
+            <p className="text-sm mt-2">Cliquez sur "Nouvelle Actualité" pour ajouter votre premier article!</p>
           </div>
         )}
       </CardContent>

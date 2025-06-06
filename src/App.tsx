@@ -49,10 +49,10 @@ const App = () => (
               <Route path="boutique" element={<ShopPage />} />
               <Route path="calendrier" element={<CalendarPage />} />
               <Route path="statistiques" element={<StatisticsPage />} />
-              {/* Admin routes */}
-              <Route path="admin" element={<AdminDashboard />} />
-              <Route path="admin-dashboard" element={<AdminDashboard />} />
             </Route>
+            {/* Admin routes - outside of main layout */}
+            <Route path="admin" element={<AdminDashboard />} />
+            <Route path="admin-dashboard" element={<AdminDashboard />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

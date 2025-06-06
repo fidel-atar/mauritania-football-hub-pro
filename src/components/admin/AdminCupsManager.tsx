@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ interface Cup {
   id: string;
   name: string;
   description: string | null;
-  status: 'upcoming' | 'ongoing' | 'completed';
+  status: string;
   start_date: string;
   end_date: string | null;
   prize_money: number | null;
@@ -28,50 +29,17 @@ const AdminCupsManager = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    status: "upcoming" as 'upcoming' | 'ongoing' | 'completed',
+    status: "upcoming",
     start_date: "",
     end_date: "",
     prize_money: ""
   });
 
-  const validateInput = (data: typeof formData) => {
-    if (!data.name.trim()) {
-      return 'Le nom de la coupe est requis';
-    }
-    
-    if (data.name.trim().length < 3) {
-      return 'Le nom doit contenir au moins 3 caractères';
-    }
-    
-    if (!data.start_date) {
-      return 'La date de début est requise';
-    }
-    
-    const startDate = new Date(data.start_date);
-    if (isNaN(startDate.getTime())) {
-      return 'Date de début invalide';
-    }
-    
-    if (data.end_date) {
-      const endDate = new Date(data.end_date);
-      if (isNaN(endDate.getTime())) {
-        return 'Date de fin invalide';
-      }
-      if (endDate <= startDate) {
-        return 'La date de fin doit être après la date de début';
-      }
-    }
-    
-    if (data.prize_money && (isNaN(Number(data.prize_money)) || Number(data.prize_money) < 0)) {
-      return 'Le prix en argent doit être un nombre positif';
-    }
-    
-    return null;
-  };
-
-  const sanitizeInput = (input: string) => {
-    return input.trim().replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-  };
+  const statusOptions = [
+    { value: "upcoming", label: "À venir" },
+    { value: "ongoing", label: "En cours" },
+    { value: "completed", label: "Terminé" }
+  ];
 
   const fetchCups = async () => {
     try {
@@ -79,7 +47,7 @@ const AdminCupsManager = () => {
       const { data, error } = await supabase
         .from('cups')
         .select('*')
-        .order('start_date', { ascending: false });
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Supabase error:', error);
@@ -110,30 +78,36 @@ const AdminCupsManager = () => {
     });
   };
 
-  const handleAdd = async () => {
-    const sanitizedData = {
-      ...formData,
-      name: sanitizeInput(formData.name),
-      description: sanitizeInput(formData.description)
-    };
-
-    const validationError = validateInput(sanitizedData);
-    if (validationError) {
-      toast.error(validationError);
-      return;
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      toast.error('Le nom de la coupe est requis');
+      return false;
     }
+    if (!formData.start_date) {
+      toast.error('La date de début est requise');
+      return false;
+    }
+    if (formData.end_date && formData.start_date > formData.end_date) {
+      toast.error('La date de fin doit être après la date de début');
+      return false;
+    }
+    return true;
+  };
+
+  const handleAdd = async () => {
+    if (!validateForm()) return;
 
     try {
-      console.log('Adding cup:', sanitizedData);
+      console.log('Adding cup:', formData);
       const { error } = await supabase
         .from('cups')
         .insert({
-          name: sanitizedData.name,
-          description: sanitizedData.description || null,
-          status: sanitizedData.status,
-          start_date: sanitizedData.start_date,
-          end_date: sanitizedData.end_date || null,
-          prize_money: sanitizedData.prize_money ? parseInt(sanitizedData.prize_money) : null
+          name: formData.name.trim(),
+          description: formData.description.trim() || null,
+          status: formData.status,
+          start_date: formData.start_date,
+          end_date: formData.end_date || null,
+          prize_money: formData.prize_money ? parseInt(formData.prize_money) : null
         });
 
       if (error) {
@@ -165,29 +139,19 @@ const AdminCupsManager = () => {
   };
 
   const handleUpdate = async () => {
-    const sanitizedData = {
-      ...formData,
-      name: sanitizeInput(formData.name),
-      description: sanitizeInput(formData.description)
-    };
-
-    const validationError = validateInput(sanitizedData);
-    if (validationError) {
-      toast.error(validationError);
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
-      console.log('Updating cup:', editingId, sanitizedData);
+      console.log('Updating cup:', editingId, formData);
       const { error } = await supabase
         .from('cups')
         .update({
-          name: sanitizedData.name,
-          description: sanitizedData.description || null,
-          status: sanitizedData.status,
-          start_date: sanitizedData.start_date,
-          end_date: sanitizedData.end_date || null,
-          prize_money: sanitizedData.prize_money ? parseInt(sanitizedData.prize_money) : null
+          name: formData.name.trim(),
+          description: formData.description.trim() || null,
+          status: formData.status,
+          start_date: formData.start_date,
+          end_date: formData.end_date || null,
+          prize_money: formData.prize_money ? parseInt(formData.prize_money) : null
         })
         .eq('id', editingId);
 
@@ -234,16 +198,17 @@ const AdminCupsManager = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'upcoming':
-        return <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">À venir</span>;
-      case 'ongoing':
-        return <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">En cours</span>;
-      case 'completed':
-        return <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">Terminée</span>;
-      default:
-        return <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">Inconnu</span>;
-    }
+    const colors = {
+      upcoming: 'bg-blue-100 text-blue-800',
+      ongoing: 'bg-green-100 text-green-800',
+      completed: 'bg-gray-100 text-gray-800'
+    };
+    const labels = {
+      upcoming: 'À venir',
+      ongoing: 'En cours',
+      completed: 'Terminé'
+    };
+    return { color: colors[status as keyof typeof colors], label: labels[status as keyof typeof labels] };
   };
 
   if (loading) {
@@ -253,10 +218,7 @@ const AdminCupsManager = () => {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <Trophy className="w-5 h-5" />
-          Gestion des Coupes ({cups.length} coupes)
-        </CardTitle>
+        <CardTitle>Gestion des Coupes ({cups.length} coupes)</CardTitle>
         <Button 
           onClick={() => setIsAdding(!isAdding)} 
           className="bg-fmf-green hover:bg-fmf-green/90"
@@ -278,20 +240,19 @@ const AdminCupsManager = () => {
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  placeholder="Nom de la coupe"
-                  maxLength={100}
+                  placeholder="ex: Coupe du Président"
                 />
               </div>
               <div>
                 <Label htmlFor="status">Statut</Label>
-                <Select value={formData.status} onValueChange={(value: 'upcoming' | 'ongoing' | 'completed') => setFormData({...formData, status: value})}>
+                <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choisir le statut" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="upcoming">À venir</SelectItem>
-                    <SelectItem value="ongoing">En cours</SelectItem>
-                    <SelectItem value="completed">Terminée</SelectItem>
+                    {statusOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -314,7 +275,7 @@ const AdminCupsManager = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="prize_money">Prize Money (MRU)</Label>
+                <Label htmlFor="prize_money">Prix (MRU)</Label>
                 <Input 
                   id="prize_money"
                   type="number"
@@ -332,8 +293,7 @@ const AdminCupsManager = () => {
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 placeholder="Description de la coupe"
-                rows={3}
-                maxLength={500}
+                rows={4}
               />
             </div>
             <div className="flex gap-2 mt-4">
@@ -360,51 +320,52 @@ const AdminCupsManager = () => {
         )}
 
         <div className="space-y-4">
-          {cups.map((cup) => (
-            <div key={cup.id} className="flex items-center justify-between p-4 border rounded-lg">
-              <div className="flex items-center gap-4">
-                <Trophy className="w-8 h-8 text-fmf-green" />
-                <div>
-                  <h3 className="font-semibold">{cup.name}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    {getStatusBadge(cup.status)}
-                    <span className="text-sm text-gray-600">
-                      {new Date(cup.start_date).toLocaleDateString('fr-FR')}
-                      {cup.end_date && ` - ${new Date(cup.end_date).toLocaleDateString('fr-FR')}`}
+          {cups.map((cup) => {
+            const statusBadge = getStatusBadge(cup.status);
+            return (
+              <div key={cup.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-fmf-yellow rounded-full flex items-center justify-center">
+                    <Trophy className="w-6 h-6 text-fmf-dark" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">{cup.name}</h3>
+                    <p className="text-sm text-gray-600">
+                      Début: {new Date(cup.start_date).toLocaleDateString('fr-FR')}
+                      {cup.end_date && ` • Fin: ${new Date(cup.end_date).toLocaleDateString('fr-FR')}`}
+                    </p>
+                    {cup.prize_money && (
+                      <p className="text-sm text-gray-600">Prix: {cup.prize_money} MRU</p>
+                    )}
+                    <span className={`inline-block mt-1 px-2 py-1 rounded text-xs ${statusBadge.color}`}>
+                      {statusBadge.label}
                     </span>
                   </div>
-                  {cup.description && (
-                    <p className="text-sm text-gray-600 mt-1">{cup.description}</p>
-                  )}
-                  {cup.prize_money && (
-                    <p className="text-sm text-green-600 mt-1">Prix: {cup.prize_money.toLocaleString()} MRU</p>
-                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleEdit(cup)}
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleDelete(cup.id, cup.name)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleEdit(cup)}
-                >
-                  <Edit className="w-4 h-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleDelete(cup.id, cup.name)}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {cups.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
             <p>Aucune coupe trouvée dans la base de données.</p>
             <p className="text-sm mt-2">Cliquez sur "Nouvelle Coupe" pour ajouter votre première coupe!</p>
           </div>

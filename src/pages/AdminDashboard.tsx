@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, LogOut, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import SecureAdminLogin from "@/components/admin/SecureAdminLogin";
+import ProtectedAdminRoute from "@/components/admin/ProtectedAdminRoute";
 import AdminTeamsManager from "@/components/admin/AdminTeamsManager";
 import AdminPlayersManager from "@/components/admin/AdminPlayersManager";
 import AdminMatchesManager from "@/components/admin/AdminMatchesManager";
@@ -16,32 +16,9 @@ import AdminCupsManager from "@/components/admin/AdminCupsManager";
 import AdminStandingsManager from "@/components/admin/AdminStandingsManager";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const AdminDashboard = () => {
+const AdminDashboardContent = () => {
   const [activeTab, setActiveTab] = useState("teams");
-  const { user, isAdmin, adminRole, loading, signOut } = useAuth();
-
-  console.log('AdminDashboard render - User:', user?.email, 'IsAdmin:', isAdmin, 'AdminRole:', adminRole, 'Loading:', loading);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fmf-green mx-auto"></div>
-          <p className="mt-4 text-gray-600">Vérification des permissions...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    console.log('No user found, showing login');
-    return <SecureAdminLogin />;
-  }
-
-  if (!isAdmin) {
-    console.log('User is not admin, showing login');
-    return <SecureAdminLogin />;
-  }
+  const { user, adminRole, signOut } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -50,8 +27,6 @@ const AdminDashboard = () => {
       console.error('Logout error:', error);
     }
   };
-
-  console.log('Rendering admin dashboard for user:', user.email);
 
   return (
     <div className="container mx-auto p-4 min-h-screen bg-gray-50">
@@ -66,7 +41,7 @@ const AdminDashboard = () => {
           <div>
             <h1 className="text-3xl font-bold text-fmf-green">Panneau d'Administration</h1>
             <p className="text-gray-600">
-              Connecté en tant que {adminRole || 'admin'} • {user.email}
+              Connecté en tant que {adminRole || 'admin'} • {user?.email}
             </p>
           </div>
         </div>
@@ -125,6 +100,14 @@ const AdminDashboard = () => {
         </TabsContent>
       </Tabs>
     </div>
+  );
+};
+
+const AdminDashboard = () => {
+  return (
+    <ProtectedAdminRoute>
+      <AdminDashboardContent />
+    </ProtectedAdminRoute>
   );
 };
 
