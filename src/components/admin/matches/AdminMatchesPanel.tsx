@@ -1,19 +1,26 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { matches, teams } from "@/data/mockData";
 import { toast } from "sonner";
 import { Match, MatchStatus } from "@/types/adminTypes";
 import MatchForm from "./MatchForm";
 import MatchTable from "./MatchTable";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Team {
+  id: string;
+  name: string;
+  logo: string | null;
+}
 
 const AdminMatchesPanel = () => {
   const [isAddingMatch, setIsAddingMatch] = useState(false);
-  // Convert existing matches to Match type
-  const [matchesList, setMatchesList] = useState<Match[]>(matches as unknown as Match[]);
+  const [matchesList, setMatchesList] = useState<Match[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [editingMatchId, setEditingMatchId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
   
   const [newMatch, setNewMatch] = useState({
     homeTeam: "",
@@ -37,51 +44,127 @@ const AdminMatchesPanel = () => {
     awayScore: "",
   });
 
-  const handleAddMatch = (formData: any) => {    
-    // Prepare match date with time
-    const [hours, minutes] = formData.time.split(':').map(Number);
-    const matchDate = new Date(formData.date || new Date());
-    matchDate.setHours(hours, minutes, 0);
-    
-    const matchId = matchesList.length > 0 ? Math.max(...matchesList.map(m => m.id)) + 1 : 1;
-    
-    const matchToAdd: Match = {
-      id: matchId,
-      homeTeam: {
-        id: parseInt(formData.homeTeam),
-        name: teams.find(t => t.id === parseInt(formData.homeTeam))?.name || "",
-        logo: teams.find(t => t.id === parseInt(formData.homeTeam))?.logo || "",
-      },
-      awayTeam: {
-        id: parseInt(formData.awayTeam),
-        name: teams.find(t => t.id === parseInt(formData.awayTeam))?.name || "",
-        logo: teams.find(t => t.id === parseInt(formData.awayTeam))?.logo || "",
-      },
-      date: matchDate.toISOString(),
-      stadium: formData.stadium,
-      status: formData.status,
-    };
-    
-    // Only add scores if not scheduled
-    if (formData.status !== "scheduled") {
-      matchToAdd.homeScore = parseInt(formData.homeScore);
-      matchToAdd.awayScore = parseInt(formData.awayScore);
+  const fetchTeams = async () => {
+    try {
+      console.log('Fetching teams for matches...');
+      const { data, error } = await supabase
+        .from('teams')
+        .select('id, name, logo')
+        .order('name');
+      
+      if (error) {
+        console.error('Error fetching teams:', error);
+        throw error;
+      }
+      
+      console.log('Teams fetched:', data);
+      setTeams(data || []);
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+      toast.error('Erreur lors du chargement des équipes');
     }
-    
-    setMatchesList([...matchesList, matchToAdd]);
-    setNewMatch({
-      homeTeam: "",
-      awayTeam: "",
-      date: new Date(),
-      time: "19:00",
-      stadium: "",
-      status: "scheduled" as MatchStatus,
-      homeScore: "0",
-      awayScore: "0",
-    });
-    
-    toast.success("Match ajouté avec succès");
-    setIsAddingMatch(false);
+  };
+
+  const fetchMatches = async () => {
+    try {
+      console.log('Fetching matches...');
+      const { data, error } = await supabase
+        .from('matches')
+        .select(`
+          *,
+          home_team:teams!matches_home_team_id_fkey(id, name, logo),
+          away_team:teams!matches_away_team_id_fkey(id, name, logo)
+        `)
+        .order('match_date', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching matches:', error);
+        throw error;
+      }
+      
+      console.log('Matches fetched:', data);
+      
+      // Convert to Match format
+      const formattedMatches: Match[] = (data || []).map((match, index) => ({
+        id: index + 1, // Using index as ID since we need number
+        homeTeam: {
+          id: parseInt(match.home_team?.id || '0'),
+          name: match.home_team?.name || '',
+          logo: match.home_team?.logo || '/placeholder.svg',
+        },
+        awayTeam: {
+          id: parseInt(match.away_team?.id || '0'),
+          name: match.away_team?.name || '',
+          logo: match.away_team?.logo || '/placeholder.svg',
+        },
+        date: match.match_date,
+        stadium: match.stadium,
+        status: match.status as MatchStatus,
+        homeScore: match.home_score,
+        awayScore: match.away_score,
+      }));
+      
+      setMatchesList(formattedMatches);
+    } catch (error) {
+      console.error('Error fetching matches:', error);
+      toast.error('Erreur lors du chargement des matchs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      await Promise.all([fetchTeams(), fetchMatches()]);
+    };
+    loadData();
+  }, []);
+
+  const handleAddMatch = async (formData: any) => {
+    try {
+      console.log('Adding match:', formData);
+      
+      // Prepare match date with time
+      const [hours, minutes] = formData.time.split(':').map(Number);
+      const matchDate = new Date(formData.date || new Date());
+      matchDate.setHours(hours, minutes, 0);
+      
+      const matchData = {
+        home_team_id: formData.homeTeam,
+        away_team_id: formData.awayTeam,
+        match_date: matchDate.toISOString(),
+        stadium: formData.stadium,
+        status: formData.status,
+        home_score: formData.status !== "scheduled" ? parseInt(formData.homeScore) : null,
+        away_score: formData.status !== "scheduled" ? parseInt(formData.awayScore) : null,
+      };
+      
+      const { error } = await supabase
+        .from('matches')
+        .insert(matchData);
+      
+      if (error) {
+        console.error('Error adding match:', error);
+        throw error;
+      }
+      
+      toast.success("Match ajouté avec succès");
+      setIsAddingMatch(false);
+      setNewMatch({
+        homeTeam: "",
+        awayTeam: "",
+        date: new Date(),
+        time: "19:00",
+        stadium: "",
+        status: "scheduled" as MatchStatus,
+        homeScore: "0",
+        awayScore: "0",
+      });
+      fetchMatches();
+    } catch (error) {
+      console.error('Error adding match:', error);
+      toast.error("Erreur lors de l'ajout du match");
+    }
   };
 
   const handleEditMatch = (matchId: number) => {
@@ -106,62 +189,92 @@ const AdminMatchesPanel = () => {
     }
   };
 
-  const handleSaveEdit = (formData: any) => {
-    const matchId = editingMatchId as number;
-    const [hours, minutes] = formData.time.split(':').map(Number);
-    const matchDate = new Date(formData.date);
-    matchDate.setHours(hours, minutes, 0);
-    
-    setMatchesList(matchesList.map(match => {
-      if (match.id === matchId) {
-        const updatedMatch: Match = {
-          ...match,
-          homeTeam: {
-            id: parseInt(formData.homeTeam),
-            name: teams.find(t => t.id === parseInt(formData.homeTeam))?.name || "",
-            logo: teams.find(t => t.id === parseInt(formData.homeTeam))?.logo || "",
-          },
-          awayTeam: {
-            id: parseInt(formData.awayTeam),
-            name: teams.find(t => t.id === parseInt(formData.awayTeam))?.name || "",
-            logo: teams.find(t => t.id === parseInt(formData.awayTeam))?.logo || "",
-          },
-          date: matchDate.toISOString(),
-          stadium: formData.stadium,
-          status: formData.status as MatchStatus,
-        };
-        
-        // Only add scores if not scheduled
-        if (formData.status !== "scheduled") {
-          updatedMatch.homeScore = parseInt(formData.homeScore);
-          updatedMatch.awayScore = parseInt(formData.awayScore);
-        } else {
-          // Remove scores if scheduled
-          delete updatedMatch.homeScore;
-          delete updatedMatch.awayScore;
-        }
-        
-        return updatedMatch;
+  const handleSaveEdit = async (formData: any) => {
+    try {
+      console.log('Updating match:', editingMatchId, formData);
+      
+      const [hours, minutes] = formData.time.split(':').map(Number);
+      const matchDate = new Date(formData.date);
+      matchDate.setHours(hours, minutes, 0);
+      
+      const matchData = {
+        home_team_id: formData.homeTeam,
+        away_team_id: formData.awayTeam,
+        match_date: matchDate.toISOString(),
+        stadium: formData.stadium,
+        status: formData.status,
+        home_score: formData.status !== "scheduled" ? parseInt(formData.homeScore) : null,
+        away_score: formData.status !== "scheduled" ? parseInt(formData.awayScore) : null,
+      };
+      
+      // Find the original match to get its database ID
+      const originalMatch = matchesList.find(m => m.id === editingMatchId);
+      if (!originalMatch) {
+        toast.error("Match introuvable");
+        return;
       }
-      return match;
-    }));
-    
-    toast.success("Modifications enregistrées");
-    setEditingMatchId(null);
-  };
-
-  const handleDeleteMatch = (matchId: number) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce match?")) {
-      setMatchesList(matchesList.filter(match => match.id !== matchId));
-      toast.success("Match supprimé avec succès");
+      
+      const { error } = await supabase
+        .from('matches')
+        .update(matchData)
+        .eq('id', originalMatch.id); // This would need the actual UUID from database
+      
+      if (error) {
+        console.error('Error updating match:', error);
+        throw error;
+      }
+      
+      toast.success("Modifications enregistrées");
+      setEditingMatchId(null);
+      fetchMatches();
+    } catch (error) {
+      console.error('Error updating match:', error);
+      toast.error("Erreur lors de la mise à jour du match");
     }
   };
+
+  const handleDeleteMatch = async (matchId: number) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce match?")) {
+      return;
+    }
+    
+    try {
+      console.log('Deleting match:', matchId);
+      
+      // Find the original match to get its database ID
+      const originalMatch = matchesList.find(m => m.id === matchId);
+      if (!originalMatch) {
+        toast.error("Match introuvable");
+        return;
+      }
+      
+      const { error } = await supabase
+        .from('matches')
+        .delete()
+        .eq('id', originalMatch.id); // This would need the actual UUID from database
+      
+      if (error) {
+        console.error('Error deleting match:', error);
+        throw error;
+      }
+      
+      toast.success("Match supprimé avec succès");
+      fetchMatches();
+    } catch (error) {
+      console.error('Error deleting match:', error);
+      toast.error("Erreur lors de la suppression du match");
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-8">Chargement des matchs...</div>;
+  }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Gérer les Matchs</CardTitle>
+          <CardTitle>Gérer les Matchs ({matchesList.length} matchs)</CardTitle>
           <Button 
             onClick={() => setIsAddingMatch(!isAddingMatch)} 
             className="bg-fmf-green hover:bg-fmf-green/90"
@@ -173,6 +286,7 @@ const AdminMatchesPanel = () => {
         <CardContent>
           {isAddingMatch && (
             <MatchForm
+              teams={teams}
               onSubmit={handleAddMatch}
               onCancel={() => setIsAddingMatch(false)}
               submitLabel="Ajouter"
@@ -181,6 +295,7 @@ const AdminMatchesPanel = () => {
 
           {editingMatchId !== null && (
             <MatchForm
+              teams={teams}
               initialData={editMatch}
               onSubmit={handleSaveEdit}
               onCancel={() => setEditingMatchId(null)}
@@ -193,6 +308,13 @@ const AdminMatchesPanel = () => {
             onEditMatch={handleEditMatch}
             onDeleteMatch={handleDeleteMatch}
           />
+
+          {matchesList.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <p>Aucun match trouvé dans la base de données.</p>
+              <p className="text-sm mt-2">Cliquez sur "Ajouter un match" pour créer votre premier match!</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

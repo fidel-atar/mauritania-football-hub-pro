@@ -161,6 +161,65 @@ export type Database = {
         }
         Relationships: []
       }
+      standings: {
+        Row: {
+          created_at: string
+          draws: number
+          goal_difference: number
+          goals_against: number
+          goals_for: number
+          id: string
+          losses: number
+          matches_played: number
+          points: number
+          position: number
+          season: string
+          team_id: string | null
+          updated_at: string
+          wins: number
+        }
+        Insert: {
+          created_at?: string
+          draws?: number
+          goal_difference?: number
+          goals_against?: number
+          goals_for?: number
+          id?: string
+          losses?: number
+          matches_played?: number
+          points?: number
+          position: number
+          season?: string
+          team_id?: string | null
+          updated_at?: string
+          wins?: number
+        }
+        Update: {
+          created_at?: string
+          draws?: number
+          goal_difference?: number
+          goals_against?: number
+          goals_for?: number
+          id?: string
+          losses?: number
+          matches_played?: number
+          points?: number
+          position?: number
+          season?: string
+          team_id?: string | null
+          updated_at?: string
+          wins?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "standings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teams: {
         Row: {
           coach: string | null

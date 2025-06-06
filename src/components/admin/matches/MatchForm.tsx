@@ -8,12 +8,18 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Clock, Save } from "lucide-react";
-import { teams } from "@/data/mockData";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Match, MatchStatus } from "@/types/adminTypes";
+import { MatchStatus } from "@/types/adminTypes";
+
+interface Team {
+  id: string;
+  name: string;
+  logo: string | null;
+}
 
 type MatchFormProps = {
+  teams: Team[];
   initialData?: {
     homeTeam: string;
     awayTeam: string;
@@ -41,6 +47,7 @@ const defaultMatchData = {
 };
 
 const MatchForm: React.FC<MatchFormProps> = ({
+  teams,
   initialData = defaultMatchData,
   onSubmit,
   onCancel,
@@ -59,6 +66,11 @@ const MatchForm: React.FC<MatchFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!matchData.homeTeam || !matchData.awayTeam || !matchData.stadium) {
+      toast.error("Tous les champs requis doivent être remplis");
+      return;
+    }
     
     if (matchData.homeTeam === matchData.awayTeam) {
       toast.error("Une équipe ne peut pas jouer contre elle-même");
@@ -81,7 +93,7 @@ const MatchForm: React.FC<MatchFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-4 mb-6 p-4 border rounded-lg">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="homeTeam">Équipe domicile</Label>
+          <Label htmlFor="homeTeam">Équipe domicile *</Label>
           <Select
             value={matchData.homeTeam}
             onValueChange={(value) => handleChange("homeTeam", value)}
@@ -91,13 +103,13 @@ const MatchForm: React.FC<MatchFormProps> = ({
             </SelectTrigger>
             <SelectContent>
               {teams.map((team) => (
-                <SelectItem key={team.id} value={team.id.toString()}>{team.name}</SelectItem>
+                <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="awayTeam">Équipe extérieur</Label>
+          <Label htmlFor="awayTeam">Équipe extérieur *</Label>
           <Select
             value={matchData.awayTeam}
             onValueChange={(value) => handleChange("awayTeam", value)}
@@ -107,13 +119,13 @@ const MatchForm: React.FC<MatchFormProps> = ({
             </SelectTrigger>
             <SelectContent>
               {teams.map((team) => (
-                <SelectItem key={team.id} value={team.id.toString()}>{team.name}</SelectItem>
+                <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Date</Label>
+          <Label>Date *</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -139,7 +151,7 @@ const MatchForm: React.FC<MatchFormProps> = ({
           </Popover>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="matchTime">Heure</Label>
+          <Label htmlFor="matchTime">Heure *</Label>
           <div className="flex items-center">
             <Clock className="mr-2 h-4 w-4 text-gray-500" />
             <Input 
@@ -148,11 +160,12 @@ const MatchForm: React.FC<MatchFormProps> = ({
               className="flex-1" 
               value={matchData.time}
               onChange={(e) => handleChange("time", e.target.value)}
+              required
             />
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="stadium">Stade</Label>
+          <Label htmlFor="stadium">Stade *</Label>
           <Input 
             id="stadium" 
             placeholder="Nom du stade" 
@@ -210,6 +223,7 @@ const MatchForm: React.FC<MatchFormProps> = ({
       
       <div className="flex gap-2">
         <Button type="submit" className="bg-fmf-green hover:bg-fmf-green/90">
+          <Save className="w-4 h-4 mr-2" />
           {submitLabel}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>
