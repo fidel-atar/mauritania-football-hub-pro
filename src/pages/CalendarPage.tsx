@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -100,7 +99,7 @@ const CalendarPage = () => {
 
   const dayNames = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
-  const getDaysInMonth = (date) => {
+  const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
@@ -108,7 +107,7 @@ const CalendarPage = () => {
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
 
-    const days = [];
+    const days: (number | null)[] = [];
 
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < startingDayOfWeek; i++) {
@@ -123,7 +122,7 @@ const CalendarPage = () => {
     return days;
   };
 
-  const getMatchesForDate = (day) => {
+  const getMatchesForDate = (day: number | null) => {
     if (!day) return [];
     const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     return matches.filter(match => match.date === dateStr);
@@ -137,7 +136,7 @@ const CalendarPage = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed': return 'bg-green-100 text-green-800';
       case 'upcoming': return 'bg-blue-100 text-blue-800';
@@ -146,7 +145,7 @@ const CalendarPage = () => {
     }
   };
 
-  const getStatusText = (status) => {
+  const getStatusText = (status: string) => {
     switch (status) {
       case 'completed': return 'Terminé';
       case 'upcoming': return 'À venir';
@@ -232,7 +231,7 @@ const CalendarPage = () => {
           <div className="space-y-4">
             {matches
               .filter(match => match.status === 'upcoming')
-              .sort((a, b) => new Date(a.date) - new Date(b.date))
+              .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
               .map((match) => (
                 <div key={match.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                   <div className="flex-1">
@@ -290,7 +289,7 @@ const CalendarPage = () => {
           <div className="space-y-4">
             {matches
               .filter(match => match.status === 'completed')
-              .sort((a, b) => new Date(b.date) - new Date(a.date))
+              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
               .map((match) => (
                 <div key={match.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
                   <div className="flex-1">
