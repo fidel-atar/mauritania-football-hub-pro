@@ -3,8 +3,10 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAdmin } from "@/contexts/AdminContext";
+import AdminLogin from "@/components/admin/AdminLogin";
 import AdminTeamsManager from "@/components/admin/AdminTeamsManager";
 import AdminPlayersManager from "@/components/admin/AdminPlayersManager";
 import AdminMatchesManager from "@/components/admin/AdminMatchesManager";
@@ -13,6 +15,11 @@ import AdminProductsManager from "@/components/admin/AdminProductsManager";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("teams");
+  const { isAdmin, logout } = useAdmin();
+
+  if (!isAdmin) {
+    return <AdminLogin />;
+  }
 
   return (
     <div className="container mx-auto p-4 min-h-screen bg-gray-50">
@@ -29,6 +36,10 @@ const AdminDashboard = () => {
             <p className="text-gray-600">Gérez tous les aspects de votre application football</p>
           </div>
         </div>
+        <Button variant="outline" onClick={logout} className="text-red-600 hover:text-red-700">
+          <LogOut className="w-4 h-4 mr-2" />
+          Déconnexion
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
