@@ -7,12 +7,13 @@ import { Link } from "react-router-dom";
 import { Trophy, Calendar, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { MatchProps } from "@/components/matches/MatchCard";
 
 const HomePage = () => {
   // Fetch matches from Supabase
   const { data: matches = [], isLoading } = useQuery({
     queryKey: ['home-matches'],
-    queryFn: async () => {
+    queryFn: async (): Promise<MatchProps[]> => {
       const { data, error } = await supabase
         .from('matches')
         .select(`
@@ -29,24 +30,35 @@ const HomePage = () => {
       }
 
       // Transform data to match MatchProps interface
-      return (data || []).map(match => ({
-        id: parseInt(match.id),
-        homeTeam: {
-          id: parseInt(match.home_team?.id || '0'),
-          name: match.home_team?.name || 'TBD',
-          logo: match.home_team?.logo || '/placeholder.svg'
-        },
-        awayTeam: {
-          id: parseInt(match.away_team?.id || '0'),
-          name: match.away_team?.name || 'TBD',
-          logo: match.away_team?.logo || '/placeholder.svg'
-        },
-        date: match.match_date,
-        stadium: match.stadium,
-        homeScore: match.home_score,
-        awayScore: match.away_score,
-        status: match.status === 'live' ? 'live' : match.status === 'completed' ? 'finished' : 'scheduled'
-      }));
+      return (data || []).map(match => {
+        let status: "scheduled" | "live" | "finished";
+        if (match.status === 'live') {
+          status = 'live';
+        } else if (match.status === 'completed' || match.status === 'finished') {
+          status = 'finished';
+        } else {
+          status = 'scheduled';
+        }
+
+        return {
+          id: parseInt(match.id),
+          homeTeam: {
+            id: parseInt(match.home_team?.id || '0'),
+            name: match.home_team?.name || 'TBD',
+            logo: match.home_team?.logo || '/placeholder.svg'
+          },
+          awayTeam: {
+            id: parseInt(match.away_team?.id || '0'),
+            name: match.away_team?.name || 'TBD',
+            logo: match.away_team?.logo || '/placeholder.svg'
+          },
+          date: match.match_date,
+          stadium: match.stadium,
+          homeScore: match.home_score,
+          awayScore: match.away_score,
+          status: status
+        };
+      });
     },
   });
 

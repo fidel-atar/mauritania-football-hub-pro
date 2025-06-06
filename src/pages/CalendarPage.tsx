@@ -8,13 +8,32 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface Match {
+  id: string;
+  match_date: string;
+  stadium: string;
+  home_score: number | null;
+  away_score: number | null;
+  status: string;
+  home_team: {
+    id: string;
+    name: string;
+    logo: string | null;
+  } | null;
+  away_team: {
+    id: string;
+    name: string;
+    logo: string | null;
+  } | null;
+}
+
 const CalendarPage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   // Fetch matches from Supabase
   const { data: matches = [], isLoading } = useQuery({
     queryKey: ['calendar-matches'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Match[]> => {
       const { data, error } = await supabase
         .from('matches')
         .select(`
@@ -45,6 +64,7 @@ const CalendarPage = () => {
       case 'live':
         return <Badge className="bg-red-500">En Direct</Badge>;
       case 'completed':
+      case 'finished':
         return <Badge variant="secondary">Terminé</Badge>;
       case 'postponed':
         return <Badge variant="outline">Reporté</Badge>;
@@ -63,7 +83,7 @@ const CalendarPage = () => {
     }
     acc[date].push(match);
     return acc;
-  }, {} as Record<string, typeof matches>);
+  }, {} as Record<string, Match[]>);
 
   if (isLoading) {
     return (
