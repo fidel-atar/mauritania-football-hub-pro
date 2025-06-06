@@ -1,13 +1,55 @@
 
 import React from "react";
 import MatchList from "@/components/matches/MatchList";
-import { matches } from "@/data/superD1MockData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Trophy, Calendar, Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const HomePage = () => {
+  // Fetch matches from Supabase
+  const { data: matches = [], isLoading } = useQuery({
+    queryKey: ['home-matches'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('matches')
+        .select(`
+          *,
+          home_team:teams!home_team_id(id, name, logo),
+          away_team:teams!away_team_id(id, name, logo)
+        `)
+        .order('match_date', { ascending: true })
+        .limit(10);
+
+      if (error) {
+        console.error('Error fetching matches:', error);
+        return [];
+      }
+
+      // Transform data to match MatchProps interface
+      return (data || []).map(match => ({
+        id: parseInt(match.id),
+        homeTeam: {
+          id: parseInt(match.home_team?.id || '0'),
+          name: match.home_team?.name || 'TBD',
+          logo: match.home_team?.logo || '/placeholder.svg'
+        },
+        awayTeam: {
+          id: parseInt(match.away_team?.id || '0'),
+          name: match.away_team?.name || 'TBD',
+          logo: match.away_team?.logo || '/placeholder.svg'
+        },
+        date: match.match_date,
+        stadium: match.stadium,
+        homeScore: match.home_score,
+        awayScore: match.away_score,
+        status: match.status === 'live' ? 'live' : match.status === 'completed' ? 'finished' : 'scheduled'
+      }));
+    },
+  });
+
   return (
     <div className="page-container pb-20">
       {/* Bannière promotionnelle */}
@@ -45,7 +87,27 @@ const HomePage = () => {
       
       {/* Section Matchs */}
       <h1 className="section-title">Matchs & Résultats</h1>
-      <MatchList matches={matches} />
+      
+      {isLoading ? (
+        <div className="text-center py-8">Chargement des matchs...</div>
+      ) : matches.length === 0 ? (
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold text-gray-600 mb-4">Aucun match disponible</h2>
+          <p className="text-gray-500 mb-6">
+            Les matchs seront ajoutés par l'administrateur bientôt.
+          </p>
+          <div className="bg-blue-50 p-4 rounded-lg inline-block">
+            <p className="text-blue-800 text-sm">
+              L'administrateur peut ajouter des matchs via le{" "}
+              <Link to="/admin-dashboard" className="font-semibold underline">
+                panneau d'administration
+              </Link>
+            </p>
+          </div>
+        </div>
+      ) : (
+        <MatchList matches={matches} />
+      )}
     </div>
   );
 };
