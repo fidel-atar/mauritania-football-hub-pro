@@ -4,347 +4,261 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Save, AlertTriangle, User } from "lucide-react";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { X } from "lucide-react";
 
 interface Team {
   id: string;
   name: string;
-  logo?: string | null;
 }
 
-interface PlayerFormData {
+interface ExistingPlayer {
+  number: number;
+  teamId: string | null;
   name: string;
-  number: string;
-  age: string;
-  position: string;
-  team: string;
-  nationality: string;
-  image: string;
 }
 
 interface PlayerFormProps {
   teams: Team[];
-  initialData?: PlayerFormData;
-  onSubmit: (data: PlayerFormData) => void;
+  onSubmit: (data: any) => void;
   onCancel: () => void;
+  initialData?: any;
   submitLabel: string;
-  existingPlayers?: Array<{ number: number; teamId: string | null; name: string }>;
+  existingPlayers?: ExistingPlayer[];
 }
 
 const positions = [
-  { value: "Gardien", label: "حارس مرمى" },
-  { value: "Défenseur", label: "مدافع" },
-  { value: "Milieu", label: "لاعب وسط" },
-  { value: "Attaquant", label: "مهاجم" }
+  "حارس مرمى",
+  "مدافع أيمن",
+  "مدافع أيسر",
+  "مدافع وسط",
+  "قلب دفاع",
+  "لاعب وسط دفاعي",
+  "لاعب وسط",
+  "لاعب وسط هجومي",
+  "جناح أيمن",
+  "جناح أيسر",
+  "مهاجم"
 ];
 
-const commonNationalities = [
-  "موريتانية",
-  "سنغالية", 
-  "مالية",
-  "مغربية",
-  "جزائرية",
-  "تونسية",
-  "مصرية",
-  "نيجيرية",
-  "غانية",
-  "كاميرونية",
-  "ساحل العاج",
-  "بوركينافاسو",
-  "فرنسية",
-  "أخرى"
+const nationalities = [
+  "موريتاني",
+  "مغربي",
+  "جزائري",
+  "تونسي",
+  "مصري",
+  "سنغالي",
+  "مالي",
+  "نيجيري",
+  "غاني",
+  "كاميروني",
+  "فرنسي",
+  "إسباني",
+  "برازيلي",
+  "أرجنتيني"
 ];
 
 const PlayerForm: React.FC<PlayerFormProps> = ({
   teams,
-  initialData,
   onSubmit,
   onCancel,
+  initialData,
   submitLabel,
   existingPlayers = []
 }) => {
-  const [playerData, setPlayerData] = useState<PlayerFormData>(
-    initialData || {
-      name: "",
-      number: "",
-      age: "",
-      position: "",
-      team: "",
-      nationality: "",
-      image: "",
-    }
-  );
-  const [errors, setErrors] = useState<string[]>([]);
+  const [formData, setFormData] = useState({
+    name: initialData?.name || "",
+    number: initialData?.number || "",
+    age: initialData?.age || "",
+    position: initialData?.position || "",
+    team: initialData?.team || "",
+    nationality: initialData?.nationality || "",
+    image: initialData?.image || ""
+  });
 
-  const handleChange = (field: keyof PlayerFormData, value: string) => {
-    setPlayerData(prev => ({ ...prev, [field]: value }));
-    
-    // Clear errors when user makes changes
-    if (errors.length > 0) {
-      setErrors([]);
-    }
-  };
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateForm = () => {
-    const newErrors: string[] = [];
+    const newErrors: Record<string, string> = {};
 
-    if (!playerData.name.trim()) {
-      newErrors.push("يجب إدخال اسم اللاعب");
-    }
-    if (!playerData.number) {
-      newErrors.push("يجب إدخال رقم اللاعب");
-    }
-    if (!playerData.age) {
-      newErrors.push("يجب إدخال عمر اللاعب");
-    }
-    if (!playerData.position) {
-      newErrors.push("يجب اختيار مركز اللاعب");
-    }
-    if (!playerData.nationality) {
-      newErrors.push("يجب اختيار جنسية اللاعب");
-    }
+    if (!formData.name.trim()) newErrors.name = "يجب إدخال اسم اللاعب";
+    if (!formData.number) newErrors.number = "يجب إدخال رقم اللاعب";
+    if (!formData.age) newErrors.age = "يجب إدخال عمر اللاعب";
+    if (!formData.position) newErrors.position = "يجب اختيار مركز اللعب";
+    if (!formData.nationality) newErrors.nationality = "يجب اختيار الجنسية";
 
-    // Validate number
-    const number = parseInt(playerData.number);
-    if (isNaN(number) || number < 1 || number > 99) {
-      newErrors.push("رقم اللاعب يجب أن يكون بين 1 و 99");
-    }
-
-    // Validate age
-    const age = parseInt(playerData.age);
-    if (isNaN(age) || age < 16 || age > 45) {
-      newErrors.push("عمر اللاعب يجب أن يكون بين 16 و 45 سنة");
-    }
-
-    // Check for duplicate number in the same team
-    if (playerData.team && playerData.number) {
-      const duplicate = existingPlayers.find(player => 
-        player.number === number && 
-        player.teamId === playerData.team &&
-        player.name !== initialData?.name // Exclude current player when editing
+    // Validate player number uniqueness within the same team
+    if (formData.number && formData.team) {
+      const duplicatePlayer = existingPlayers.find(player => 
+        player.number === parseInt(formData.number) && 
+        player.teamId === formData.team
       );
-      if (duplicate) {
-        newErrors.push(`الرقم ${number} مُستخدم بالفعل من قبل اللاعب ${duplicate.name} في نفس الفريق`);
+      if (duplicatePlayer) {
+        newErrors.number = `الرقم ${formData.number} مستخدم بالفعل في هذا الفريق`;
       }
     }
 
+    // Validate age range
+    const age = parseInt(formData.age);
+    if (age && (age < 16 || age > 45)) {
+      newErrors.age = "العمر يجب أن يكون بين 16 و 45 سنة";
+    }
+
+    // Validate number range
+    const number = parseInt(formData.number);
+    if (number && (number < 1 || number > 99)) {
+      newErrors.number = "رقم اللاعب يجب أن يكون بين 1 و 99";
+    }
+
     setErrors(newErrors);
-    return newErrors.length === 0;
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      toast.error("يرجى تصحيح الأخطاء المذكورة");
-      return;
+    if (validateForm()) {
+      onSubmit(formData);
     }
-
-    onSubmit(playerData);
   };
 
-  const getTeamPlayers = (teamId: string) => {
-    return existingPlayers.filter(player => player.teamId === teamId);
-  };
-
-  const getAvailableNumbers = (teamId: string) => {
-    if (!teamId) return [];
-    
-    const teamPlayers = getTeamPlayers(teamId);
-    const usedNumbers = teamPlayers.map(player => player.number);
-    const availableNumbers = [];
-    
-    for (let i = 1; i <= 99; i++) {
-      if (!usedNumbers.includes(i)) {
-        availableNumbers.push(i);
-      }
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: "" }));
     }
-    
-    return availableNumbers;
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 mb-6 p-6 border rounded-lg bg-white shadow-sm">
-      <div className="flex items-center gap-2 mb-4">
-        <User className="w-5 h-5 text-fmf-green" />
-        <h3 className="text-lg font-semibold text-fmf-green">
-          {submitLabel === "Ajouter" ? "إضافة لاعب جديد" : "تعديل بيانات اللاعب"}
-        </h3>
-      </div>
+    <Card className="mb-6">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>{submitLabel === "إضافة" ? "إضافة لاعب جديد" : "تعديل بيانات اللاعب"}</CardTitle>
+        <Button variant="ghost" size="sm" onClick={onCancel}>
+          <X className="h-4 w-4" />
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="name">اسم اللاعب *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+                placeholder="أدخل اسم اللاعب"
+                className={errors.name ? "border-red-500" : ""}
+              />
+              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+            </div>
 
-      {errors.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-4 h-4 text-red-600" />
-            <span className="text-red-800 font-medium">يرجى تصحيح الأخطاء التالية:</span>
+            <div>
+              <Label htmlFor="number">رقم اللاعب *</Label>
+              <Input
+                id="number"
+                type="number"
+                min="1"
+                max="99"
+                value={formData.number}
+                onChange={(e) => handleChange("number", e.target.value)}
+                placeholder="رقم اللاعب"
+                className={errors.number ? "border-red-500" : ""}
+              />
+              {errors.number && <p className="text-red-500 text-sm mt-1">{errors.number}</p>}
+            </div>
           </div>
-          <ul className="list-disc list-inside text-red-700 text-sm space-y-1">
-            {errors.map((error, index) => (
-              <li key={index}>{error}</li>
-            ))}
-          </ul>
-        </div>
-      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="playerName" className="text-right">اسم اللاعب *</Label>
-          <Input 
-            id="playerName" 
-            placeholder="أدخل اسم اللاعب" 
-            className={cn("text-right", !playerData.name && "border-red-300")}
-            value={playerData.name}
-            onChange={(e) => handleChange('name', e.target.value)}
-            required 
-          />
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="age">العمر *</Label>
+              <Input
+                id="age"
+                type="number"
+                min="16"
+                max="45"
+                value={formData.age}
+                onChange={(e) => handleChange("age", e.target.value)}
+                placeholder="عمر اللاعب"
+                className={errors.age ? "border-red-500" : ""}
+              />
+              {errors.age && <p className="text-red-500 text-sm mt-1">{errors.age}</p>}
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="playerTeam" className="text-right">الفريق *</Label>
-          <Select
-            value={playerData.team}
-            onValueChange={(value) => {
-              handleChange('team', value);
-              // Clear number when team changes
-              if (playerData.number) {
-                handleChange('number', '');
-              }
-            }}
-          >
-            <SelectTrigger className="text-right">
-              <SelectValue placeholder="اختر الفريق" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">بدون فريق</SelectItem>
-              {teams.map((team) => (
-                <SelectItem key={team.id} value={team.id}>
-                  <div className="flex items-center gap-2">
-                    {team.logo && (
-                      <img src={team.logo} alt={team.name} className="w-5 h-5 rounded-full" />
-                    )}
-                    <span>{team.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            <div>
+              <Label htmlFor="position">المركز *</Label>
+              <Select value={formData.position} onValueChange={(value) => handleChange("position", value)}>
+                <SelectTrigger className={errors.position ? "border-red-500" : ""}>
+                  <SelectValue placeholder="اختر مركز اللعب" />
+                </SelectTrigger>
+                <SelectContent>
+                  {positions.map((position) => (
+                    <SelectItem key={position} value={position}>
+                      {position}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.position && <p className="text-red-500 text-sm mt-1">{errors.position}</p>}
+            </div>
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="playerNumber" className="text-right">رقم اللاعب *</Label>
-          {playerData.team ? (
-            <Select
-              value={playerData.number}
-              onValueChange={(value) => handleChange('number', value)}
-            >
-              <SelectTrigger className={cn("text-right", !playerData.number && "border-red-300")}>
-                <SelectValue placeholder="اختر الرقم" />
-              </SelectTrigger>
-              <SelectContent>
-                {getAvailableNumbers(playerData.team).map((number) => (
-                  <SelectItem key={number} value={number.toString()}>
-                    {number}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <Input 
-              id="playerNumber" 
-              placeholder="اختر الفريق أولاً" 
-              type="number" 
-              min="1"
-              max="99"
-              className="text-right"
-              disabled
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="team">الفريق</Label>
+              <Select value={formData.team} onValueChange={(value) => handleChange("team", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="اختر الفريق (اختياري)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">بدون فريق</SelectItem>
+                  {teams.map((team) => (
+                    <SelectItem key={team.id} value={team.id}>
+                      {team.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="nationality">الجنسية *</Label>
+              <Select value={formData.nationality} onValueChange={(value) => handleChange("nationality", value)}>
+                <SelectTrigger className={errors.nationality ? "border-red-500" : ""}>
+                  <SelectValue placeholder="اختر الجنسية" />
+                </SelectTrigger>
+                <SelectContent>
+                  {nationalities.map((nationality) => (
+                    <SelectItem key={nationality} value={nationality}>
+                      {nationality}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.nationality && <p className="text-red-500 text-sm mt-1">{errors.nationality}</p>}
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="image">رابط الصورة (اختياري)</Label>
+            <Input
+              id="image"
+              type="url"
+              value={formData.image}
+              onChange={(e) => handleChange("image", e.target.value)}
+              placeholder="رابط صورة اللاعب"
             />
-          )}
-          {playerData.team && getAvailableNumbers(playerData.team).length === 0 && (
-            <p className="text-sm text-red-600">جميع الأرقام مُستخدمة في هذا الفريق</p>
-          )}
-        </div>
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="playerAge" className="text-right">العمر *</Label>
-          <Input 
-            id="playerAge" 
-            placeholder="عمر اللاعب (16-45)" 
-            type="number" 
-            min="16"
-            max="45"
-            className={cn("text-right", !playerData.age && "border-red-300")}
-            value={playerData.age}
-            onChange={(e) => handleChange('age', e.target.value)}
-            required 
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="playerPosition" className="text-right">المركز *</Label>
-          <Select 
-            value={playerData.position}
-            onValueChange={(value) => handleChange('position', value)}
-          >
-            <SelectTrigger className={cn("text-right", !playerData.position && "border-red-300")}>
-              <SelectValue placeholder="اختر المركز" />
-            </SelectTrigger>
-            <SelectContent>
-              {positions.map((position) => (
-                <SelectItem key={position.value} value={position.value}>
-                  {position.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="playerNationality" className="text-right">الجنسية *</Label>
-          <Select
-            value={playerData.nationality}
-            onValueChange={(value) => handleChange('nationality', value)}
-          >
-            <SelectTrigger className={cn("text-right", !playerData.nationality && "border-red-300")}>
-              <SelectValue placeholder="اختر الجنسية" />
-            </SelectTrigger>
-            <SelectContent>
-              {commonNationalities.map((nationality) => (
-                <SelectItem key={nationality} value={nationality}>
-                  {nationality}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="playerImage" className="text-right">رابط صورة اللاعب (اختياري)</Label>
-        <Input 
-          id="playerImage" 
-          placeholder="أدخل رابط الصورة" 
-          type="url" 
-          className="text-right"
-          value={playerData.image}
-          onChange={(e) => handleChange('image', e.target.value)}
-        />
-        <div className="text-xs text-gray-500 text-right">
-          إذا تركت هذا الحقل فارغاً، سيتم استخدام صورة افتراضية
-        </div>
-      </div>
-
-      <div className="flex gap-3 pt-4">
-        <Button type="submit" className="bg-fmf-green hover:bg-fmf-green/90 flex-1">
-          <Save className="w-4 h-4 mr-2" />
-          {submitLabel}
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
-          إلغاء
-        </Button>
-      </div>
-    </form>
+          <div className="flex gap-2 pt-4">
+            <Button type="submit" className="bg-fmf-green hover:bg-fmf-green/90">
+              {submitLabel}
+            </Button>
+            <Button type="button" variant="outline" onClick={onCancel}>
+              إلغاء
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -4,339 +4,222 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon, Clock, Save, AlertTriangle } from "lucide-react";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { MatchStatus } from "@/types/adminTypes";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { X } from "lucide-react";
 
 interface Team {
   id: string;
   name: string;
-  logo: string | null;
-  stadium?: string;
 }
 
-type MatchFormProps = {
+interface MatchFormProps {
   teams: Team[];
-  initialData?: {
-    homeTeam: string;
-    awayTeam: string;
-    date: Date;
-    time: string;
-    stadium: string;
-    status: MatchStatus;
-    homeScore: string;
-    awayScore: string;
-  };
-  onSubmit: (matchData: any) => void;
+  onSubmit: (data: any) => void;
   onCancel: () => void;
+  initialData?: any;
   submitLabel: string;
-};
+}
 
-const defaultMatchData = {
-  homeTeam: "",
-  awayTeam: "",
-  date: new Date(),
-  time: "19:00",
-  stadium: "",
-  status: "scheduled" as MatchStatus,
-  homeScore: "0",
-  awayScore: "0",
-};
-
-// قائمة الملاعب الشائعة في موريتانيا
-const commonStadiums = [
-  "الملعب الأولمبي - نواكشوط",
-  "ملعب الشيخ زايد - نواكشوط", 
-  "ملعب دار النعيم - نواكشوط",
-  "ملعب أطار",
-  "ملعب روصو",
-  "ملعب كيفة",
-  "ملعب نواذيبو",
-  "ملعب بوكي",
-  "ملعب تيشيت",
-  "ملعب المدينة الرياضية"
+const stadiums = [
+  "Stade Olympique de Nouakchott",
+  "Stade de Nouadhibou",
+  "Stade Municipal de Kaédi",
+  "Stade de Rosso",
+  "Stade de Kiffa"
 ];
 
 const MatchForm: React.FC<MatchFormProps> = ({
   teams,
-  initialData = defaultMatchData,
   onSubmit,
   onCancel,
-  submitLabel,
+  initialData,
+  submitLabel
 }) => {
-  const [matchData, setMatchData] = useState(initialData);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialData.date);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [formData, setFormData] = useState({
+    homeTeam: initialData?.homeTeam || "",
+    awayTeam: initialData?.awayTeam || "",
+    date: initialData?.date || "",
+    time: initialData?.time || "",
+    stadium: initialData?.stadium || "",
+    status: initialData?.status || "scheduled",
+    homeScore: initialData?.homeScore || "",
+    awayScore: initialData?.awayScore || ""
+  });
 
-  const handleChange = (field: string, value: string | Date | MatchStatus) => {
-    setMatchData((prev) => ({ ...prev, [field]: value }));
-    
-    if (field === "date") {
-      setSelectedDate(value as Date);
-    }
-
-    // Clear errors when user makes changes
-    if (errors.length > 0) {
-      setErrors([]);
-    }
-  };
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateForm = () => {
-    const newErrors: string[] = [];
+    const newErrors: Record<string, string> = {};
 
-    if (!matchData.homeTeam) {
-      newErrors.push("يجب اختيار فريق الضيافة");
+    if (!formData.homeTeam) newErrors.homeTeam = "يجب اختيار الفريق المضيف";
+    if (!formData.awayTeam) newErrors.awayTeam = "يجب اختيار الفريق الضيف";
+    if (formData.homeTeam === formData.awayTeam) {
+      newErrors.awayTeam = "لا يمكن أن يلعب الفريق ضد نفسه";
     }
-    if (!matchData.awayTeam) {
-      newErrors.push("يجب اختيار الفريق الزائر");
-    }
-    if (!matchData.stadium) {
-      newErrors.push("يجب اختيار الملعب");
-    }
-    if (!selectedDate) {
-      newErrors.push("يجب اختيار تاريخ المباراة");
-    }
-    if (matchData.homeTeam === matchData.awayTeam && matchData.homeTeam) {
-      newErrors.push("لا يمكن للفريق أن يلعب ضد نفسه");
-    }
+    if (!formData.date) newErrors.date = "يجب تحديد تاريخ المباراة";
+    if (!formData.time) newErrors.time = "يجب تحديد وقت المباراة";
+    if (!formData.stadium) newErrors.stadium = "يجب اختيار الملعب";
 
     setErrors(newErrors);
-    return newErrors.length === 0;
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      toast.error("يرجى تصحيح الأخطاء المذكورة");
-      return;
+    if (validateForm()) {
+      onSubmit(formData);
     }
-
-    onSubmit({
-      ...matchData,
-      date: selectedDate,
-    });
   };
 
-  const matchStatusOptions = [
-    { value: "scheduled", label: "مُبرمج" },
-    { value: "live", label: "مُباشر" },
-    { value: "finished", label: "منتهي" }
-  ] as const;
-
-  const availableTeams = teams.filter(team => team.id !== matchData.homeTeam);
-  const availableAwayTeams = teams.filter(team => team.id !== matchData.awayTeam);
-
-  const getTeamStadium = (teamId: string) => {
-    const team = teams.find(t => t.id === teamId);
-    return team?.stadium;
-  };
-
-  const handleHomeTeamChange = (teamId: string) => {
-    handleChange("homeTeam", teamId);
-    
-    // Auto-fill stadium with home team's stadium
-    const teamStadium = getTeamStadium(teamId);
-    if (teamStadium && !matchData.stadium) {
-      handleChange("stadium", teamStadium);
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: "" }));
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 mb-6 p-6 border rounded-lg bg-white shadow-sm">
-      <div className="flex items-center gap-2 mb-4">
-        <h3 className="text-lg font-semibold text-fmf-green">
-          {submitLabel === "Ajouter" ? "إضافة مباراة جديدة" : "تعديل المباراة"}
-        </h3>
-      </div>
+    <Card className="mb-6">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>{submitLabel === "إضافة" ? "إضافة مباراة جديدة" : "تعديل المباراة"}</CardTitle>
+        <Button variant="ghost" size="sm" onClick={onCancel}>
+          <X className="h-4 w-4" />
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="homeTeam">الفريق المضيف *</Label>
+              <Select value={formData.homeTeam} onValueChange={(value) => handleChange("homeTeam", value)}>
+                <SelectTrigger className={errors.homeTeam ? "border-red-500" : ""}>
+                  <SelectValue placeholder="اختر الفريق المضيف" />
+                </SelectTrigger>
+                <SelectContent>
+                  {teams.map((team) => (
+                    <SelectItem key={team.id} value={team.id}>
+                      {team.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.homeTeam && <p className="text-red-500 text-sm mt-1">{errors.homeTeam}</p>}
+            </div>
 
-      {errors.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-4 h-4 text-red-600" />
-            <span className="text-red-800 font-medium">يرجى تصحيح الأخطاء التالية:</span>
+            <div>
+              <Label htmlFor="awayTeam">الفريق الضيف *</Label>
+              <Select value={formData.awayTeam} onValueChange={(value) => handleChange("awayTeam", value)}>
+                <SelectTrigger className={errors.awayTeam ? "border-red-500" : ""}>
+                  <SelectValue placeholder="اختر الفريق الضيف" />
+                </SelectTrigger>
+                <SelectContent>
+                  {teams.map((team) => (
+                    <SelectItem key={team.id} value={team.id}>
+                      {team.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.awayTeam && <p className="text-red-500 text-sm mt-1">{errors.awayTeam}</p>}
+            </div>
           </div>
-          <ul className="list-disc list-inside text-red-700 text-sm space-y-1">
-            {errors.map((error, index) => (
-              <li key={index}>{error}</li>
-            ))}
-          </ul>
-        </div>
-      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="homeTeam" className="text-right">فريق الضيافة *</Label>
-          <Select
-            value={matchData.homeTeam}
-            onValueChange={handleHomeTeamChange}
-          >
-            <SelectTrigger className={cn("text-right", !matchData.homeTeam && "border-red-300")}>
-              <SelectValue placeholder="اختر فريق الضيافة" />
-            </SelectTrigger>
-            <SelectContent>
-              {teams.map((team) => (
-                <SelectItem key={team.id} value={team.id}>
-                  <div className="flex items-center gap-2">
-                    {team.logo && (
-                      <img src={team.logo} alt={team.name} className="w-5 h-5 rounded-full" />
-                    )}
-                    <span>{team.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="awayTeam" className="text-right">الفريق الزائر *</Label>
-          <Select
-            value={matchData.awayTeam}
-            onValueChange={(value) => handleChange("awayTeam", value)}
-          >
-            <SelectTrigger className={cn("text-right", !matchData.awayTeam && "border-red-300")}>
-              <SelectValue placeholder="اختر الفريق الزائر" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableAwayTeams.map((team) => (
-                <SelectItem key={team.id} value={team.id}>
-                  <div className="flex items-center gap-2">
-                    {team.logo && (
-                      <img src={team.logo} alt={team.name} className="w-5 h-5 rounded-full" />
-                    )}
-                    <span>{team.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-right">تاريخ المباراة *</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-full justify-start text-right font-normal",
-                  !selectedDate && "text-muted-foreground border-red-300"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {selectedDate ? format(selectedDate, "PPP") : <span>اختر التاريخ</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                initialFocus
-                className="p-3 pointer-events-auto"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="date">تاريخ المباراة *</Label>
+              <Input
+                id="date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => handleChange("date", e.target.value)}
+                className={errors.date ? "border-red-500" : ""}
               />
-            </PopoverContent>
-          </Popover>
-        </div>
+              {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="matchTime" className="text-right">وقت المباراة *</Label>
-          <div className="flex items-center">
-            <Clock className="mr-2 h-4 w-4 text-gray-500" />
-            <Input 
-              type="time" 
-              id="matchTime" 
-              className="flex-1 text-right" 
-              value={matchData.time}
-              onChange={(e) => handleChange("time", e.target.value)}
-              required
-            />
+            <div>
+              <Label htmlFor="time">وقت المباراة *</Label>
+              <Input
+                id="time"
+                type="time"
+                value={formData.time}
+                onChange={(e) => handleChange("time", e.target.value)}
+                className={errors.time ? "border-red-500" : ""}
+              />
+              {errors.time && <p className="text-red-500 text-sm mt-1">{errors.time}</p>}
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="stadium" className="text-right">الملعب *</Label>
-          <Select
-            value={matchData.stadium}
-            onValueChange={(value) => handleChange("stadium", value)}
-          >
-            <SelectTrigger className={cn("text-right", !matchData.stadium && "border-red-300")}>
-              <SelectValue placeholder="اختر الملعب" />
-            </SelectTrigger>
-            <SelectContent>
-              {commonStadiums.map((stadium) => (
-                <SelectItem key={stadium} value={stadium}>
-                  {stadium}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+          <div>
+            <Label htmlFor="stadium">الملعب *</Label>
+            <Select value={formData.stadium} onValueChange={(value) => handleChange("stadium", value)}>
+              <SelectTrigger className={errors.stadium ? "border-red-500" : ""}>
+                <SelectValue placeholder="اختر الملعب" />
+              </SelectTrigger>
+              <SelectContent>
+                {stadiums.map((stadium) => (
+                  <SelectItem key={stadium} value={stadium}>
+                    {stadium}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.stadium && <p className="text-red-500 text-sm mt-1">{errors.stadium}</p>}
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="matchStatus" className="text-right">حالة المباراة</Label>
-          <Select
-            value={matchData.status}
-            onValueChange={(value) => handleChange("status", value as MatchStatus)}
-          >
-            <SelectTrigger className="text-right">
-              <SelectValue placeholder="اختر الحالة" />
-            </SelectTrigger>
-            <SelectContent>
-              {matchStatusOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      
-      {matchData.status !== "scheduled" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50 rounded-lg">
-          <div className="space-y-2">
-            <Label htmlFor="homeScore" className="text-right">نتيجة فريق الضيافة</Label>
-            <Input 
-              id="homeScore" 
-              placeholder="النتيجة" 
-              type="number" 
-              min="0"
-              className="text-right"
-              value={matchData.homeScore}
-              onChange={(e) => handleChange("homeScore", e.target.value)} 
-            />
+          <div>
+            <Label htmlFor="status">حالة المباراة</Label>
+            <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="scheduled">مجدولة</SelectItem>
+                <SelectItem value="live">مباشرة</SelectItem>
+                <SelectItem value="completed">منتهية</SelectItem>
+                <SelectItem value="postponed">مؤجلة</SelectItem>
+                <SelectItem value="cancelled">ملغية</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="awayScore" className="text-right">نتيجة الفريق الزائر</Label>
-            <Input 
-              id="awayScore" 
-              placeholder="النتيجة" 
-              type="number" 
-              min="0" 
-              className="text-right"
-              value={matchData.awayScore}
-              onChange={(e) => handleChange("awayScore", e.target.value)}
-            />
+
+          {(formData.status === "completed" || formData.status === "live") && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="homeScore">نتيجة الفريق المضيف</Label>
+                <Input
+                  id="homeScore"
+                  type="number"
+                  min="0"
+                  value={formData.homeScore}
+                  onChange={(e) => handleChange("homeScore", e.target.value)}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="awayScore">نتيجة الفريق الضيف</Label>
+                <Input
+                  id="awayScore"
+                  type="number"
+                  min="0"
+                  value={formData.awayScore}
+                  onChange={(e) => handleChange("awayScore", e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-4">
+            <Button type="submit" className="bg-fmf-green hover:bg-fmf-green/90">
+              {submitLabel}
+            </Button>
+            <Button type="button" variant="outline" onClick={onCancel}>
+              إلغاء
+            </Button>
           </div>
-        </div>
-      )}
-      
-      <div className="flex gap-3 pt-4">
-        <Button type="submit" className="bg-fmf-green hover:bg-fmf-green/90 flex-1">
-          <Save className="w-4 h-4 mr-2" />
-          {submitLabel}
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
-          إلغاء
-        </Button>
-      </div>
-    </form>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 
