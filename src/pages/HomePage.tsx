@@ -3,6 +3,9 @@ import React from "react";
 import MatchList from "@/components/matches/MatchList";
 import { matches } from "@/data/superD1MockData";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { Trophy, Calendar } from "lucide-react";
 
 const HomePage = () => {
   return (
@@ -17,6 +20,22 @@ const HomePage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Navigation rapide */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <Link to="/classement">
+          <Button className="w-full h-16 bg-fmf-green hover:bg-fmf-green/90 text-white flex flex-col items-center justify-center gap-2">
+            <Trophy size={24} />
+            <span className="text-sm font-medium">Classement</span>
+          </Button>
+        </Link>
+        <Link to="/calendrier">
+          <Button className="w-full h-16 bg-fmf-yellow hover:bg-fmf-yellow/90 text-fmf-dark flex flex-col items-center justify-center gap-2">
+            <Calendar size={24} />
+            <span className="text-sm font-medium">Calendrier</span>
+          </Button>
+        </Link>
+      </div>
       
       {/* Section Matchs */}
       <h1 className="section-title">Matchs & Résultats</h1>
