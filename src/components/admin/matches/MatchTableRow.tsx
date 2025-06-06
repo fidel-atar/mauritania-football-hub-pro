@@ -2,35 +2,31 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
-import { Match, Team } from "@/hooks/useSupabaseData";
+import { Match } from "@/types/adminTypes";
 import { TableRow, TableCell } from "@/components/ui/table";
 
 interface MatchTableRowProps {
   match: Match;
-  teams: Team[];
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
 }
 
-const MatchTableRow: React.FC<MatchTableRowProps> = ({ match, teams, onEdit, onDelete }) => {
-  const homeTeam = teams.find(t => t.id === match.home_team_id);
-  const awayTeam = teams.find(t => t.id === match.away_team_id);
-  
+const MatchTableRow: React.FC<MatchTableRowProps> = ({ match, onEdit, onDelete }) => {
   let statusText = "Programmé";
   if (match.status === "live") statusText = "En direct";
   if (match.status === "finished") statusText = "Terminé";
 
   return (
-    <TableRow className="hover:bg-gray-50">
+    <TableRow key={match.id} className="hover:bg-gray-50">
       <TableCell>
-        {new Date(match.match_date).toLocaleDateString()} {new Date(match.match_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        {new Date(match.date).toLocaleDateString()} {new Date(match.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
-          <img src={homeTeam?.logo || "/placeholder.svg"} alt={homeTeam?.name || "Team"} className="w-6 h-6" />
-          {homeTeam?.name || "Équipe inconnue"} vs 
-          <img src={awayTeam?.logo || "/placeholder.svg"} alt={awayTeam?.name || "Team"} className="w-6 h-6 ml-2" />
-          {awayTeam?.name || "Équipe inconnue"}
+          <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="w-6 h-6" />
+          {match.homeTeam.name} vs 
+          <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="w-6 h-6 ml-2" />
+          {match.awayTeam.name}
         </div>
       </TableCell>
       <TableCell>{match.stadium}</TableCell>
@@ -44,8 +40,8 @@ const MatchTableRow: React.FC<MatchTableRowProps> = ({ match, teams, onEdit, onD
         </span>
       </TableCell>
       <TableCell>
-        {match.status !== "scheduled" && match.home_score !== null && match.away_score !== null
-          ? `${match.home_score} - ${match.away_score}` 
+        {match.status !== "scheduled" && match.homeScore !== undefined && match.awayScore !== undefined
+          ? `${match.homeScore} - ${match.awayScore}` 
           : "-"
         }
       </TableCell>

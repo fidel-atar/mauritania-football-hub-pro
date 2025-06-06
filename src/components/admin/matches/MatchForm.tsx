@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,59 +7,49 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Clock } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Save } from "lucide-react";
+import { teams } from "@/data/mockData";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Team, Match } from "@/hooks/useSupabaseData";
+import { Match, MatchStatus } from "@/types/adminTypes";
 
 type MatchFormProps = {
-  teams: Team[];
-  initialData?: Match;
+  initialData?: {
+    homeTeam: string;
+    awayTeam: string;
+    date: Date;
+    time: string;
+    stadium: string;
+    status: MatchStatus;
+    homeScore: string;
+    awayScore: string;
+  };
   onSubmit: (matchData: any) => void;
   onCancel: () => void;
   submitLabel: string;
 };
 
+const defaultMatchData = {
+  homeTeam: "",
+  awayTeam: "",
+  date: new Date(),
+  time: "19:00",
+  stadium: "",
+  status: "scheduled" as MatchStatus,
+  homeScore: "0",
+  awayScore: "0",
+};
+
 const MatchForm: React.FC<MatchFormProps> = ({
-  teams,
-  initialData,
+  initialData = defaultMatchData,
   onSubmit,
   onCancel,
   submitLabel,
 }) => {
-  const [matchData, setMatchData] = useState({
-    homeTeam: "",
-    awayTeam: "",
-    date: new Date(),
-    time: "19:00",
-    stadium: "",
-    status: "scheduled" as "scheduled" | "live" | "finished",
-    homeScore: "0",
-    awayScore: "0",
-  });
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [matchData, setMatchData] = useState(initialData);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialData.date);
 
-  useEffect(() => {
-    if (initialData) {
-      const matchDate = new Date(initialData.match_date);
-      const hours = matchDate.getHours().toString().padStart(2, '0');
-      const minutes = matchDate.getMinutes().toString().padStart(2, '0');
-      
-      setMatchData({
-        homeTeam: initialData.home_team_id || "",
-        awayTeam: initialData.away_team_id || "",
-        date: matchDate,
-        time: `${hours}:${minutes}`,
-        stadium: initialData.stadium,
-        status: initialData.status,
-        homeScore: initialData.home_score?.toString() || "0",
-        awayScore: initialData.away_score?.toString() || "0",
-      });
-      setSelectedDate(matchDate);
-    }
-  }, [initialData]);
-
-  const handleChange = (field: string, value: string | Date) => {
+  const handleChange = (field: string, value: string | Date | MatchStatus) => {
     setMatchData((prev) => ({ ...prev, [field]: value }));
     
     if (field === "date") {
@@ -75,13 +65,9 @@ const MatchForm: React.FC<MatchFormProps> = ({
       return;
     }
 
-    const [hours, minutes] = matchData.time.split(':').map(Number);
-    const matchDateTime = new Date(selectedDate || new Date());
-    matchDateTime.setHours(hours, minutes, 0);
-
     onSubmit({
       ...matchData,
-      date: matchDateTime,
+      date: selectedDate,
     });
   };
 
@@ -105,7 +91,7 @@ const MatchForm: React.FC<MatchFormProps> = ({
             </SelectTrigger>
             <SelectContent>
               {teams.map((team) => (
-                <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
+                <SelectItem key={team.id} value={team.id.toString()}>{team.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -121,7 +107,7 @@ const MatchForm: React.FC<MatchFormProps> = ({
             </SelectTrigger>
             <SelectContent>
               {teams.map((team) => (
-                <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
+                <SelectItem key={team.id} value={team.id.toString()}>{team.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -179,7 +165,7 @@ const MatchForm: React.FC<MatchFormProps> = ({
           <Label htmlFor="matchStatus">Statut</Label>
           <Select
             value={matchData.status}
-            onValueChange={(value) => handleChange("status", value)}
+            onValueChange={(value) => handleChange("status", value as MatchStatus)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Sélectionner un statut" />

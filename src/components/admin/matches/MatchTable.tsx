@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Match, Team } from "@/hooks/useSupabaseData";
+import { Match } from "@/types/adminTypes";
 import MatchTableRow from "./MatchTableRow";
 import {
   Table,
@@ -12,14 +12,12 @@ import {
 
 interface MatchTableProps {
   matches: Match[];
-  teams: Team[];
-  onEditMatch: (id: string) => void;
-  onDeleteMatch: (id: string) => void;
+  onEditMatch: (id: number) => void;
+  onDeleteMatch: (id: number) => void;
 }
 
 const MatchTable: React.FC<MatchTableProps> = ({
   matches,
-  teams,
   onEditMatch,
   onDeleteMatch
 }) => {
@@ -41,7 +39,6 @@ const MatchTable: React.FC<MatchTableProps> = ({
             <MatchTableRow
               key={match.id}
               match={match}
-              teams={teams}
               onEdit={onEditMatch}
               onDelete={onDeleteMatch}
             />
