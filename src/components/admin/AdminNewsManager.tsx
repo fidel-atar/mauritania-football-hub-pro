@@ -45,6 +45,47 @@ const AdminNewsManager = () => {
     "Autres"
   ];
 
+  const validateInput = (data: typeof formData) => {
+    if (!data.title.trim()) {
+      return 'Le titre est requis';
+    }
+    
+    if (data.title.trim().length < 5) {
+      return 'Le titre doit contenir au moins 5 caractères';
+    }
+    
+    if (!data.content.trim()) {
+      return 'Le contenu est requis';
+    }
+    
+    if (data.content.trim().length < 20) {
+      return 'Le contenu doit contenir au moins 20 caractères';
+    }
+    
+    if (!data.author.trim()) {
+      return 'L\'auteur est requis';
+    }
+    
+    if (data.image && !isValidUrl(data.image)) {
+      return 'L\'URL de l\'image n\'est pas valide';
+    }
+    
+    return null;
+  };
+
+  const isValidUrl = (string: string) => {
+    try {
+      const url = new URL(string);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch (_) {
+      return false;
+    }
+  };
+
+  const sanitizeInput = (input: string) => {
+    return input.trim().replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  };
+
   const fetchArticles = async () => {
     try {
       const { data, error } = await supabase
@@ -52,7 +93,11 @@ const AdminNewsManager = () => {
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching articles:', error);
+        toast.error('Erreur lors du chargement des articles');
+        return;
+      }
       setArticles(data || []);
     } catch (error) {
       console.error('Error fetching articles:', error);
@@ -78,8 +123,16 @@ const AdminNewsManager = () => {
   };
 
   const handleAdd = async () => {
-    if (!formData.title || !formData.content || !formData.author) {
-      toast.error('Le titre, le contenu et l\'auteur sont requis');
+    const sanitizedData = {
+      ...formData,
+      title: sanitizeInput(formData.title),
+      content: sanitizeInput(formData.content),
+      author: sanitizeInput(formData.author)
+    };
+
+    const validationError = validateInput(sanitizedData);
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
 
@@ -87,15 +140,19 @@ const AdminNewsManager = () => {
       const { error } = await supabase
         .from('news')
         .insert({
-          title: formData.title,
-          content: formData.content,
-          author: formData.author,
-          category: formData.category,
-          image: formData.image || null,
-          published: formData.published
+          title: sanitizedData.title,
+          content: sanitizedData.content,
+          author: sanitizedData.author,
+          category: sanitizedData.category,
+          image: sanitizedData.image || null,
+          published: sanitizedData.published
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding article:', error);
+        toast.error('Erreur lors de l\'ajout de l\'article');
+        return;
+      }
       
       toast.success('Article ajouté avec succès');
       setIsAdding(false);
@@ -120,8 +177,16 @@ const AdminNewsManager = () => {
   };
 
   const handleUpdate = async () => {
-    if (!formData.title || !formData.content || !formData.author) {
-      toast.error('Le titre, le contenu et l\'auteur sont requis');
+    const sanitizedData = {
+      ...formData,
+      title: sanitizeInput(formData.title),
+      content: sanitizeInput(formData.content),
+      author: sanitizeInput(formData.author)
+    };
+
+    const validationError = validateInput(sanitizedData);
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
 
@@ -129,16 +194,20 @@ const AdminNewsManager = () => {
       const { error } = await supabase
         .from('news')
         .update({
-          title: formData.title,
-          content: formData.content,
-          author: formData.author,
-          category: formData.category,
-          image: formData.image || null,
-          published: formData.published
+          title: sanitizedData.title,
+          content: sanitizedData.content,
+          author: sanitizedData.author,
+          category: sanitizedData.category,
+          image: sanitizedData.image || null,
+          published: sanitizedData.published
         })
         .eq('id', editingId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating article:', error);
+        toast.error('Erreur lors de la mise à jour de l\'article');
+        return;
+      }
       
       toast.success('Article mis à jour avec succès');
       setEditingId(null);
@@ -161,7 +230,11 @@ const AdminNewsManager = () => {
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting article:', error);
+        toast.error('Erreur lors de la suppression de l\'article');
+        return;
+      }
       
       toast.success('Article supprimé avec succès');
       fetchArticles();
@@ -178,7 +251,11 @@ const AdminNewsManager = () => {
         .update({ published: !currentStatus })
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error toggling published status:', error);
+        toast.error('Erreur lors de la modification du statut');
+        return;
+      }
       
       toast.success(`Article ${!currentStatus ? 'publié' : 'retiré de la publication'}`);
       fetchArticles();
@@ -218,6 +295,7 @@ const AdminNewsManager = () => {
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
                   placeholder="Titre de l'article"
+                  maxLength={200}
                 />
               </div>
               <div>
@@ -228,6 +306,7 @@ const AdminNewsManager = () => {
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
                   placeholder="Contenu de l'article"
                   rows={6}
+                  maxLength={5000}
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -238,6 +317,7 @@ const AdminNewsManager = () => {
                     value={formData.author}
                     onChange={(e) => setFormData({...formData, author: e.target.value})}
                     placeholder="Nom de l'auteur"
+                    maxLength={100}
                   />
                 </div>
                 <div>
@@ -260,7 +340,8 @@ const AdminNewsManager = () => {
                   id="image"
                   value={formData.image}
                   onChange={(e) => setFormData({...formData, image: e.target.value})}
-                  placeholder="URL de l'image (optionnel)"
+                  placeholder="https://example.com/image.jpg (optionnel)"
+                  type="url"
                 />
               </div>
               <div className="flex items-center space-x-2">

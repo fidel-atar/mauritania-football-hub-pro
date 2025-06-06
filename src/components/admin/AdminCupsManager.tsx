@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,6 +34,45 @@ const AdminCupsManager = () => {
     prize_money: ""
   });
 
+  const validateInput = (data: typeof formData) => {
+    if (!data.name.trim()) {
+      return 'Le nom de la coupe est requis';
+    }
+    
+    if (data.name.trim().length < 3) {
+      return 'Le nom doit contenir au moins 3 caractères';
+    }
+    
+    if (!data.start_date) {
+      return 'La date de début est requise';
+    }
+    
+    const startDate = new Date(data.start_date);
+    if (isNaN(startDate.getTime())) {
+      return 'Date de début invalide';
+    }
+    
+    if (data.end_date) {
+      const endDate = new Date(data.end_date);
+      if (isNaN(endDate.getTime())) {
+        return 'Date de fin invalide';
+      }
+      if (endDate <= startDate) {
+        return 'La date de fin doit être après la date de début';
+      }
+    }
+    
+    if (data.prize_money && (isNaN(Number(data.prize_money)) || Number(data.prize_money) < 0)) {
+      return 'Le prix en argent doit être un nombre positif';
+    }
+    
+    return null;
+  };
+
+  const sanitizeInput = (input: string) => {
+    return input.trim().replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  };
+
   const fetchCups = async () => {
     try {
       console.log('Fetching cups from database...');
@@ -45,7 +83,8 @@ const AdminCupsManager = () => {
       
       if (error) {
         console.error('Supabase error:', error);
-        throw error;
+        toast.error('Erreur lors du chargement des coupes');
+        return;
       }
       setCups(data || []);
     } catch (error) {
@@ -72,27 +111,35 @@ const AdminCupsManager = () => {
   };
 
   const handleAdd = async () => {
-    if (!formData.name || !formData.start_date) {
-      toast.error('Le nom et la date de début sont requis');
+    const sanitizedData = {
+      ...formData,
+      name: sanitizeInput(formData.name),
+      description: sanitizeInput(formData.description)
+    };
+
+    const validationError = validateInput(sanitizedData);
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
 
     try {
-      console.log('Adding cup:', formData);
+      console.log('Adding cup:', sanitizedData);
       const { error } = await supabase
         .from('cups')
         .insert({
-          name: formData.name,
-          description: formData.description || null,
-          status: formData.status,
-          start_date: formData.start_date,
-          end_date: formData.end_date || null,
-          prize_money: formData.prize_money ? parseInt(formData.prize_money) : null
+          name: sanitizedData.name,
+          description: sanitizedData.description || null,
+          status: sanitizedData.status,
+          start_date: sanitizedData.start_date,
+          end_date: sanitizedData.end_date || null,
+          prize_money: sanitizedData.prize_money ? parseInt(sanitizedData.prize_money) : null
         });
 
       if (error) {
         console.error('Error adding cup:', error);
-        throw error;
+        toast.error('Erreur lors de l\'ajout de la coupe');
+        return;
       }
       
       toast.success('Coupe ajoutée avec succès');
@@ -118,28 +165,36 @@ const AdminCupsManager = () => {
   };
 
   const handleUpdate = async () => {
-    if (!formData.name || !formData.start_date) {
-      toast.error('Le nom et la date de début sont requis');
+    const sanitizedData = {
+      ...formData,
+      name: sanitizeInput(formData.name),
+      description: sanitizeInput(formData.description)
+    };
+
+    const validationError = validateInput(sanitizedData);
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
 
     try {
-      console.log('Updating cup:', editingId, formData);
+      console.log('Updating cup:', editingId, sanitizedData);
       const { error } = await supabase
         .from('cups')
         .update({
-          name: formData.name,
-          description: formData.description || null,
-          status: formData.status,
-          start_date: formData.start_date,
-          end_date: formData.end_date || null,
-          prize_money: formData.prize_money ? parseInt(formData.prize_money) : null
+          name: sanitizedData.name,
+          description: sanitizedData.description || null,
+          status: sanitizedData.status,
+          start_date: sanitizedData.start_date,
+          end_date: sanitizedData.end_date || null,
+          prize_money: sanitizedData.prize_money ? parseInt(sanitizedData.prize_money) : null
         })
         .eq('id', editingId);
 
       if (error) {
         console.error('Error updating cup:', error);
-        throw error;
+        toast.error('Erreur lors de la mise à jour de la coupe');
+        return;
       }
       
       toast.success('Coupe mise à jour avec succès');
@@ -166,7 +221,8 @@ const AdminCupsManager = () => {
 
       if (error) {
         console.error('Error deleting cup:', error);
-        throw error;
+        toast.error('Erreur lors de la suppression de la coupe');
+        return;
       }
       
       toast.success('Coupe supprimée avec succès');
@@ -223,6 +279,7 @@ const AdminCupsManager = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   placeholder="Nom de la coupe"
+                  maxLength={100}
                 />
               </div>
               <div>
@@ -261,6 +318,7 @@ const AdminCupsManager = () => {
                 <Input 
                   id="prize_money"
                   type="number"
+                  min="0"
                   value={formData.prize_money}
                   onChange={(e) => setFormData({...formData, prize_money: e.target.value})}
                   placeholder="Montant du prix"
@@ -275,6 +333,7 @@ const AdminCupsManager = () => {
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 placeholder="Description de la coupe"
                 rows={3}
+                maxLength={500}
               />
             </div>
             <div className="flex gap-2 mt-4">
