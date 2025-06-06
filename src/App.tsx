@@ -23,20 +23,20 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <BrowserRouter>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/matches" element={<MatchDetailPage />} />
-              <Route path="/news" element={<NewsPage />} />
-              <Route path="/teams" element={<TeamsPage />} />
-              <Route path="/teams/:id" element={<TeamPage />} />
-              <Route path="/cup" element={<CupPage />} />
-              <Route path="/standings" element={<StandingsPage />} />
-              <Route path="/shop" element={<ShopPage />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            </Routes>
-          </Layout>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Index />} />
+              <Route path="matches" element={<MatchDetailPage />} />
+              <Route path="news" element={<NewsPage />} />
+              <Route path="teams" element={<TeamsPage />} />
+              <Route path="teams/:id" element={<TeamPage />} />
+              <Route path="cup" element={<CupPage />} />
+              <Route path="standings" element={<StandingsPage />} />
+              <Route path="shop" element={<ShopPage />} />
+              <Route path="admin" element={<AdminDashboard />} />
+              <Route path="admin-dashboard" element={<AdminDashboard />} />
+            </Route>
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
