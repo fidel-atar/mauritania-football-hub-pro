@@ -30,7 +30,7 @@ const HomePage = () => {
           </Button>
         </Link>
         <Link to="/equipes">
-          <Button className="w-full h-16 bg-fmf-blue hover:bg-fmf-blue/90 text-white flex flex-col items-center justify-center gap-2">
+          <Button className="w-full h-16 bg-fmf-red hover:bg-fmf-red/90 text-white flex flex-col items-center justify-center gap-2">
             <Users size={20} />
             <span className="text-xs font-medium">Équipes</span>
           </Button>
