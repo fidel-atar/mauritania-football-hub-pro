@@ -12,6 +12,8 @@ import AdminPlayersManager from "@/components/admin/AdminPlayersManager";
 import AdminMatchesManager from "@/components/admin/AdminMatchesManager";
 import AdminNewsManager from "@/components/admin/AdminNewsManager";
 import AdminProductsManager from "@/components/admin/AdminProductsManager";
+import AdminCupsManager from "@/components/admin/AdminCupsManager";
+import AdminStandingsManager from "@/components/admin/AdminStandingsManager";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("teams");
@@ -43,10 +45,12 @@ const AdminDashboard = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 mb-6">
+        <TabsList className="grid w-full grid-cols-7 mb-6">
           <TabsTrigger value="teams">Équipes</TabsTrigger>
           <TabsTrigger value="players">Joueurs</TabsTrigger>
           <TabsTrigger value="matches">Matchs</TabsTrigger>
+          <TabsTrigger value="standings">Classement</TabsTrigger>
+          <TabsTrigger value="cups">Coupes</TabsTrigger>
           <TabsTrigger value="news">Actualités</TabsTrigger>
           <TabsTrigger value="products">Boutique</TabsTrigger>
         </TabsList>
@@ -61,6 +65,14 @@ const AdminDashboard = () => {
 
         <TabsContent value="matches">
           <AdminMatchesManager />
+        </TabsContent>
+
+        <TabsContent value="standings">
+          <AdminStandingsManager />
+        </TabsContent>
+
+        <TabsContent value="cups">
+          <AdminCupsManager />
         </TabsContent>
 
         <TabsContent value="news">
