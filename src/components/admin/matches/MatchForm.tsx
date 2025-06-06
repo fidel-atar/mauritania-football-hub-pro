@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,13 +9,14 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, Clock, Save } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { MatchStatus } from "@/types/adminTypes";
 
 interface Team {
   id: string;
   name: string;
   logo: string | null;
 }
+
+type MatchStatus = 'scheduled' | 'live' | 'finished';
 
 type MatchFormProps = {
   teams: Team[];

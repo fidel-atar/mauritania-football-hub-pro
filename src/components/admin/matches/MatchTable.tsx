@@ -23,7 +23,7 @@ interface Match {
   };
   date: string;
   stadium: string;
-  status: 'scheduled' | 'live' | 'completed';
+  status: 'scheduled' | 'live' | 'finished';
   homeScore: number | null;
   awayScore: number | null;
 }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,12 +27,12 @@ interface Match {
   };
   date: string;
   stadium: string;
-  status: 'scheduled' | 'live' | 'completed';
+  status: 'scheduled' | 'live' | 'finished';
   homeScore: number | null;
   awayScore: number | null;
 }
 
-type MatchStatus = 'scheduled' | 'live' | 'completed';
+type MatchStatus = 'scheduled' | 'live' | 'finished';
 
 const AdminMatchesPanel = () => {
   const [isAddingMatch, setIsAddingMatch] = useState(false);
