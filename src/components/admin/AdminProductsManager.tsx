@@ -14,11 +14,12 @@ import { supabase } from "@/integrations/supabase/client";
 interface Product {
   id: string;
   name: string;
+  description: string | null;
   price: number;
   category: string;
-  description: string | null;
   image: string | null;
   in_stock: boolean;
+  created_at: string;
 }
 
 const AdminProductsManager = () => {
@@ -28,30 +29,35 @@ const AdminProductsManager = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
+    description: "",
     price: "",
     category: "Maillots",
-    description: "",
     image: "",
     in_stock: true
   });
 
   const categories = [
     "Maillots",
+    "Shorts",
+    "Chaussettes",
     "Équipements",
     "Accessoires",
-    "Souvenirs",
-    "Chaussures",
-    "Entraînement"
+    "Souvenirs"
   ];
 
   const fetchProducts = async () => {
     try {
+      console.log('Fetching products from database...');
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .order('name');
+        .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        toast.error('Erreur lors du chargement des produits');
+        return;
+      }
       setProducts(data || []);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -68,33 +74,47 @@ const AdminProductsManager = () => {
   const resetForm = () => {
     setFormData({
       name: "",
+      description: "",
       price: "",
       category: "Maillots",
-      description: "",
       image: "",
       in_stock: true
     });
   };
 
-  const handleAdd = async () => {
-    if (!formData.name || !formData.price) {
-      toast.error('Le nom et le prix sont requis');
-      return;
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      toast.error('Le nom du produit est requis');
+      return false;
     }
+    if (!formData.price || isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
+      toast.error('Le prix doit être un nombre positif');
+      return false;
+    }
+    return true;
+  };
+
+  const handleAdd = async () => {
+    if (!validateForm()) return;
 
     try {
+      console.log('Adding product:', formData);
       const { error } = await supabase
         .from('products')
         .insert({
-          name: formData.name,
+          name: formData.name.trim(),
+          description: formData.description.trim() || null,
           price: parseInt(formData.price),
           category: formData.category,
-          description: formData.description || null,
-          image: formData.image || null,
+          image: formData.image.trim() || null,
           in_stock: formData.in_stock
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding product:', error);
+        toast.error('Erreur lors de l\'ajout du produit');
+        return;
+      }
       
       toast.success('Produit ajouté avec succès');
       setIsAdding(false);
@@ -110,34 +130,36 @@ const AdminProductsManager = () => {
     setEditingId(product.id);
     setFormData({
       name: product.name,
+      description: product.description || "",
       price: product.price.toString(),
       category: product.category,
-      description: product.description || "",
       image: product.image || "",
       in_stock: product.in_stock
     });
   };
 
   const handleUpdate = async () => {
-    if (!formData.name || !formData.price) {
-      toast.error('Le nom et le prix sont requis');
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
+      console.log('Updating product:', editingId, formData);
       const { error } = await supabase
         .from('products')
         .update({
-          name: formData.name,
+          name: formData.name.trim(),
+          description: formData.description.trim() || null,
           price: parseInt(formData.price),
           category: formData.category,
-          description: formData.description || null,
-          image: formData.image || null,
+          image: formData.image.trim() || null,
           in_stock: formData.in_stock
         })
         .eq('id', editingId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating product:', error);
+        toast.error('Erreur lors de la mise à jour du produit');
+        return;
+      }
       
       toast.success('Produit mis à jour avec succès');
       setEditingId(null);
@@ -155,12 +177,17 @@ const AdminProductsManager = () => {
     }
 
     try {
+      console.log('Deleting product:', id);
       const { error } = await supabase
         .from('products')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting product:', error);
+        toast.error('Erreur lors de la suppression du produit');
+        return;
+      }
       
       toast.success('Produit supprimé avec succès');
       fetchProducts();
@@ -170,31 +197,14 @@ const AdminProductsManager = () => {
     }
   };
 
-  const toggleStock = async (id: string, currentStatus: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('products')
-        .update({ in_stock: !currentStatus })
-        .eq('id', id);
-
-      if (error) throw error;
-      
-      toast.success(`Produit ${!currentStatus ? 'remis en stock' : 'marqué comme épuisé'}`);
-      fetchProducts();
-    } catch (error) {
-      console.error('Error toggling stock status:', error);
-      toast.error('Erreur lors de la modification du stock');
-    }
-  };
-
   if (loading) {
-    return <div className="text-center py-8">Chargement...</div>;
+    return <div className="text-center py-8">Chargement des produits...</div>;
   }
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Gestion de la Boutique</CardTitle>
+        <CardTitle>Gestion de la Boutique ({products.length} produits)</CardTitle>
         <Button 
           onClick={() => setIsAdding(!isAdding)} 
           className="bg-fmf-green hover:bg-fmf-green/90"
@@ -224,6 +234,7 @@ const AdminProductsManager = () => {
                 <Input 
                   id="price"
                   type="number"
+                  min="0"
                   value={formData.price}
                   onChange={(e) => setFormData({...formData, price: e.target.value})}
                   placeholder="Prix en MRU"
@@ -248,27 +259,28 @@ const AdminProductsManager = () => {
                   id="image"
                   value={formData.image}
                   onChange={(e) => setFormData({...formData, image: e.target.value})}
-                  placeholder="URL de l'image"
+                  placeholder="https://example.com/image.jpg"
+                  type="url"
                 />
               </div>
-              <div className="md:col-span-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea 
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  placeholder="Description du produit"
-                  rows={3}
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  id="in_stock"
-                  checked={formData.in_stock}
-                  onCheckedChange={(checked) => setFormData({...formData, in_stock: checked})}
-                />
-                <Label htmlFor="in_stock">En stock</Label>
-              </div>
+            </div>
+            <div className="mt-4">
+              <Label htmlFor="description">Description</Label>
+              <Textarea 
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                placeholder="Description du produit"
+                rows={3}
+              />
+            </div>
+            <div className="flex items-center space-x-2 mt-4">
+              <Switch 
+                id="in_stock"
+                checked={formData.in_stock}
+                onCheckedChange={(checked) => setFormData({...formData, in_stock: checked})}
+              />
+              <Label htmlFor="in_stock">En stock</Label>
             </div>
             <div className="flex gap-2 mt-4">
               <Button 
@@ -293,55 +305,50 @@ const AdminProductsManager = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-4">
           {products.map((product) => (
-            <div key={product.id} className="border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold truncate">{product.name}</h3>
-                <span className={`px-2 py-1 rounded text-xs ${
-                  product.in_stock 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {product.in_stock ? 'En stock' : 'Épuisé'}
-                </span>
-              </div>
-              <img 
-                src={product.image || "/placeholder.svg"} 
-                alt={product.name} 
-                className="w-full h-32 object-cover rounded mb-2"
-              />
-              <p className="text-sm text-gray-600 mb-2">{product.category}</p>
-              <p className="font-bold text-lg text-fmf-green mb-2">
-                {product.price.toLocaleString()} MRU
-              </p>
-              {product.description && (
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                  {product.description}
-                </p>
-              )}
-              <div className="flex items-center justify-between">
-                <Switch 
-                  checked={product.in_stock}
-                  onCheckedChange={() => toggleStock(product.id, product.in_stock)}
+            <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex items-center gap-4">
+                <img 
+                  src={product.image || "/placeholder.svg"} 
+                  alt={product.name} 
+                  className="w-16 h-16 rounded object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/placeholder.svg";
+                  }}
                 />
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleEdit(product)}
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleDelete(product.id, product.name)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                <div>
+                  <h3 className="font-semibold">{product.name}</h3>
+                  <p className="text-sm text-gray-600">{product.category} • {product.price} MRU</p>
+                  {product.description && (
+                    <p className="text-sm text-gray-500 mt-1">{product.description}</p>
+                  )}
+                  <span className={`inline-block mt-1 px-2 py-1 rounded text-xs ${
+                    product.in_stock 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {product.in_stock ? 'En stock' : 'Rupture de stock'}
+                  </span>
                 </div>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleEdit(product)}
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleDelete(product.id, product.name)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           ))}
@@ -349,7 +356,8 @@ const AdminProductsManager = () => {
 
         {products.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            Aucun produit trouvé. Ajoutez votre premier produit!
+            <p>Aucun produit trouvé dans la base de données.</p>
+            <p className="text-sm mt-2">Cliquez sur "Nouveau Produit" pour ajouter votre premier produit!</p>
           </div>
         )}
       </CardContent>
