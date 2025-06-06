@@ -1,54 +1,45 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Layout from "@/components/layout/Layout";
-import { AdminProvider } from "@/contexts/AdminContext";
-
-import HomePage from "./pages/HomePage";
-import StandingsPage from "./pages/StandingsPage";
-import CupPage from "./pages/CupPage";
-import ShopPage from "./pages/ShopPage";
-import NewsPage from "./pages/NewsPage";
-import MatchDetailPage from "./pages/MatchDetailPage";
-import TeamPage from "./pages/TeamPage";
-import TeamsPage from "./pages/TeamsPage";
-import NotFound from "./pages/NotFound";
-import AdminPage from "./pages/AdminPage";
-import LiveScoresPage from "./pages/LiveScoresPage";
-import StatisticsPage from "./pages/StatisticsPage";
-import CalendarPage from "./pages/CalendarPage";
-import AdminDashboard from "./pages/AdminDashboard";
+import Index from "@/pages/Index";
+import Matches from "@/pages/Matches";
+import News from "@/pages/News";
+import Teams from "@/pages/Teams";
+import TeamDetail from "@/pages/TeamDetail";
+import Cup from "@/pages/Cup";
+import Standings from "@/pages/Standings";
+import Shop from "@/pages/Shop";
+import AdminDashboard from "@/pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AdminProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<HomePage />} />
-            <Route path="classement" element={<StandingsPage />} />
-            <Route path="equipes" element={<TeamsPage />} />
-            <Route path="coupe" element={<CupPage />} />
-            <Route path="boutique" element={<ShopPage />} />
-            <Route path="actualites" element={<NewsPage />} />
-            <Route path="live" element={<LiveScoresPage />} />
-            <Route path="statistiques" element={<StatisticsPage />} />
-            <Route path="calendrier" element={<CalendarPage />} />
-            <Route path="match/:id" element={<MatchDetailPage />} />
-            <Route path="equipe/:id" element={<TeamPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        </Routes>
-      </BrowserRouter>
-    </AdminProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <BrowserRouter>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/matches" element={<Matches />} />
+              <Route path="/news" element={<News />} />
+              <Route path="/teams" element={<Teams />} />
+              <Route path="/teams/:id" element={<TeamDetail />} />
+              <Route path="/cup" element={<Cup />} />
+              <Route path="/standings" element={<Standings />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            </Routes>
+          </Layout>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
