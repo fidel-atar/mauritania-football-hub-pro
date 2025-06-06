@@ -6,13 +6,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Layout from "@/components/layout/Layout";
 import Index from "@/pages/Index";
-import Matches from "@/pages/Matches";
-import News from "@/pages/News";
-import Teams from "@/pages/Teams";
-import TeamDetail from "@/pages/TeamDetail";
-import Cup from "@/pages/Cup";
-import Standings from "@/pages/Standings";
-import Shop from "@/pages/Shop";
+import MatchDetailPage from "@/pages/MatchDetailPage";
+import NewsPage from "@/pages/NewsPage";
+import TeamsPage from "@/pages/TeamsPage";
+import TeamPage from "@/pages/TeamPage";
+import CupPage from "@/pages/CupPage";
+import StandingsPage from "@/pages/StandingsPage";
+import ShopPage from "@/pages/ShopPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 
 const queryClient = new QueryClient();
@@ -26,13 +26,13 @@ const App = () => (
           <Layout>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/matches" element={<Matches />} />
-              <Route path="/news" element={<News />} />
-              <Route path="/teams" element={<Teams />} />
-              <Route path="/teams/:id" element={<TeamDetail />} />
-              <Route path="/cup" element={<Cup />} />
-              <Route path="/standings" element={<Standings />} />
-              <Route path="/shop" element={<Shop />} />
+              <Route path="/matches" element={<MatchDetailPage />} />
+              <Route path="/news" element={<NewsPage />} />
+              <Route path="/teams" element={<TeamsPage />} />
+              <Route path="/teams/:id" element={<TeamPage />} />
+              <Route path="/cup" element={<CupPage />} />
+              <Route path="/standings" element={<StandingsPage />} />
+              <Route path="/shop" element={<ShopPage />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
             </Routes>
