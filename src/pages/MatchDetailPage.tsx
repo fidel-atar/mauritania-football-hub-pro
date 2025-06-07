@@ -1,12 +1,12 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, BarChart2, Info, Clock, Trophy } from "lucide-react";
+import { User, BarChart2, Info, Clock, Trophy, Zap } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import MatchEventManager from "@/components/matches/MatchEventManager";
 
 interface MatchData {
   id: string;
@@ -232,6 +232,10 @@ const MatchDetailPage = () => {
               <Info className="w-4 h-4 mr-2" />
               Résumé
             </TabsTrigger>
+            <TabsTrigger value="events" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-fmf-green data-[state=active]:shadow-none rounded-none">
+              <Zap className="w-4 h-4 mr-2" />
+              Événements
+            </TabsTrigger>
             <TabsTrigger value="timeline" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-fmf-green data-[state=active]:shadow-none rounded-none">
               <Clock className="w-4 h-4 mr-2" />
               Chronologie
@@ -300,6 +304,18 @@ const MatchDetailPage = () => {
                   </div>
                 )}
               </div>
+            )}
+          </TabsContent>
+
+          {/* Events Tab */}
+          <TabsContent value="events" className="p-6">
+            {matchData.home_team?.id && matchData.away_team?.id && (
+              <MatchEventManager
+                matchId={matchData.id}
+                homeTeamId={matchData.home_team.id}
+                awayTeamId={matchData.away_team.id}
+                isFinished={isFinished}
+              />
             )}
           </TabsContent>
 
