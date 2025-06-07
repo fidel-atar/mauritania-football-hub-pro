@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trophy, Users, Save, RefreshCw, Shuffle, ArrowRight } from "lucide-react";
+import { Trophy, Users, Save, RefreshCw, Shuffle, Play, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -37,6 +37,8 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
   const [bracketPositions, setBracketPositions] = useState<string[]>(new Array(16).fill(""));
   const [matches, setMatches] = useState<CupMatch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingMatch, setEditingMatch] = useState<string | null>(null);
+  const [matchResults, setMatchResults] = useState<{[key: string]: {homeScore: string, awayScore: string}}>({});
 
   const fetchTeams = async () => {
     try {
@@ -191,6 +193,74 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
     }
   };
 
+  const updateMatchResult = async (matchId: string) => {
+    const result = matchResults[matchId];
+    if (!result || !result.homeScore || !result.awayScore) {
+      toast.error('Veuillez saisir les scores');
+      return;
+    }
+
+    const homeScore = parseInt(result.homeScore);
+    const awayScore = parseInt(result.awayScore);
+    
+    if (isNaN(homeScore) || isNaN(awayScore)) {
+      toast.error('Les scores doivent être des nombres');
+      return;
+    }
+
+    const match = matches.find(m => m.id === matchId);
+    if (!match) return;
+
+    const winnerId = homeScore > awayScore ? match.home_team_id : 
+                     awayScore > homeScore ? match.away_team_id : null;
+
+    try {
+      const { error } = await supabase
+        .from('cup_matches')
+        .update({
+          home_score: homeScore,
+          away_score: awayScore,
+          winner_team_id: winnerId,
+          is_played: true
+        })
+        .eq('id', matchId);
+
+      if (error) throw error;
+
+      // Update next round match if this is not the final
+      if (match.round < 4) {
+        await updateNextRoundMatch(match, winnerId);
+      }
+
+      toast.success('Résultat enregistré avec succès');
+      setEditingMatch(null);
+      setMatchResults(prev => ({ ...prev, [matchId]: { homeScore: '', awayScore: '' } }));
+      fetchMatches();
+    } catch (error) {
+      console.error('Error updating match result:', error);
+      toast.error('Erreur lors de la mise à jour du résultat');
+    }
+  };
+
+  const updateNextRoundMatch = async (currentMatch: CupMatch, winnerId: string | null) => {
+    if (!winnerId) return;
+
+    const nextRound = currentMatch.round + 1;
+    const nextMatchNumber = Math.ceil(currentMatch.match_number / 2);
+    
+    // Determine if winner goes to home or away position in next match
+    const isHomeTeam = currentMatch.match_number % 2 === 1;
+    
+    const updateField = isHomeTeam ? 'home_team_id' : 'away_team_id';
+    
+    await supabase
+      .from('cup_matches')
+      .update({ [updateField]: winnerId })
+      .eq('cup_id', cupId)
+      .eq('round', nextRound)
+      .eq('match_number', nextMatchNumber);
+  };
+
   const getTeamName = (teamId: string) => {
     const team = teams.find(t => t.id === teamId);
     return team ? team.name : "";
@@ -199,6 +269,135 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
   const getTeamLogo = (teamId: string) => {
     const team = teams.find(t => t.id === teamId);
     return team?.logo || "/placeholder.svg";
+  };
+
+  const MatchCard = ({ match }: { match: CupMatch }) => {
+    const isEditing = editingMatch === match.id;
+    
+    return (
+      <Card className={`p-4 w-72 transition-all duration-200 ${match.is_played ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'} hover:shadow-md`}>
+        {match.home_team_id && match.away_team_id ? (
+          <>
+            {/* Home Team */}
+            <div className="flex justify-between items-center mb-3 p-3 rounded bg-gray-50">
+              <div className="flex items-center flex-1">
+                <img
+                  src={getTeamLogo(match.home_team_id)}
+                  alt={getTeamName(match.home_team_id)}
+                  className="w-8 h-8 mr-3 rounded-full object-cover"
+                />
+                <span className={`${match.winner_team_id === match.home_team_id ? "font-bold text-fmf-green" : ""} text-sm`}>
+                  {getTeamName(match.home_team_id)}
+                </span>
+              </div>
+              {isEditing ? (
+                <Input
+                  type="number"
+                  min="0"
+                  className="w-16 h-8 text-center"
+                  value={matchResults[match.id]?.homeScore || ''}
+                  onChange={(e) => setMatchResults(prev => ({
+                    ...prev,
+                    [match.id]: { ...prev[match.id], homeScore: e.target.value }
+                  }))}
+                />
+              ) : (
+                <span className="font-mono font-bold text-lg bg-fmf-yellow px-3 py-1 rounded min-w-[2rem] text-center">
+                  {match.is_played ? match.home_score : "-"}
+                </span>
+              )}
+            </div>
+            
+            <div className="text-center text-xs text-gray-500 mb-3">VS</div>
+            
+            {/* Away Team */}
+            <div className="flex justify-between items-center mb-3 p-3 rounded bg-gray-50">
+              <div className="flex items-center flex-1">
+                <img
+                  src={getTeamLogo(match.away_team_id)}
+                  alt={getTeamName(match.away_team_id)}
+                  className="w-8 h-8 mr-3 rounded-full object-cover"
+                />
+                <span className={`${match.winner_team_id === match.away_team_id ? "font-bold text-fmf-green" : ""} text-sm`}>
+                  {getTeamName(match.away_team_id)}
+                </span>
+              </div>
+              {isEditing ? (
+                <Input
+                  type="number"
+                  min="0"
+                  className="w-16 h-8 text-center"
+                  value={matchResults[match.id]?.awayScore || ''}
+                  onChange={(e) => setMatchResults(prev => ({
+                    ...prev,
+                    [match.id]: { ...prev[match.id], awayScore: e.target.value }
+                  }))}
+                />
+              ) : (
+                <span className="font-mono font-bold text-lg bg-fmf-yellow px-3 py-1 rounded min-w-[2rem] text-center">
+                  {match.is_played ? match.away_score : "-"}
+                </span>
+              )}
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex gap-2 mt-3">
+              {!match.is_played && (
+                <>
+                  {isEditing ? (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={() => updateMatchResult(match.id)}
+                        className="bg-fmf-green hover:bg-fmf-green/90 flex-1"
+                      >
+                        <Save className="w-3 h-3 mr-1" />
+                        Valider
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingMatch(null);
+                          setMatchResults(prev => ({ ...prev, [match.id]: { homeScore: '', awayScore: '' } }));
+                        }}
+                      >
+                        Annuler
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingMatch(match.id);
+                        setMatchResults(prev => ({
+                          ...prev,
+                          [match.id]: { homeScore: '', awayScore: '' }
+                        }));
+                      }}
+                      className="flex-1"
+                    >
+                      <Edit className="w-3 h-3 mr-1" />
+                      Saisir résultat
+                    </Button>
+                  )}
+                </>
+              )}
+              {match.is_played && (
+                <div className="flex-1 text-center text-xs text-green-600 font-medium py-2">
+                  ✓ Match terminé
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="py-8 text-center text-gray-500 text-sm bg-gray-100 rounded">
+            En attente des équipes qualifiées
+          </div>
+        )}
+      </Card>
+    );
   };
 
   const TeamSlot = ({ position, label }: { position: number; label: string }) => {
@@ -258,193 +457,167 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Trophy className="h-5 w-5" />
-          Configuration du Tableau - 16 Équipes
+          Gestion du Tableau - Coupe
         </CardTitle>
         <Button variant="outline" onClick={onClose}>
           Fermer
         </Button>
       </CardHeader>
       <CardContent className="space-y-8">
-        {/* Action Buttons */}
-        <div className="flex items-center justify-between">
-          <div className="flex gap-4">
-            <Button 
-              onClick={generateBracket}
-              className="bg-fmf-green hover:bg-fmf-green/90"
-              disabled={bracketPositions.filter(pos => pos !== "").length !== 16}
-            >
-              <Users className="w-4 h-4 mr-2" />
-              Générer le Tableau
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={fetchMatches}
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Actualiser
-            </Button>
-          </div>
-          <Button 
-            variant="outline" 
-            onClick={randomizePositions}
-            className="flex items-center gap-2"
-          >
-            <Shuffle className="w-4 h-4" />
-            Mélanger
-          </Button>
-        </div>
-
-        {/* Progress indicator */}
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-            <span>Équipes placées:</span>
-            <span className={`font-bold ${bracketPositions.filter(pos => pos !== "").length === 16 ? 'text-fmf-green' : 'text-orange-500'}`}>
-              {bracketPositions.filter(pos => pos !== "").length}/16
-            </span>
-          </div>
-          {bracketPositions.filter(pos => pos !== "").length === 16 && (
-            <div className="mt-2 text-fmf-green text-sm font-medium">
-              ✓ Toutes les équipes sont placées. Vous pouvez générer le tableau !
+        {/* Setup Phase */}
+        {matches.length === 0 && (
+          <>
+            {/* Action Buttons */}
+            <div className="flex items-center justify-between">
+              <div className="flex gap-4">
+                <Button 
+                  onClick={generateBracket}
+                  className="bg-fmf-green hover:bg-fmf-green/90"
+                  disabled={bracketPositions.filter(pos => pos !== "").length !== 16}
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  Générer le Tableau
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={fetchMatches}
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Actualiser
+                </Button>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={randomizePositions}
+                className="flex items-center gap-2"
+              >
+                <Shuffle className="w-4 h-4" />
+                Mélanger
+              </Button>
             </div>
-          )}
-        </div>
 
-        {/* Visual Tournament Bracket Tree */}
-        <div className="bg-gradient-to-br from-gray-50 to-white p-8 rounded-lg border-2 border-fmf-yellow/20 overflow-x-auto">
-          <h3 className="text-lg font-semibold mb-8 text-center bg-fmf-green text-white py-3 px-6 rounded-lg">
-            Configuration du Tableau de Compétition
-          </h3>
-          
-          <div className="flex justify-center items-center min-w-max">
-            <div className="grid grid-cols-5 gap-8 items-center">
+            {/* Progress indicator */}
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+                <span>Équipes placées:</span>
+                <span className={`font-bold ${bracketPositions.filter(pos => pos !== "").length === 16 ? 'text-fmf-green' : 'text-orange-500'}`}>
+                  {bracketPositions.filter(pos => pos !== "").length}/16
+                </span>
+              </div>
+              {bracketPositions.filter(pos => pos !== "").length === 16 && (
+                <div className="mt-2 text-fmf-green text-sm font-medium">
+                  ✓ Toutes les équipes sont placées. Vous pouvez générer le tableau !
+                </div>
+              )}
+            </div>
+
+            {/* Team Selection Grid */}
+            <div className="bg-gradient-to-br from-gray-50 to-white p-8 rounded-lg border-2 border-fmf-yellow/20">
+              <h3 className="text-lg font-semibold mb-6 text-center bg-fmf-green text-white py-3 px-6 rounded-lg">
+                Sélection des 16 équipes
+              </h3>
               
-              {/* Round 1 - 16 Teams */}
+              <div className="grid grid-cols-4 gap-4">
+                {Array.from({ length: 16 }, (_, i) => (
+                  <TeamSlot key={i} position={i} label={`Équipe ${i + 1}`} />
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Tournament Bracket Phase */}
+        {matches.length > 0 && (
+          <div className="bg-gradient-to-br from-gray-50 to-white p-8 rounded-lg border-2 border-fmf-yellow/20 overflow-x-auto">
+            <h3 className="text-lg font-semibold mb-8 text-center bg-fmf-green text-white py-3 px-6 rounded-lg">
+              Tableau de la Compétition
+            </h3>
+            
+            <div className="flex justify-center items-start min-w-max space-x-12">
+              {/* Round 1 - 8 matches */}
               <div className="space-y-4">
                 <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-2 px-3 rounded mb-6">
-                  1er Tour (16 équipes)
+                  8èmes de finale
                 </h4>
-                <div className="space-y-8">
-                  {Array.from({ length: 8 }, (_, i) => (
-                    <div key={i} className="space-y-2">
-                      <TeamSlot position={i * 2} label={`Match ${i + 1} - Dom`} />
-                      <TeamSlot position={i * 2 + 1} label={`Match ${i + 1} - Ext`} />
-                    </div>
+                <div className="space-y-6">
+                  {matches.filter(m => m.round === 1).map((match) => (
+                    <MatchCard key={match.id} match={match} />
                   ))}
                 </div>
               </div>
 
-              {/* Connector Lines */}
-              <div className="flex flex-col items-center justify-center h-full">
-                <div className="space-y-16">
-                  {Array.from({ length: 8 }, (_, i) => (
-                    <div key={i} className="flex items-center">
-                      <div className="w-8 h-0.5 bg-fmf-green"></div>
-                      <div className="w-2 h-2 bg-fmf-green rounded-full"></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quarter Finals - 8 Teams */}
+              {/* Round 2 - 4 matches */}
               <div className="space-y-4">
                 <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-2 px-3 rounded mb-6">
                   Quarts de finale
                 </h4>
-                <div className="space-y-16">
-                  {Array.from({ length: 4 }, (_, i) => (
-                    <div key={i} className="bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300">
-                      <div className="text-xs text-center text-gray-500 mb-2">Quart {i + 1}</div>
-                      <div className="w-32 h-12 bg-white border rounded flex items-center justify-center text-xs text-gray-400">
-                        Vainqueur M{i * 2 + 1}
-                      </div>
-                      <div className="text-center my-1 text-xs text-gray-400">vs</div>
-                      <div className="w-32 h-12 bg-white border rounded flex items-center justify-center text-xs text-gray-400">
-                        Vainqueur M{i * 2 + 2}
-                      </div>
-                    </div>
+                <div className="space-y-12">
+                  {matches.filter(m => m.round === 2).map((match) => (
+                    <MatchCard key={match.id} match={match} />
                   ))}
                 </div>
               </div>
 
-              {/* Connector Lines */}
-              <div className="flex flex-col items-center justify-center h-full">
-                <div className="space-y-32">
-                  {Array.from({ length: 4 }, (_, i) => (
-                    <div key={i} className="flex items-center">
-                      <div className="w-8 h-0.5 bg-fmf-green"></div>
-                      <div className="w-2 h-2 bg-fmf-green rounded-full"></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Semi Finals and Final */}
+              {/* Round 3 - 2 matches */}
               <div className="space-y-4">
                 <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-2 px-3 rounded mb-6">
-                  Demi-finales & Finale
+                  Demi-finales
                 </h4>
-                <div className="space-y-8">
-                  {/* Semi Final 1 */}
-                  <div className="bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300">
-                    <div className="text-xs text-center text-gray-500 mb-2">Demi-finale 1</div>
-                    <div className="w-32 h-8 bg-white border rounded flex items-center justify-center text-xs text-gray-400">
-                      Vainqueur Q1
-                    </div>
-                    <div className="text-center my-1 text-xs text-gray-400">vs</div>
-                    <div className="w-32 h-8 bg-white border rounded flex items-center justify-center text-xs text-gray-400">
-                      Vainqueur Q2
-                    </div>
-                  </div>
+                <div className="space-y-24">
+                  {matches.filter(m => m.round === 3).map((match) => (
+                    <MatchCard key={match.id} match={match} />
+                  ))}
+                </div>
+              </div>
 
-                  {/* Final */}
-                  <div className="bg-gradient-to-r from-fmf-yellow to-fmf-green p-6 rounded-lg border-2 border-fmf-green">
-                    <div className="text-sm text-center font-bold text-fmf-dark mb-3">🏆 FINALE 🏆</div>
-                    <div className="w-32 h-8 bg-white border rounded flex items-center justify-center text-xs text-gray-400 mx-auto mb-2">
-                      Vainqueur DF1
+              {/* Round 4 - Final */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-2 px-3 rounded mb-6">
+                  Finale
+                </h4>
+                <div className="pt-32">
+                  {matches.filter(m => m.round === 4).map((match) => (
+                    <div key={match.id} className="relative">
+                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <Trophy className="w-8 h-8 text-yellow-500" />
+                      </div>
+                      <MatchCard match={match} />
                     </div>
-                    <div className="text-center my-1 text-xs text-fmf-dark font-bold">vs</div>
-                    <div className="w-32 h-8 bg-white border rounded flex items-center justify-center text-xs text-gray-400 mx-auto">
-                      Vainqueur DF2
-                    </div>
-                  </div>
-
-                  {/* Semi Final 2 */}
-                  <div className="bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300">
-                    <div className="text-xs text-center text-gray-500 mb-2">Demi-finale 2</div>
-                    <div className="w-32 h-8 bg-white border rounded flex items-center justify-center text-xs text-gray-400">
-                      Vainqueur Q3
-                    </div>
-                    <div className="text-center my-1 text-xs text-gray-400">vs</div>
-                    <div className="w-32 h-8 bg-white border rounded flex items-center justify-center text-xs text-gray-400">
-                      Vainqueur Q4
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Current Tournament Status */}
         {matches.length > 0 && (
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="text-lg font-semibold mb-4">Tableau actuel</h3>
+            <h3 className="text-lg font-semibold mb-4">Statistiques de la compétition</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div className="text-center">
-                <div className="font-medium">1er Tour</div>
-                <div className="text-gray-600">{matches.filter(m => m.round === 1).length} matchs</div>
+                <div className="font-medium">8èmes de finale</div>
+                <div className="text-gray-600">
+                  {matches.filter(m => m.round === 1 && m.is_played).length}/{matches.filter(m => m.round === 1).length} terminés
+                </div>
               </div>
               <div className="text-center">
-                <div className="font-medium">Quarts</div>
-                <div className="text-gray-600">{matches.filter(m => m.round === 2).length} matchs</div>
+                <div className="font-medium">Quarts de finale</div>
+                <div className="text-gray-600">
+                  {matches.filter(m => m.round === 2 && m.is_played).length}/{matches.filter(m => m.round === 2).length} terminés
+                </div>
               </div>
               <div className="text-center">
                 <div className="font-medium">Demi-finales</div>
-                <div className="text-gray-600">{matches.filter(m => m.round === 3).length} matchs</div>
+                <div className="text-gray-600">
+                  {matches.filter(m => m.round === 3 && m.is_played).length}/{matches.filter(m => m.round === 3).length} terminés
+                </div>
               </div>
               <div className="text-center">
                 <div className="font-medium">Finale</div>
-                <div className="text-gray-600">{matches.filter(m => m.round === 4).length} match</div>
+                <div className="text-gray-600">
+                  {matches.filter(m => m.round === 4 && m.is_played).length}/{matches.filter(m => m.round === 4).length} terminée
+                </div>
               </div>
             </div>
           </div>
