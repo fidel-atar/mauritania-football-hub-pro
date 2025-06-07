@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -201,55 +200,50 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
     return team?.logo || "/placeholder.svg";
   };
 
-  const TeamPositionCard = ({ position, teamId }: { position: number; teamId: string }) => {
+  const TeamSlot = ({ position, label }: { position: number; label: string }) => {
+    const teamId = bracketPositions[position];
     const team = teams.find(t => t.id === teamId);
-    const matchNumber = Math.floor(position / 2) + 1;
-    const isHome = position % 2 === 0;
     
     return (
-      <div className="space-y-2">
-        <Label className="text-xs text-gray-600">
-          Match {matchNumber} - {isHome ? "Domicile" : "Extérieur"}
-        </Label>
-        <div className="relative">
-          <Select 
-            value={teamId || ""} 
-            onValueChange={(value) => handlePositionChange(position, value)}
-          >
-            <SelectTrigger className="h-12 bg-white border-2 border-fmf-yellow/30">
-              <SelectValue placeholder="Choisir équipe" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">-- Aucune équipe --</SelectItem>
-              {teams.map((team) => (
-                <SelectItem 
-                  key={team.id} 
-                  value={team.id}
-                  disabled={bracketPositions.includes(team.id)}
-                >
-                  <div className="flex items-center gap-2">
-                    <img 
-                      src={team.logo || "/placeholder.svg"} 
-                      alt={team.name}
-                      className="w-4 h-4 rounded-full"
-                    />
-                    {team.name}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {team && (
-            <div className="absolute left-3 top-3 flex items-center gap-2 pointer-events-none">
-              <img 
-                src={team.logo || "/placeholder.svg"} 
-                alt={team.name}
-                className="w-6 h-6 rounded-full"
-              />
-              <span className="text-sm font-medium truncate max-w-32">{team.name}</span>
-            </div>
-          )}
-        </div>
+      <div className="relative">
+        <Label className="text-xs text-gray-600 mb-1 block">{label}</Label>
+        <Select 
+          value={teamId || ""} 
+          onValueChange={(value) => handlePositionChange(position, value)}
+        >
+          <SelectTrigger className="h-16 w-40 bg-white border-2 border-fmf-yellow/30 hover:border-fmf-yellow/50">
+            <SelectValue placeholder="Équipe" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">-- Vide --</SelectItem>
+            {teams.map((team) => (
+              <SelectItem 
+                key={team.id} 
+                value={team.id}
+                disabled={bracketPositions.includes(team.id)}
+              >
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={team.logo || "/placeholder.svg"} 
+                    alt={team.name}
+                    className="w-4 h-4 rounded-full"
+                  />
+                  {team.name}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {team && (
+          <div className="absolute left-2 top-7 flex items-center gap-2 pointer-events-none">
+            <img 
+              src={team.logo || "/placeholder.svg"} 
+              alt={team.name}
+              className="w-6 h-6 rounded-full"
+            />
+            <span className="text-sm font-medium truncate max-w-28">{team.name}</span>
+          </div>
+        )}
       </div>
     );
   };
@@ -263,7 +257,7 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Trophy className="h-5 w-5" />
-          Gestion du Tableau de Compétition - 16 Équipes
+          Configuration du Tableau - 16 Équipes
         </CardTitle>
         <Button variant="outline" onClick={onClose}>
           Fermer
@@ -299,67 +293,134 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
           </Button>
         </div>
 
-        {/* Visual Tournament Bracket Setup */}
-        <div className="bg-gradient-to-br from-gray-50 to-white p-6 rounded-lg border-2 border-fmf-yellow/20">
-          <h3 className="text-lg font-semibold mb-6 text-center bg-fmf-green text-white py-2 px-4 rounded-lg">
-            Placement des 16 Équipes - 1er Tour
+        {/* Progress indicator */}
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+            <span>Équipes placées:</span>
+            <span className={`font-bold ${bracketPositions.filter(pos => pos !== "").length === 16 ? 'text-fmf-green' : 'text-orange-500'}`}>
+              {bracketPositions.filter(pos => pos !== "").length}/16
+            </span>
+          </div>
+          {bracketPositions.filter(pos => pos !== "").length === 16 && (
+            <div className="mt-2 text-fmf-green text-sm font-medium">
+              ✓ Toutes les équipes sont placées. Vous pouvez générer le tableau !
+            </div>
+          )}
+        </div>
+
+        {/* Visual Tournament Bracket Tree */}
+        <div className="bg-gradient-to-br from-gray-50 to-white p-8 rounded-lg border-2 border-fmf-yellow/20 overflow-x-auto">
+          <h3 className="text-lg font-semibold mb-8 text-center bg-fmf-green text-white py-3 px-6 rounded-lg">
+            Configuration du Tableau de Compétition
           </h3>
           
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* First Quarter - Matches 1-2 */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-1 px-2 rounded">
-                Quart 1
-              </h4>
-              {Array.from({ length: 4 }, (_, i) => (
-                <TeamPositionCard key={i} position={i} teamId={bracketPositions[i]} />
-              ))}
-            </div>
-
-            {/* Second Quarter - Matches 3-4 */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-1 px-2 rounded">
-                Quart 2
-              </h4>
-              {Array.from({ length: 4 }, (_, i) => (
-                <TeamPositionCard key={i + 4} position={i + 4} teamId={bracketPositions[i + 4]} />
-              ))}
-            </div>
-
-            {/* Third Quarter - Matches 5-6 */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-1 px-2 rounded">
-                Quart 3
-              </h4>
-              {Array.from({ length: 4 }, (_, i) => (
-                <TeamPositionCard key={i + 8} position={i + 8} teamId={bracketPositions[i + 8]} />
-              ))}
-            </div>
-
-            {/* Fourth Quarter - Matches 7-8 */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-1 px-2 rounded">
-                Quart 4
-              </h4>
-              {Array.from({ length: 4 }, (_, i) => (
-                <TeamPositionCard key={i + 12} position={i + 12} teamId={bracketPositions[i + 12]} />
-              ))}
-            </div>
-          </div>
-
-          {/* Progress indicator */}
-          <div className="mt-6 text-center">
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-              <span>Équipes placées:</span>
-              <span className={`font-bold ${bracketPositions.filter(pos => pos !== "").length === 16 ? 'text-fmf-green' : 'text-orange-500'}`}>
-                {bracketPositions.filter(pos => pos !== "").length}/16
-              </span>
-            </div>
-            {bracketPositions.filter(pos => pos !== "").length === 16 && (
-              <div className="mt-2 text-fmf-green text-sm font-medium">
-                ✓ Toutes les équipes sont placées. Vous pouvez générer le tableau !
+          <div className="flex justify-center items-center min-w-max">
+            <div className="grid grid-cols-5 gap-8 items-center">
+              
+              {/* Round 1 - 16 Teams */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-2 px-3 rounded mb-6">
+                  1er Tour (16 équipes)
+                </h4>
+                <div className="space-y-8">
+                  {Array.from({ length: 8 }, (_, i) => (
+                    <div key={i} className="space-y-2">
+                      <TeamSlot position={i * 2} label={`Match ${i + 1} - Dom`} />
+                      <TeamSlot position={i * 2 + 1} label={`Match ${i + 1} - Ext`} />
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
+
+              {/* Connector Lines */}
+              <div className="flex flex-col items-center justify-center h-full">
+                <div className="space-y-16">
+                  {Array.from({ length: 8 }, (_, i) => (
+                    <div key={i} className="flex items-center">
+                      <div className="w-8 h-0.5 bg-fmf-green"></div>
+                      <div className="w-2 h-2 bg-fmf-green rounded-full"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quarter Finals - 8 Teams */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-2 px-3 rounded mb-6">
+                  Quarts de finale
+                </h4>
+                <div className="space-y-16">
+                  {Array.from({ length: 4 }, (_, i) => (
+                    <div key={i} className="bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300">
+                      <div className="text-xs text-center text-gray-500 mb-2">Quart {i + 1}</div>
+                      <div className="w-32 h-12 bg-white border rounded flex items-center justify-center text-xs text-gray-400">
+                        Vainqueur M{i * 2 + 1}
+                      </div>
+                      <div className="text-center my-1 text-xs text-gray-400">vs</div>
+                      <div className="w-32 h-12 bg-white border rounded flex items-center justify-center text-xs text-gray-400">
+                        Vainqueur M{i * 2 + 2}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Connector Lines */}
+              <div className="flex flex-col items-center justify-center h-full">
+                <div className="space-y-32">
+                  {Array.from({ length: 4 }, (_, i) => (
+                    <div key={i} className="flex items-center">
+                      <div className="w-8 h-0.5 bg-fmf-green"></div>
+                      <div className="w-2 h-2 bg-fmf-green rounded-full"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Semi Finals and Final */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-2 px-3 rounded mb-6">
+                  Demi-finales & Finale
+                </h4>
+                <div className="space-y-8">
+                  {/* Semi Final 1 */}
+                  <div className="bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300">
+                    <div className="text-xs text-center text-gray-500 mb-2">Demi-finale 1</div>
+                    <div className="w-32 h-8 bg-white border rounded flex items-center justify-center text-xs text-gray-400">
+                      Vainqueur Q1
+                    </div>
+                    <div className="text-center my-1 text-xs text-gray-400">vs</div>
+                    <div className="w-32 h-8 bg-white border rounded flex items-center justify-center text-xs text-gray-400">
+                      Vainqueur Q2
+                    </div>
+                  </div>
+
+                  {/* Final */}
+                  <div className="bg-gradient-to-r from-fmf-yellow to-fmf-green p-6 rounded-lg border-2 border-fmf-green">
+                    <div className="text-sm text-center font-bold text-fmf-dark mb-3">🏆 FINALE 🏆</div>
+                    <div className="w-32 h-8 bg-white border rounded flex items-center justify-center text-xs text-gray-400 mx-auto mb-2">
+                      Vainqueur DF1
+                    </div>
+                    <div className="text-center my-1 text-xs text-fmf-dark font-bold">vs</div>
+                    <div className="w-32 h-8 bg-white border rounded flex items-center justify-center text-xs text-gray-400 mx-auto">
+                      Vainqueur DF2
+                    </div>
+                  </div>
+
+                  {/* Semi Final 2 */}
+                  <div className="bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300">
+                    <div className="text-xs text-center text-gray-500 mb-2">Demi-finale 2</div>
+                    <div className="w-32 h-8 bg-white border rounded flex items-center justify-center text-xs text-gray-400">
+                      Vainqueur Q3
+                    </div>
+                    <div className="text-center my-1 text-xs text-gray-400">vs</div>
+                    <div className="w-32 h-8 bg-white border rounded flex items-center justify-center text-xs text-gray-400">
+                      Vainqueur Q4
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
