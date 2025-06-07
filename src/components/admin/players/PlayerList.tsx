@@ -1,6 +1,7 @@
 
 import React from "react";
 import PlayerCard from "./PlayerCard";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Team {
   id: string;
@@ -40,26 +41,28 @@ const PlayerList: React.FC<PlayerListProps> = ({
   onDelete,
   totalCount
 }) => {
+  const isMobile = useIsMobile();
+
   if (players.length === 0 && totalCount > 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        <p>Aucun joueur trouvé pour "{searchQuery}".</p>
-        <p className="text-sm mt-2">Essayez de modifier votre recherche!</p>
+      <div className="text-center py-6 md:py-8 text-gray-500">
+        <p className="text-sm md:text-base">Aucun joueur trouvé pour "{searchQuery}".</p>
+        <p className="text-xs md:text-sm mt-2">Essayez de modifier votre recherche!</p>
       </div>
     );
   }
 
   if (totalCount === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        <p>Aucun joueur trouvé dans la base de données.</p>
-        <p className="text-sm mt-2">Cliquez sur "Nouveau Joueur" pour ajouter votre premier joueur!</p>
+      <div className="text-center py-6 md:py-8 text-gray-500">
+        <p className="text-sm md:text-base">Aucun joueur trouvé dans la base de données.</p>
+        <p className="text-xs md:text-sm mt-2">Cliquez sur "Nouveau Joueur" pour ajouter votre premier joueur!</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 md:space-y-4">
       {players.map((player) => (
         <PlayerCard
           key={player.id}

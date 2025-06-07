@@ -42,13 +42,21 @@ const Layout = () => {
   const isDetailPage = location.pathname.includes('/match/') || location.pathname.includes('/equipe/');
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50 overflow-x-hidden">
       <Header />
-      <main className={`flex-1 pb-20 ${isDetailPage ? '' : 'pt-4'}`}>
-        <Outlet />
+      <main className={`flex-1 pb-20 ${isDetailPage ? '' : 'pt-2 md:pt-4'} min-h-0`}>
+        <div className="w-full max-w-full overflow-x-hidden">
+          <Outlet />
+        </div>
       </main>
       <BottomNavigation />
-      <Toaster position="top-center" />
+      <Toaster 
+        position="top-center" 
+        toastOptions={{
+          className: "text-sm",
+          duration: 3000,
+        }}
+      />
     </div>
   );
 };

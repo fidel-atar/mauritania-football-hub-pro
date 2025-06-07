@@ -95,29 +95,70 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Poppins', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold;
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    body {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  }
+
+  /* Safe area support for mobile devices */
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-pt {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Touch improvements */
+  button, [role="button"], .touchable {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Better focus visibility on mobile */
+  @media (max-width: 768px) {
+    *:focus {
+      outline: 2px solid theme('colors.fmf.green');
+      outline-offset: 2px;
+    }
   }
 }
 
 /* Classes personnalisées */
 @layer components {
   .match-card {
-    @apply bg-white rounded-lg shadow-md hover:shadow-lg transition-all p-4 flex flex-col;
+    @apply bg-white rounded-lg shadow-md hover:shadow-lg transition-all p-3 md:p-4 flex flex-col active:scale-[0.98];
   }
   
   .team-logo {
-    @apply w-16 h-16 object-contain;
+    @apply w-12 h-12 md:w-16 md:h-16 object-contain;
   }
   
   .page-container {
-    @apply container mx-auto px-4 py-8;
+    @apply container mx-auto px-3 md:px-4 py-3 md:py-8;
   }
   
   .section-title {
-    @apply text-2xl font-bold mb-6 text-fmf-dark border-l-4 border-fmf-green pl-3;
+    @apply text-xl md:text-2xl font-bold mb-4 md:mb-6 text-fmf-dark border-l-4 border-fmf-green pl-3;
   }
   
   .tab-active {
@@ -125,11 +166,11 @@
   }
   
   .tab-inactive {
-    @apply bg-gray-100 text-fmf-dark hover:bg-gray-200;
+    @apply bg-gray-100 text-fmf-dark hover:bg-gray-200 active:bg-gray-300;
   }
 
   .bottom-nav-item {
-    @apply flex flex-col items-center justify-center text-xs font-medium;
+    @apply flex flex-col items-center justify-center text-xs font-medium min-h-[44px];
   }
   
   .bottom-nav-active {
@@ -138,5 +179,67 @@
   
   .bottom-nav-inactive {
     @apply text-gray-500;
+  }
+
+  /* Mobile-first button styles */
+  .btn-mobile {
+    @apply px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 active:scale-95;
+  }
+
+  .btn-mobile-primary {
+    @apply btn-mobile bg-fmf-green text-white hover:bg-fmf-green/90;
+  }
+
+  .btn-mobile-secondary {
+    @apply btn-mobile bg-gray-100 text-gray-700 hover:bg-gray-200;
+  }
+
+  /* Card animations for mobile */
+  .mobile-card {
+    @apply transform transition-all duration-200 active:scale-[0.98] active:shadow-sm;
+  }
+
+  /* Better touch targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+
+  /* Loading states */
+  .loading-spinner {
+    @apply animate-spin rounded-full border-2 border-gray-300 border-t-fmf-green;
+  }
+
+  /* Responsive text */
+  .text-responsive-xs {
+    @apply text-xs md:text-sm;
+  }
+
+  .text-responsive-sm {
+    @apply text-sm md:text-base;
+  }
+
+  .text-responsive-base {
+    @apply text-base md:text-lg;
+  }
+
+  .text-responsive-lg {
+    @apply text-lg md:text-xl;
+  }
+
+  .text-responsive-xl {
+    @apply text-xl md:text-2xl;
+  }
+}
+
+/* Performance optimizations */
+@layer utilities {
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  .smooth-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
 }
