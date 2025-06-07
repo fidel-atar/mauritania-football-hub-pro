@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, LogOut, AlertTriangle } from "lucide-react";
+import { ArrowLeft, LogOut, AlertTriangle, Trophy, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import ProtectedAdminRoute from "@/components/admin/ProtectedAdminRoute";
@@ -39,7 +39,8 @@ const AdminDashboardContent = () => {
       'match': 'matches',
       'news': 'news',
       'product': 'products',
-      'stadium': 'stadiums'
+      'stadium': 'stadiums',
+      'standing': 'standings'
     };
 
     const targetTab = tabMap[result.type as keyof typeof tabMap];
@@ -76,6 +77,50 @@ const AdminDashboardContent = () => {
             Déconnexion
           </Button>
         </div>
+      </div>
+
+      {/* Quick Actions Section */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <Button 
+          onClick={() => setActiveTab("teams")} 
+          className="bg-fmf-green hover:bg-fmf-green/90 h-16"
+          variant={activeTab === "teams" ? "default" : "outline"}
+        >
+          <div className="text-center">
+            <Trophy className="w-6 h-6 mx-auto mb-1" />
+            <span>Gérer Équipes</span>
+          </div>
+        </Button>
+        <Button 
+          onClick={() => setActiveTab("stadiums")} 
+          className="bg-fmf-green hover:bg-fmf-green/90 h-16"
+          variant={activeTab === "stadiums" ? "default" : "outline"}
+        >
+          <div className="text-center">
+            <div className="w-6 h-6 mx-auto mb-1 bg-current rounded"></div>
+            <span>Gérer Stades</span>
+          </div>
+        </Button>
+        <Button 
+          onClick={() => setActiveTab("standings")} 
+          className="bg-fmf-green hover:bg-fmf-green/90 h-16"
+          variant={activeTab === "standings" ? "default" : "outline"}
+        >
+          <div className="text-center">
+            <BarChart3 className="w-6 h-6 mx-auto mb-1" />
+            <span>Gérer Stats</span>
+          </div>
+        </Button>
+        <Button 
+          onClick={() => setActiveTab("players")} 
+          className="bg-fmf-green hover:bg-fmf-green/90 h-16"
+          variant={activeTab === "players" ? "default" : "outline"}
+        >
+          <div className="text-center">
+            <div className="w-6 h-6 mx-auto mb-1 bg-current rounded-full"></div>
+            <span>Gérer Joueurs</span>
+          </div>
+        </Button>
       </div>
 
       {adminRole === 'moderator' && (
