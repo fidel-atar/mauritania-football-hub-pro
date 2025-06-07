@@ -1,6 +1,6 @@
 
 // Match Types
-export type MatchStatus = "scheduled" | "live" | "finished";
+export type MatchStatus = "scheduled" | "live" | "finished" | "postponed";
 
 export interface MatchTeam {
   id: string;

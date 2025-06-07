@@ -176,14 +176,13 @@ const MatchForm: React.FC<MatchFormProps> = ({
               <SelectContent>
                 <SelectItem value="scheduled">مجدولة</SelectItem>
                 <SelectItem value="live">مباشرة</SelectItem>
-                <SelectItem value="completed">منتهية</SelectItem>
+                <SelectItem value="finished">منتهية</SelectItem>
                 <SelectItem value="postponed">مؤجلة</SelectItem>
-                <SelectItem value="cancelled">ملغية</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {(formData.status === "completed" || formData.status === "live") && (
+          {(formData.status === "finished" || formData.status === "live") && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="homeScore">نتيجة الفريق المضيف</Label>
