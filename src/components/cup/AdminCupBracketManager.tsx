@@ -4,8 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Trophy, Users, Save, RefreshCw } from "lucide-react";
+import { Trophy, Users, Save, RefreshCw, Shuffle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,12 +12,6 @@ interface Team {
   id: string;
   name: string;
   logo?: string;
-}
-
-interface Cup {
-  id: string;
-  name: string;
-  status: string;
 }
 
 interface CupMatch {
@@ -41,7 +34,7 @@ interface AdminCupBracketManagerProps {
 
 const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps) => {
   const [teams, setTeams] = useState<Team[]>([]);
-  const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
+  const [bracketPositions, setBracketPositions] = useState<string[]>(new Array(16).fill(""));
   const [matches, setMatches] = useState<CupMatch[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -71,6 +64,19 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
       
       if (error) throw error;
       setMatches(data || []);
+
+      // Load existing bracket positions from first round matches
+      if (data && data.length > 0) {
+        const firstRoundMatches = data.filter(m => m.round === 1).sort((a, b) => a.match_number - b.match_number);
+        const positions = new Array(16).fill("");
+        
+        firstRoundMatches.forEach((match, index) => {
+          if (match.home_team_id) positions[index * 2] = match.home_team_id;
+          if (match.away_team_id) positions[index * 2 + 1] = match.away_team_id;
+        });
+        
+        setBracketPositions(positions);
+      }
     } catch (error) {
       console.error('Error fetching matches:', error);
       toast.error('Erreur lors du chargement des matchs');
@@ -84,9 +90,37 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
     fetchMatches();
   }, [cupId]);
 
+  const handlePositionChange = (position: number, teamId: string) => {
+    const newPositions = [...bracketPositions];
+    
+    // Remove team from any other position
+    const previousPosition = newPositions.indexOf(teamId);
+    if (previousPosition !== -1) {
+      newPositions[previousPosition] = "";
+    }
+    
+    newPositions[position] = teamId;
+    setBracketPositions(newPositions);
+  };
+
+  const randomizePositions = () => {
+    const availableTeams = teams.slice(0, 16);
+    const shuffled = [...availableTeams].sort(() => Math.random() - 0.5);
+    const newPositions = shuffled.map(team => team.id);
+    
+    // Fill remaining positions with empty strings if less than 16 teams
+    while (newPositions.length < 16) {
+      newPositions.push("");
+    }
+    
+    setBracketPositions(newPositions);
+    toast.success('Positions mélangées aléatoirement');
+  };
+
   const generateBracket = async () => {
-    if (selectedTeams.length !== 16) {
-      toast.error('Vous devez sélectionner exactement 16 équipes');
+    const filledPositions = bracketPositions.filter(pos => pos !== "");
+    if (filledPositions.length !== 16) {
+      toast.error('Vous devez remplir toutes les 16 positions');
       return;
     }
 
@@ -104,8 +138,8 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
           cup_id: cupId,
           round: 1,
           match_number: i + 1,
-          home_team_id: selectedTeams[i * 2],
-          away_team_id: selectedTeams[i * 2 + 1],
+          home_team_id: bracketPositions[i * 2],
+          away_team_id: bracketPositions[i * 2 + 1],
           is_played: false
         });
       }
@@ -157,10 +191,9 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
     }
   };
 
-  const handleTeamChange = (index: number, teamId: string) => {
-    const newSelectedTeams = [...selectedTeams];
-    newSelectedTeams[index] = teamId;
-    setSelectedTeams(newSelectedTeams);
+  const getTeamName = (teamId: string) => {
+    const team = teams.find(t => t.id === teamId);
+    return team ? team.name : "";
   };
 
   if (loading) {
@@ -180,42 +213,86 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
       </CardHeader>
       <CardContent className="space-y-6">
         <div>
-          <Label className="text-lg font-semibold mb-4 block">
-            Sélectionner 16 équipes pour la compétition
-          </Label>
+          <div className="flex items-center justify-between mb-4">
+            <Label className="text-lg font-semibold">
+              Placer les 16 équipes dans le tableau
+            </Label>
+            <Button 
+              variant="outline" 
+              onClick={randomizePositions}
+              className="flex items-center gap-2"
+            >
+              <Shuffle className="w-4 h-4" />
+              Mélanger
+            </Button>
+          </div>
+          
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Array.from({ length: 16 }, (_, index) => (
-              <div key={index}>
-                <Label htmlFor={`team-${index}`}>Équipe {index + 1}</Label>
-                <Select 
-                  value={selectedTeams[index] || ""} 
-                  onValueChange={(value) => handleTeamChange(index, value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choisir une équipe" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {teams.map((team) => (
-                      <SelectItem 
-                        key={team.id} 
-                        value={team.id}
-                        disabled={selectedTeams.includes(team.id)}
-                      >
-                        {team.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
+            {Array.from({ length: 16 }, (_, index) => {
+              const matchNumber = Math.floor(index / 2) + 1;
+              const isHome = index % 2 === 0;
+              
+              return (
+                <div key={index}>
+                  <Label htmlFor={`position-${index}`} className="text-sm">
+                    Match {matchNumber} - {isHome ? "Domicile" : "Extérieur"}
+                  </Label>
+                  <Select 
+                    value={bracketPositions[index] || ""} 
+                    onValueChange={(value) => handlePositionChange(index, value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choisir une équipe" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">-- Aucune équipe --</SelectItem>
+                      {teams.map((team) => (
+                        <SelectItem 
+                          key={team.id} 
+                          value={team.id}
+                          disabled={bracketPositions.includes(team.id)}
+                        >
+                          {team.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              );
+            })}
           </div>
         </div>
+
+        {/* Preview of first round matches */}
+        {bracketPositions.some(pos => pos !== "") && (
+          <div>
+            <Label className="text-lg font-semibold mb-4 block">
+              Aperçu du 1er Tour
+            </Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Array.from({ length: 8 }, (_, i) => (
+                <div key={i} className="p-3 border rounded-lg bg-gray-50">
+                  <h4 className="font-semibold mb-2">Match {i + 1}</h4>
+                  <div className="space-y-1">
+                    <div className="flex justify-between">
+                      <span>{getTeamName(bracketPositions[i * 2]) || "En attente"}</span>
+                      <span className="text-gray-500">vs</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{getTeamName(bracketPositions[i * 2 + 1]) || "En attente"}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-4">
           <Button 
             onClick={generateBracket}
             className="bg-fmf-green hover:bg-fmf-green/90"
-            disabled={selectedTeams.length !== 16}
+            disabled={bracketPositions.filter(pos => pos !== "").length !== 16}
           >
             <Users className="w-4 h-4 mr-2" />
             Générer le Tableau
