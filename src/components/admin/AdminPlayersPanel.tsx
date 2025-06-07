@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,7 +45,7 @@ const AdminPlayersPanel = () => {
     nationality: "",
     age: "",
     number: "",
-    team_id: "no-team",
+    team_id: "",
     image: "",
     matches: "0",
     goals: "0",
@@ -109,7 +110,7 @@ const AdminPlayersPanel = () => {
       nationality: "",
       age: "",
       number: "",
-      team_id: "no-team",
+      team_id: "",
       image: "",
       matches: "0",
       goals: "0",
@@ -124,6 +125,10 @@ const AdminPlayersPanel = () => {
       toast.error('Le nom du joueur est requis');
       return false;
     }
+    if (!formData.team_id) {
+      toast.error('Une équipe doit être sélectionnée');
+      return false;
+    }
     if (!formData.nationality.trim()) {
       toast.error('La nationalité est requise');
       return false;
@@ -136,6 +141,18 @@ const AdminPlayersPanel = () => {
       toast.error('Le numéro doit être entre 1 et 99');
       return false;
     }
+
+    // Check if player number is already taken in the same team
+    const existingPlayer = players.find(player => 
+      player.team_id === formData.team_id && 
+      player.number === parseInt(formData.number) &&
+      player.id !== editingId
+    );
+    if (existingPlayer) {
+      toast.error(`Le numéro ${formData.number} est déjà pris par ${existingPlayer.name} dans cette équipe`);
+      return false;
+    }
+
     return true;
   };
 
@@ -152,7 +169,7 @@ const AdminPlayersPanel = () => {
           nationality: formData.nationality.trim(),
           age: parseInt(formData.age),
           number: parseInt(formData.number),
-          team_id: formData.team_id === "no-team" ? null : formData.team_id,
+          team_id: formData.team_id,
           image: formData.image.trim() || null,
           matches: parseInt(formData.matches) || 0,
           goals: parseInt(formData.goals) || 0,
@@ -185,7 +202,7 @@ const AdminPlayersPanel = () => {
       nationality: player.nationality,
       age: player.age.toString(),
       number: player.number.toString(),
-      team_id: player.team_id || "no-team",
+      team_id: player.team_id || "",
       image: player.image || "",
       matches: player.matches.toString(),
       goals: player.goals.toString(),
@@ -208,7 +225,7 @@ const AdminPlayersPanel = () => {
           nationality: formData.nationality.trim(),
           age: parseInt(formData.age),
           number: parseInt(formData.number),
-          team_id: formData.team_id === "no-team" ? null : formData.team_id,
+          team_id: formData.team_id,
           image: formData.image.trim() || null,
           matches: parseInt(formData.matches) || 0,
           goals: parseInt(formData.goals) || 0,
@@ -264,6 +281,22 @@ const AdminPlayersPanel = () => {
     return <div className="text-center py-8">Chargement des joueurs...</div>;
   }
 
+  if (teams.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Gestion des Joueurs</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-gray-500">
+            <p>Aucune équipe trouvée.</p>
+            <p className="text-sm mt-2">Vous devez d'abord créer des équipes avant d'ajouter des joueurs!</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -290,6 +323,31 @@ const AdminPlayersPanel = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   placeholder="Nom complet"
+                />
+              </div>
+              <div>
+                <Label htmlFor="team_id">Équipe *</Label>
+                <Select value={formData.team_id} onValueChange={(value) => setFormData({...formData, team_id: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner une équipe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teams.map((team) => (
+                      <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="number">Numéro *</Label>
+                <Input 
+                  id="number"
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={formData.number}
+                  onChange={(e) => setFormData({...formData, number: e.target.value})}
+                  placeholder="Numéro de maillot"
                 />
               </div>
               <div>
@@ -325,32 +383,6 @@ const AdminPlayersPanel = () => {
                   onChange={(e) => setFormData({...formData, age: e.target.value})}
                   placeholder="Âge"
                 />
-              </div>
-              <div>
-                <Label htmlFor="number">Numéro *</Label>
-                <Input 
-                  id="number"
-                  type="number"
-                  min="1"
-                  max="99"
-                  value={formData.number}
-                  onChange={(e) => setFormData({...formData, number: e.target.value})}
-                  placeholder="Numéro de maillot"
-                />
-              </div>
-              <div>
-                <Label htmlFor="team_id">Équipe</Label>
-                <Select value={formData.team_id} onValueChange={(value) => setFormData({...formData, team_id: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner une équipe" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="no-team">Aucune équipe</SelectItem>
-                    {teams.map((team) => (
-                      <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             </div>
             
