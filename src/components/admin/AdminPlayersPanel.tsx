@@ -8,6 +8,8 @@ import { PlusCircle, Edit, Trash2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import ImageUpload from "./ImageUpload";
+import LocalSearchBar from "./LocalSearchBar";
+import { useAdminSearch } from "@/hooks/useAdminSearch";
 
 interface Team {
   id: string;
@@ -55,6 +57,18 @@ const AdminPlayersPanel = () => {
 
   const positions = ["Gardien", "Défenseur", "Milieu", "Attaquant"];
 
+  // Search functionality
+  const {
+    searchQuery,
+    setSearchQuery,
+    filteredData: filteredPlayers,
+    resultCount,
+    totalCount
+  } = useAdminSearch({
+    data: players,
+    searchFields: ['name', 'nationality', 'position', 'teams']
+  });
+
   const fetchTeams = async () => {
     try {
       const { data, error } = await supabase
@@ -65,7 +79,6 @@ const AdminPlayersPanel = () => {
       if (error) throw error;
       setTeams(data || []);
     } catch (error) {
-      console.error('Error fetching teams');
       toast.error('Erreur lors du chargement des équipes');
     }
   };
@@ -86,7 +99,6 @@ const AdminPlayersPanel = () => {
       }
       setPlayers(data || []);
     } catch (error) {
-      console.error('Error fetching players');
       toast.error('Erreur lors du chargement des joueurs');
     } finally {
       setLoading(false);
@@ -184,7 +196,6 @@ const AdminPlayersPanel = () => {
       resetForm();
       fetchPlayers();
     } catch (error) {
-      console.error('Error adding player');
       toast.error('Erreur lors de l\'ajout du joueur');
     }
   };
@@ -239,7 +250,6 @@ const AdminPlayersPanel = () => {
       resetForm();
       fetchPlayers();
     } catch (error) {
-      console.error('Error updating player');
       toast.error('Erreur lors de la mise à jour du joueur');
     }
   };
@@ -263,7 +273,6 @@ const AdminPlayersPanel = () => {
       toast.success('Joueur supprimé avec succès');
       fetchPlayers();
     } catch (error) {
-      console.error('Error deleting player');
       toast.error('Erreur lors de la suppression du joueur');
     }
   };
@@ -301,6 +310,14 @@ const AdminPlayersPanel = () => {
         </Button>
       </CardHeader>
       <CardContent>
+        <LocalSearchBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          placeholder="Rechercher par nom, nationalité, position ou équipe..."
+          resultCount={resultCount}
+          totalCount={totalCount}
+        />
+
         {(isAdding || editingId) && (
           <div className="mb-6 p-4 border rounded-lg bg-gray-50">
             <h3 className="font-semibold mb-4">
@@ -470,7 +487,7 @@ const AdminPlayersPanel = () => {
         )}
 
         <div className="space-y-4">
-          {players.map((player) => (
+          {filteredPlayers.map((player) => (
             <div key={player.id} className="flex items-center justify-between p-4 border rounded-lg">
               <div className="flex items-center gap-4">
                 <img 
@@ -515,6 +532,13 @@ const AdminPlayersPanel = () => {
             </div>
           ))}
         </div>
+
+        {filteredPlayers.length === 0 && totalCount > 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <p>Aucun joueur trouvé pour "{searchQuery}".</p>
+            <p className="text-sm mt-2">Essayez de modifier votre recherche!</p>
+          </div>
+        )}
 
         {players.length === 0 && (
           <div className="text-center py-8 text-gray-500">

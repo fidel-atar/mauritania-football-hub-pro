@@ -14,7 +14,9 @@ import AdminNewsManager from "@/components/admin/AdminNewsManager";
 import AdminProductsManager from "@/components/admin/AdminProductsManager";
 import AdminCupsManager from "@/components/admin/AdminCupsManager";
 import AdminStandingsManager from "@/components/admin/AdminStandingsManager";
+import AdminSearchBar from "@/components/admin/AdminSearchBar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 const AdminDashboardContent = () => {
   const [activeTab, setActiveTab] = useState("teams");
@@ -25,6 +27,23 @@ const AdminDashboardContent = () => {
       await signOut();
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  };
+
+  const handleSearchResult = (result: any) => {
+    // Switch to the appropriate tab based on the result type
+    const tabMap = {
+      'team': 'teams',
+      'player': 'players', 
+      'match': 'matches',
+      'news': 'news',
+      'product': 'products'
+    };
+
+    const targetTab = tabMap[result.type as keyof typeof tabMap];
+    if (targetTab) {
+      setActiveTab(targetTab);
+      toast.success(`Navigué vers ${result.title}`);
     }
   };
 
@@ -45,10 +64,16 @@ const AdminDashboardContent = () => {
             </p>
           </div>
         </div>
-        <Button variant="outline" onClick={handleLogout} className="text-red-600 hover:text-red-700">
-          <LogOut className="w-4 h-4 mr-2" />
-          Déconnexion
-        </Button>
+        <div className="flex items-center gap-4">
+          <AdminSearchBar 
+            onResultSelect={handleSearchResult}
+            activeTab={activeTab}
+          />
+          <Button variant="outline" onClick={handleLogout} className="text-red-600 hover:text-red-700">
+            <LogOut className="w-4 h-4 mr-2" />
+            Déconnexion
+          </Button>
+        </div>
       </div>
 
       {adminRole === 'moderator' && (
