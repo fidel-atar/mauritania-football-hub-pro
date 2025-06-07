@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,6 @@ import { PlusCircle, Edit, Trash2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import ImageUpload from "./ImageUpload";
-import AddTeamsButton from "./AddTeamsButton";
 
 interface Team {
   id: string;
@@ -188,16 +186,13 @@ const AdminTeamsManager = () => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Gestion des Équipes ({teams.length} équipes)</CardTitle>
-        <div className="flex gap-2">
-          <AddTeamsButton />
-          <Button 
-            onClick={() => setIsAdding(!isAdding)} 
-            className="bg-fmf-green hover:bg-fmf-green/90"
-          >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Nouvelle Équipe
-          </Button>
-        </div>
+        <Button 
+          onClick={() => setIsAdding(!isAdding)} 
+          className="bg-fmf-green hover:bg-fmf-green/90"
+        >
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Nouvelle Équipe
+        </Button>
       </CardHeader>
       <CardContent>
         {(isAdding || editingId) && (
