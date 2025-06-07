@@ -11,58 +11,58 @@ export type Database = {
     Tables: {
       admin_roles: {
         Row: {
-          created_at: string
+          created_at: string | null
           id: string
-          role: Database["public"]["Enums"]["admin_role"]
+          role: Database["public"]["Enums"]["admin_role"] | null
           user_id: string
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          role?: Database["public"]["Enums"]["admin_role"]
+          role?: Database["public"]["Enums"]["admin_role"] | null
           user_id: string
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          role?: Database["public"]["Enums"]["admin_role"]
+          role?: Database["public"]["Enums"]["admin_role"] | null
           user_id?: string
         }
         Relationships: []
       }
       cups: {
         Row: {
-          created_at: string
+          created_at: string | null
           description: string | null
           end_date: string | null
           id: string
           name: string
           prize_money: number | null
           start_date: string
-          status: string
-          updated_at: string
+          status: string | null
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           end_date?: string | null
           id?: string
           name: string
           prize_money?: number | null
           start_date: string
-          status?: string
-          updated_at?: string
+          status?: string | null
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           end_date?: string | null
           id?: string
           name?: string
           prize_money?: number | null
           start_date?: string
-          status?: string
-          updated_at?: string
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -70,38 +70,38 @@ export type Database = {
         Row: {
           away_score: number | null
           away_team_id: string | null
-          created_at: string
+          created_at: string | null
           home_score: number | null
           home_team_id: string | null
           id: string
           match_date: string
           stadium: string
           status: Database["public"]["Enums"]["match_status"] | null
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
           away_score?: number | null
           away_team_id?: string | null
-          created_at?: string
+          created_at?: string | null
           home_score?: number | null
           home_team_id?: string | null
           id?: string
           match_date: string
           stadium: string
           status?: Database["public"]["Enums"]["match_status"] | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
           away_score?: number | null
           away_team_id?: string | null
-          created_at?: string
+          created_at?: string | null
           home_score?: number | null
           home_team_id?: string | null
           id?: string
           match_date?: string
           stadium?: string
           status?: Database["public"]["Enums"]["match_status"] | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -125,34 +125,34 @@ export type Database = {
           author: string | null
           category: string
           content: string
-          created_at: string
+          created_at: string | null
           id: string
           image: string | null
-          published: boolean
+          published: boolean | null
           title: string
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
           author?: string | null
           category: string
           content: string
-          created_at?: string
+          created_at?: string | null
           id?: string
           image?: string | null
-          published?: boolean
+          published?: boolean | null
           title: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
           author?: string | null
           category?: string
           content?: string
-          created_at?: string
+          created_at?: string | null
           id?: string
           image?: string | null
-          published?: boolean
+          published?: boolean | null
           title?: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -160,7 +160,7 @@ export type Database = {
         Row: {
           age: number
           assists: number | null
-          created_at: string
+          created_at: string | null
           goals: number | null
           id: string
           image: string | null
@@ -171,13 +171,13 @@ export type Database = {
           position: string
           red_cards: number | null
           team_id: string | null
-          updated_at: string
+          updated_at: string | null
           yellow_cards: number | null
         }
         Insert: {
           age: number
           assists?: number | null
-          created_at?: string
+          created_at?: string | null
           goals?: number | null
           id?: string
           image?: string | null
@@ -188,13 +188,13 @@ export type Database = {
           position: string
           red_cards?: number | null
           team_id?: string | null
-          updated_at?: string
+          updated_at?: string | null
           yellow_cards?: number | null
         }
         Update: {
           age?: number
           assists?: number | null
-          created_at?: string
+          created_at?: string | null
           goals?: number | null
           id?: string
           image?: string | null
@@ -205,7 +205,7 @@ export type Database = {
           position?: string
           red_cards?: number | null
           team_id?: string | null
-          updated_at?: string
+          updated_at?: string | null
           yellow_cards?: number | null
         }
         Relationships: [
@@ -221,87 +221,87 @@ export type Database = {
       products: {
         Row: {
           category: string
-          created_at: string
+          created_at: string | null
           description: string | null
           id: string
           image: string | null
           in_stock: boolean | null
           name: string
           price: number
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
           category: string
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           id?: string
           image?: string | null
           in_stock?: boolean | null
           name: string
           price: number
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
           category?: string
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           id?: string
           image?: string | null
           in_stock?: boolean | null
           name?: string
           price?: number
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
       standings: {
         Row: {
-          created_at: string
-          draws: number
-          goal_difference: number
-          goals_against: number
-          goals_for: number
+          created_at: string | null
+          draws: number | null
+          goal_difference: number | null
+          goals_against: number | null
+          goals_for: number | null
           id: string
-          losses: number
-          matches_played: number
-          points: number
+          losses: number | null
+          matches_played: number | null
+          points: number | null
           position: number
-          season: string
+          season: string | null
           team_id: string | null
-          updated_at: string
-          wins: number
+          updated_at: string | null
+          wins: number | null
         }
         Insert: {
-          created_at?: string
-          draws?: number
-          goal_difference?: number
-          goals_against?: number
-          goals_for?: number
+          created_at?: string | null
+          draws?: number | null
+          goal_difference?: number | null
+          goals_against?: number | null
+          goals_for?: number | null
           id?: string
-          losses?: number
-          matches_played?: number
-          points?: number
+          losses?: number | null
+          matches_played?: number | null
+          points?: number | null
           position: number
-          season?: string
+          season?: string | null
           team_id?: string | null
-          updated_at?: string
-          wins?: number
+          updated_at?: string | null
+          wins?: number | null
         }
         Update: {
-          created_at?: string
-          draws?: number
-          goal_difference?: number
-          goals_against?: number
-          goals_for?: number
+          created_at?: string | null
+          draws?: number | null
+          goal_difference?: number | null
+          goals_against?: number | null
+          goals_for?: number | null
           id?: string
-          losses?: number
-          matches_played?: number
-          points?: number
+          losses?: number | null
+          matches_played?: number | null
+          points?: number | null
           position?: number
-          season?: string
+          season?: string | null
           team_id?: string | null
-          updated_at?: string
-          wins?: number
+          updated_at?: string | null
+          wins?: number | null
         }
         Relationships: [
           {
@@ -316,36 +316,36 @@ export type Database = {
       teams: {
         Row: {
           coach: string | null
-          created_at: string
+          created_at: string | null
           description: string | null
           founded_year: number | null
           id: string
           logo: string | null
           name: string
           stadium: string | null
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
           coach?: string | null
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           founded_year?: number | null
           id?: string
           logo?: string | null
           name: string
           stadium?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
           coach?: string | null
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           founded_year?: number | null
           id?: string
           logo?: string | null
           name?: string
           stadium?: string | null
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: []
       }

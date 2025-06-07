@@ -71,7 +71,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
     number: initialData?.number || "",
     age: initialData?.age || "",
     position: initialData?.position || "",
-    team: initialData?.team || "",
+    team: initialData?.team || "no-team",
     nationality: initialData?.nationality || "",
     image: initialData?.image || ""
   });
@@ -88,7 +88,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
     if (!formData.nationality) newErrors.nationality = "يجب اختيار الجنسية";
 
     // Validate player number uniqueness within the same team
-    if (formData.number && formData.team) {
+    if (formData.number && formData.team && formData.team !== "no-team") {
       const duplicatePlayer = existingPlayers.find(player => 
         player.number === parseInt(formData.number) && 
         player.teamId === formData.team
@@ -117,7 +117,12 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit(formData);
+      // Convert "no-team" back to empty string for the API
+      const submitData = {
+        ...formData,
+        team: formData.team === "no-team" ? "" : formData.team
+      };
+      onSubmit(submitData);
     }
   };
 
@@ -209,7 +214,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
                   <SelectValue placeholder="اختر الفريق (اختياري)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">بدون فريق</SelectItem>
+                  <SelectItem value="no-team">بدون فريق</SelectItem>
                   {teams.map((team) => (
                     <SelectItem key={team.id} value={team.id}>
                       {team.name}
