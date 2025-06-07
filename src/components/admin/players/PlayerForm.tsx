@@ -4,266 +4,287 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { X } from "lucide-react";
+import { Save, X } from "lucide-react";
+import { toast } from "sonner";
+import ImageUpload from "../ImageUpload";
 
 interface Team {
   id: string;
   name: string;
+  logo: string | null;
 }
 
-interface ExistingPlayer {
-  number: number;
-  teamId: string | null;
+interface Player {
+  id: string;
   name: string;
+  position: string;
+  nationality: string;
+  age: number;
+  number: number;
+  team_id: string | null;
+  image: string | null;
+  matches: number;
+  goals: number;
+  assists: number;
+  yellow_cards: number;
+  red_cards: number;
 }
 
 interface PlayerFormProps {
   teams: Team[];
-  onSubmit: (data: any) => void;
+  players: Player[];
+  isAdding: boolean;
+  editingId: string | null;
+  onSave: (data: any) => void;
   onCancel: () => void;
-  initialData?: any;
-  submitLabel: string;
-  existingPlayers?: ExistingPlayer[];
 }
 
-const positions = [
-  "حارس مرمى",
-  "مدافع أيمن",
-  "مدافع أيسر",
-  "مدافع وسط",
-  "قلب دفاع",
-  "لاعب وسط دفاعي",
-  "لاعب وسط",
-  "لاعب وسط هجومي",
-  "جناح أيمن",
-  "جناح أيسر",
-  "مهاجم"
-];
-
-const nationalities = [
-  "موريتاني",
-  "مغربي",
-  "جزائري",
-  "تونسي",
-  "مصري",
-  "سنغالي",
-  "مالي",
-  "نيجيري",
-  "غاني",
-  "كاميروني",
-  "فرنسي",
-  "إسباني",
-  "برازيلي",
-  "أرجنتيني"
-];
+const positions = ["Gardien", "Défenseur", "Milieu", "Attaquant"];
 
 const PlayerForm: React.FC<PlayerFormProps> = ({
   teams,
-  onSubmit,
-  onCancel,
-  initialData,
-  submitLabel,
-  existingPlayers = []
+  players,
+  isAdding,
+  editingId,
+  onSave,
+  onCancel
 }) => {
+  const editingPlayer = editingId ? players.find(p => p.id === editingId) : null;
+  
   const [formData, setFormData] = useState({
-    name: initialData?.name || "",
-    number: initialData?.number || "",
-    age: initialData?.age || "",
-    position: initialData?.position || "",
-    team: initialData?.team || "no-team",
-    nationality: initialData?.nationality || "",
-    image: initialData?.image || ""
+    name: editingPlayer?.name || "",
+    position: editingPlayer?.position || "Attaquant",
+    nationality: editingPlayer?.nationality || "",
+    age: editingPlayer?.age?.toString() || "",
+    number: editingPlayer?.number?.toString() || "",
+    team_id: editingPlayer?.team_id || "",
+    image: editingPlayer?.image || "",
+    matches: editingPlayer?.matches?.toString() || "0",
+    goals: editingPlayer?.goals?.toString() || "0",
+    assists: editingPlayer?.assists?.toString() || "0",
+    yellow_cards: editingPlayer?.yellow_cards?.toString() || "0",
+    red_cards: editingPlayer?.red_cards?.toString() || "0"
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) newErrors.name = "يجب إدخال اسم اللاعب";
-    if (!formData.number) newErrors.number = "يجب إدخال رقم اللاعب";
-    if (!formData.age) newErrors.age = "يجب إدخال عمر اللاعب";
-    if (!formData.position) newErrors.position = "يجب اختيار مركز اللعب";
-    if (!formData.nationality) newErrors.nationality = "يجب اختيار الجنسية";
-
-    // Validate player number uniqueness within the same team
-    if (formData.number && formData.team && formData.team !== "no-team") {
-      const duplicatePlayer = existingPlayers.find(player => 
-        player.number === parseInt(formData.number) && 
-        player.teamId === formData.team
-      );
-      if (duplicatePlayer) {
-        newErrors.number = `الرقم ${formData.number} مستخدم بالفعل في هذا الفريق`;
-      }
+    if (!formData.name.trim()) {
+      toast.error('Le nom du joueur est requis');
+      return false;
+    }
+    if (!formData.team_id) {
+      toast.error('Une équipe doit être sélectionnée');
+      return false;
+    }
+    if (!formData.nationality.trim()) {
+      toast.error('La nationalité est requise');
+      return false;
+    }
+    if (!formData.age || parseInt(formData.age) < 16 || parseInt(formData.age) > 50) {
+      toast.error('L\'âge doit être entre 16 et 50 ans');
+      return false;
+    }
+    if (!formData.number || parseInt(formData.number) < 1 || parseInt(formData.number) > 99) {
+      toast.error('Le numéro doit être entre 1 et 99');
+      return false;
     }
 
-    // Validate age range
-    const age = parseInt(formData.age);
-    if (age && (age < 16 || age > 45)) {
-      newErrors.age = "العمر يجب أن يكون بين 16 و 45 سنة";
+    // Check if player number is already taken in the same team
+    const existingPlayer = players.find(player => 
+      player.team_id === formData.team_id && 
+      player.number === parseInt(formData.number) &&
+      player.id !== editingId
+    );
+    if (existingPlayer) {
+      toast.error(`Le numéro ${formData.number} est déjà pris par ${existingPlayer.name} dans cette équipe`);
+      return false;
     }
 
-    // Validate number range
-    const number = parseInt(formData.number);
-    if (number && (number < 1 || number > 99)) {
-      newErrors.number = "رقم اللاعب يجب أن يكون بين 1 و 99";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return true;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm()) {
-      // Convert "no-team" back to empty string for the API
-      const submitData = {
-        ...formData,
-        team: formData.team === "no-team" ? "" : formData.team
-      };
-      onSubmit(submitData);
-    }
-  };
+  const handleSubmit = () => {
+    if (!validateForm()) return;
 
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
-    }
+    const submitData = {
+      name: formData.name.trim(),
+      position: formData.position,
+      nationality: formData.nationality.trim(),
+      age: parseInt(formData.age),
+      number: parseInt(formData.number),
+      team_id: formData.team_id,
+      image: formData.image.trim() || null,
+      matches: parseInt(formData.matches) || 0,
+      goals: parseInt(formData.goals) || 0,
+      assists: parseInt(formData.assists) || 0,
+      yellow_cards: parseInt(formData.yellow_cards) || 0,
+      red_cards: parseInt(formData.red_cards) || 0
+    };
+
+    onSave(submitData);
   };
 
   return (
-    <Card className="mb-6">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>{submitLabel === "إضافة" ? "إضافة لاعب جديد" : "تعديل بيانات اللاعب"}</CardTitle>
-        <Button variant="ghost" size="sm" onClick={onCancel}>
-          <X className="h-4 w-4" />
-        </Button>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="name">اسم اللاعب *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                placeholder="أدخل اسم اللاعب"
-                className={errors.name ? "border-red-500" : ""}
-              />
-              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="number">رقم اللاعب *</Label>
-              <Input
-                id="number"
-                type="number"
-                min="1"
-                max="99"
-                value={formData.number}
-                onChange={(e) => handleChange("number", e.target.value)}
-                placeholder="رقم اللاعب"
-                className={errors.number ? "border-red-500" : ""}
-              />
-              {errors.number && <p className="text-red-500 text-sm mt-1">{errors.number}</p>}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="age">العمر *</Label>
-              <Input
-                id="age"
-                type="number"
-                min="16"
-                max="45"
-                value={formData.age}
-                onChange={(e) => handleChange("age", e.target.value)}
-                placeholder="عمر اللاعب"
-                className={errors.age ? "border-red-500" : ""}
-              />
-              {errors.age && <p className="text-red-500 text-sm mt-1">{errors.age}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="position">المركز *</Label>
-              <Select value={formData.position} onValueChange={(value) => handleChange("position", value)}>
-                <SelectTrigger className={errors.position ? "border-red-500" : ""}>
-                  <SelectValue placeholder="اختر مركز اللعب" />
-                </SelectTrigger>
-                <SelectContent>
-                  {positions.map((position) => (
-                    <SelectItem key={position} value={position}>
-                      {position}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.position && <p className="text-red-500 text-sm mt-1">{errors.position}</p>}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="team">الفريق</Label>
-              <Select value={formData.team} onValueChange={(value) => handleChange("team", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="اختر الفريق (اختياري)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="no-team">بدون فريق</SelectItem>
-                  {teams.map((team) => (
-                    <SelectItem key={team.id} value={team.id}>
-                      {team.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="nationality">الجنسية *</Label>
-              <Select value={formData.nationality} onValueChange={(value) => handleChange("nationality", value)}>
-                <SelectTrigger className={errors.nationality ? "border-red-500" : ""}>
-                  <SelectValue placeholder="اختر الجنسية" />
-                </SelectTrigger>
-                <SelectContent>
-                  {nationalities.map((nationality) => (
-                    <SelectItem key={nationality} value={nationality}>
-                      {nationality}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.nationality && <p className="text-red-500 text-sm mt-1">{errors.nationality}</p>}
-            </div>
-          </div>
-
+    <div className="mb-6 p-4 border rounded-lg bg-gray-50">
+      <h3 className="font-semibold mb-4">
+        {isAdding ? 'Ajouter un nouveau joueur' : 'Modifier le joueur'}
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <Label htmlFor="name">Nom du joueur *</Label>
+          <Input 
+            id="name"
+            value={formData.name}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            placeholder="Nom complet"
+          />
+        </div>
+        <div>
+          <Label htmlFor="team_id">Équipe *</Label>
+          <Select value={formData.team_id} onValueChange={(value) => setFormData({...formData, team_id: value})}>
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner une équipe" />
+            </SelectTrigger>
+            <SelectContent>
+              {teams.map((team) => (
+                <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="number">Numéro *</Label>
+          <Input 
+            id="number"
+            type="number"
+            min="1"
+            max="99"
+            value={formData.number}
+            onChange={(e) => setFormData({...formData, number: e.target.value})}
+            placeholder="Numéro de maillot"
+          />
+        </div>
+        <div>
+          <Label htmlFor="position">Position</Label>
+          <Select value={formData.position} onValueChange={(value) => setFormData({...formData, position: value})}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {positions.map((position) => (
+                <SelectItem key={position} value={position}>{position}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="nationality">Nationalité *</Label>
+          <Input 
+            id="nationality"
+            value={formData.nationality}
+            onChange={(e) => setFormData({...formData, nationality: e.target.value})}
+            placeholder="ex: Mauritanienne"
+          />
+        </div>
+        <div>
+          <Label htmlFor="age">Âge *</Label>
+          <Input 
+            id="age"
+            type="number"
+            min="16"
+            max="50"
+            value={formData.age}
+            onChange={(e) => setFormData({...formData, age: e.target.value})}
+            placeholder="Âge"
+          />
+        </div>
+      </div>
+      
+      <div className="mt-4">
+        <ImageUpload
+          value={formData.image}
+          onChange={(value) => setFormData({...formData, image: value})}
+          label="Photo du joueur"
+        />
+      </div>
+      
+      <div className="mt-4">
+        <h4 className="font-medium mb-2">Statistiques</h4>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div>
-            <Label htmlFor="image">رابط الصورة (اختياري)</Label>
-            <Input
-              id="image"
-              type="url"
-              value={formData.image}
-              onChange={(e) => handleChange("image", e.target.value)}
-              placeholder="رابط صورة اللاعب"
+            <Label htmlFor="matches">Matchs</Label>
+            <Input 
+              id="matches"
+              type="number"
+              min="0"
+              value={formData.matches}
+              onChange={(e) => setFormData({...formData, matches: e.target.value})}
+              placeholder="0"
             />
           </div>
-
-          <div className="flex gap-2 pt-4">
-            <Button type="submit" className="bg-fmf-green hover:bg-fmf-green/90">
-              {submitLabel}
-            </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
-              إلغاء
-            </Button>
+          <div>
+            <Label htmlFor="goals">Buts</Label>
+            <Input 
+              id="goals"
+              type="number"
+              min="0"
+              value={formData.goals}
+              onChange={(e) => setFormData({...formData, goals: e.target.value})}
+              placeholder="0"
+            />
           </div>
-        </form>
-      </CardContent>
-    </Card>
+          <div>
+            <Label htmlFor="assists">Passes D.</Label>
+            <Input 
+              id="assists"
+              type="number"
+              min="0"
+              value={formData.assists}
+              onChange={(e) => setFormData({...formData, assists: e.target.value})}
+              placeholder="0"
+            />
+          </div>
+          <div>
+            <Label htmlFor="yellow_cards">C. Jaunes</Label>
+            <Input 
+              id="yellow_cards"
+              type="number"
+              min="0"
+              value={formData.yellow_cards}
+              onChange={(e) => setFormData({...formData, yellow_cards: e.target.value})}
+              placeholder="0"
+            />
+          </div>
+          <div>
+            <Label htmlFor="red_cards">C. Rouges</Label>
+            <Input 
+              id="red_cards"
+              type="number"
+              min="0"
+              value={formData.red_cards}
+              onChange={(e) => setFormData({...formData, red_cards: e.target.value})}
+              placeholder="0"
+            />
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex gap-2 mt-4">
+        <Button 
+          onClick={handleSubmit} 
+          className="bg-fmf-green hover:bg-fmf-green/90"
+        >
+          <Save className="w-4 h-4 mr-2" />
+          {isAdding ? 'Ajouter' : 'Modifier'}
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={onCancel}
+        >
+          <X className="w-4 h-4 mr-2" />
+          Annuler
+        </Button>
+      </div>
+    </div>
   );
 };
 
