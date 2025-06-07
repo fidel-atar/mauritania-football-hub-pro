@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { PlusCircle, Edit, Trash2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import ImageUpload from "./ImageUpload";
 
 interface Product {
   id: string;
@@ -253,17 +253,16 @@ const AdminProductsManager = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label htmlFor="image">URL de l'image</Label>
-                <Input 
-                  id="image"
-                  value={formData.image}
-                  onChange={(e) => setFormData({...formData, image: e.target.value})}
-                  placeholder="https://example.com/image.jpg"
-                  type="url"
-                />
-              </div>
             </div>
+            
+            <div className="mt-4">
+              <ImageUpload
+                value={formData.image}
+                onChange={(value) => setFormData({...formData, image: value})}
+                label="Image du produit"
+              />
+            </div>
+            
             <div className="mt-4">
               <Label htmlFor="description">Description</Label>
               <Textarea 

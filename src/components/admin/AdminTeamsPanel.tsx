@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PlusCircle, Edit, Trash2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import ImageUpload from "./ImageUpload";
 
 interface Team {
   id: string;
@@ -180,15 +180,11 @@ const AdminTeamsPanel = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="teamLogo">Logo URL</Label>
-                <Input 
-                  id="teamLogo" 
-                  placeholder="URL du logo" 
-                  type="url" 
+                <ImageUpload
                   value={newTeam.logo}
-                  onChange={(e) => handleInputChange(e)}
+                  onChange={(value) => setNewTeam(prev => ({ ...prev, logo: value }))}
+                  label="Logo de l'équipe"
                 />
-                <div className="text-xs text-gray-500">Si laissé vide, un placeholder sera utilisé</div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="teamDescription">Description</Label>
@@ -250,11 +246,10 @@ const AdminTeamsPanel = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor={`edit-logo-${team.id}`}>Logo URL</Label>
-                            <Input 
-                              id={`edit-logo-${team.id}`}
+                            <ImageUpload
                               value={editTeam.logo}
-                              onChange={(e) => handleInputChange(e, true)}
+                              onChange={(value) => setEditTeam(prev => ({ ...prev, logo: value }))}
+                              label="Logo de l'équipe"
                             />
                           </div>
                           <div className="space-y-2">

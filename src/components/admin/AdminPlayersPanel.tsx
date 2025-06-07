@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlusCircle, Edit, Trash2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import ImageUpload from "./ImageUpload";
 
 interface Team {
   id: string;
@@ -351,16 +352,14 @@ const AdminPlayersPanel = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="md:col-span-3">
-                <Label htmlFor="image">URL de l'image</Label>
-                <Input 
-                  id="image"
-                  value={formData.image}
-                  onChange={(e) => setFormData({...formData, image: e.target.value})}
-                  placeholder="https://example.com/player.jpg"
-                  type="url"
-                />
-              </div>
+            </div>
+            
+            <div className="mt-4">
+              <ImageUpload
+                value={formData.image}
+                onChange={(value) => setFormData({...formData, image: value})}
+                label="Photo du joueur"
+              />
             </div>
             
             <div className="mt-4">
