@@ -1,69 +1,23 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import NewsCard from "@/components/news/NewsCard";
 import NewsCategoryFilter from "@/components/news/NewsCategoryFilter";
 import AdBanner from "@/components/ads/AdBanner";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-const newsData = [
-  {
-    id: 1,
-    title: "Préparation pour la finale de la Coupe du Président",
-    summary: "Les équipes finalistes intensifient leurs entraînements avant le grand match du 30 mai.",
-    date: "2023-05-20",
-    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400&h=200&fit=crop",
-    category: "Coupe"
-  },
-  {
-    id: 2,
-    title: "Nouveau centre de formation à Nouakchott",
-    summary: "La FMF inaugure un nouveau centre de formation pour les jeunes talents mauritaniens.",
-    date: "2023-05-18",
-    image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=400&h=200&fit=crop",
-    category: "Formation"
-  },
-  {
-    id: 3,
-    title: "Partenariat avec la Ligue Française",
-    summary: "Un accord de coopération signé pour le développement du football mauritanien.",
-    date: "2023-05-15",
-    image: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=400&h=200&fit=crop",
-    category: "Partenariat"
-  },
-  {
-    id: 4,
-    title: "Victoire historique en éliminatoires",
-    summary: "L'équipe nationale remporte une victoire cruciale lors des éliminatoires de la CAN.",
-    date: "2023-05-12",
-    image: "https://images.unsplash.com/photo-1493962853295-0fd70327578a?w=400&h=200&fit=crop",
-    category: "Équipe Nationale"
-  },
-  {
-    id: 5,
-    title: "Formation des arbitres",
-    summary: "Un programme de formation intensive pour les arbitres mauritaniens a été lancé.",
-    date: "2023-05-10",
-    image: "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=400&h=200&fit=crop",
-    category: "Formation"
-  },
-  {
-    id: 6,
-    title: "Tournoi des jeunes talents",
-    summary: "Le tournoi national des moins de 18 ans débutera la semaine prochaine.",
-    date: "2023-05-08",
-    image: "https://images.unsplash.com/photo-1466721591366-2d5fba72006d?w=400&h=200&fit=crop",
-    category: "Jeunes"
-  },
-  {
-    id: 7,
-    title: "Maillots officiels disponibles en boutique",
-    summary: "Les nouveaux maillots de l'équipe nationale sont maintenant disponibles dans notre boutique officielle.",
-    date: "2023-05-07",
-    image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=200&fit=crop",
-    category: "Boutique"
-  }
-];
+interface NewsArticle {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  author: string | null;
+  image: string | null;
+  published: boolean;
+  created_at: string;
+}
 
 const adData = [
   {
@@ -81,17 +35,58 @@ const adData = [
 ];
 
 const NewsPage = () => {
+  const [news, setNews] = useState<NewsArticle[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Toutes");
+  const [categories, setCategories] = useState<string[]>(["Toutes"]);
 
-  const categories = ["Toutes", "Coupe", "Boutique", "Formation", "Équipe Nationale", "Partenariat", "Jeunes"];
+  const fetchNews = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('news')
+        .select('*')
+        .eq('published', true)
+        .order('created_at', { ascending: false });
 
-  const filteredNews = newsData.filter((news) => {
-    const matchesSearch = news.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         news.summary.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "Toutes" || news.category === selectedCategory;
+      if (error) {
+        console.error('Error fetching news:', error);
+        toast.error('Erreur lors du chargement des actualités');
+        return;
+      }
+
+      setNews(data || []);
+      
+      // Extract unique categories from the news data
+      const uniqueCategories = ["Toutes", ...new Set(data?.map(article => article.category) || [])];
+      setCategories(uniqueCategories);
+    } catch (error) {
+      console.error('Error fetching news:', error);
+      toast.error('Erreur lors du chargement des actualités');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNews();
+  }, []);
+
+  const filteredNews = news.filter((article) => {
+    const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         article.content.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "Toutes" || article.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  if (loading) {
+    return (
+      <div className="page-container pb-20">
+        <h1 className="section-title">Actualités</h1>
+        <div className="text-center py-8">Chargement des actualités...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-container pb-20">
@@ -129,13 +124,13 @@ const NewsPage = () => {
       
       {filteredNews.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredNews.map((news, index) => (
-            <React.Fragment key={news.id}>
+          {filteredNews.map((article, index) => (
+            <React.Fragment key={article.id}>
               <NewsCard
-                title={news.title}
-                summary={news.summary}
-                date={news.date}
-                image={news.image}
+                title={article.title}
+                summary={article.content.substring(0, 150) + "..."}
+                date={article.created_at}
+                image={article.image || "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400&h=200&fit=crop"}
               />
               {/* Insert ads every 3 news items */}
               {(index + 1) % 3 === 0 && index < filteredNews.length - 1 && (
@@ -154,7 +149,12 @@ const NewsPage = () => {
         </div>
       ) : (
         <div className="text-center py-10">
-          <p className="text-gray-500">Aucune actualité trouvée</p>
+          <p className="text-gray-500">
+            {news.length === 0 
+              ? "Aucune actualité disponible pour le moment."
+              : "Aucune actualité trouvée pour votre recherche."
+            }
+          </p>
         </div>
       )}
     </div>
