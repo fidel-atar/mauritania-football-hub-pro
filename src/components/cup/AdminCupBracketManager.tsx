@@ -1,12 +1,13 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Trophy, Users, Save, RefreshCw, Shuffle, Play, Edit } from "lucide-react";
+import { Trophy, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import TeamSelectionGrid from "./admin/TeamSelectionGrid";
+import TournamentBracketView from "./admin/TournamentBracketView";
+import TournamentStats from "./admin/TournamentStats";
 
 interface Team {
   id: string;
@@ -261,191 +262,24 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
       .eq('match_number', nextMatchNumber);
   };
 
-  const getTeamName = (teamId: string) => {
-    const team = teams.find(t => t.id === teamId);
-    return team ? team.name : "";
+  const handleEditStart = (matchId: string) => {
+    setEditingMatch(matchId);
+    setMatchResults(prev => ({
+      ...prev,
+      [matchId]: { homeScore: '', awayScore: '' }
+    }));
   };
 
-  const getTeamLogo = (teamId: string) => {
-    const team = teams.find(t => t.id === teamId);
-    return team?.logo || "/placeholder.svg";
+  const handleEditCancel = (matchId: string) => {
+    setEditingMatch(null);
+    setMatchResults(prev => ({ ...prev, [matchId]: { homeScore: '', awayScore: '' } }));
   };
 
-  const MatchCard = ({ match }: { match: CupMatch }) => {
-    const isEditing = editingMatch === match.id;
-    
-    return (
-      <Card className={`p-4 w-72 transition-all duration-200 ${match.is_played ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'} hover:shadow-md`}>
-        {match.home_team_id && match.away_team_id ? (
-          <>
-            {/* Home Team */}
-            <div className="flex justify-between items-center mb-3 p-3 rounded bg-gray-50">
-              <div className="flex items-center flex-1">
-                <img
-                  src={getTeamLogo(match.home_team_id)}
-                  alt={getTeamName(match.home_team_id)}
-                  className="w-8 h-8 mr-3 rounded-full object-cover"
-                />
-                <span className={`${match.winner_team_id === match.home_team_id ? "font-bold text-fmf-green" : ""} text-sm`}>
-                  {getTeamName(match.home_team_id)}
-                </span>
-              </div>
-              {isEditing ? (
-                <Input
-                  type="number"
-                  min="0"
-                  className="w-16 h-8 text-center"
-                  value={matchResults[match.id]?.homeScore || ''}
-                  onChange={(e) => setMatchResults(prev => ({
-                    ...prev,
-                    [match.id]: { ...prev[match.id], homeScore: e.target.value }
-                  }))}
-                />
-              ) : (
-                <span className="font-mono font-bold text-lg bg-fmf-yellow px-3 py-1 rounded min-w-[2rem] text-center">
-                  {match.is_played ? match.home_score : "-"}
-                </span>
-              )}
-            </div>
-            
-            <div className="text-center text-xs text-gray-500 mb-3">VS</div>
-            
-            {/* Away Team */}
-            <div className="flex justify-between items-center mb-3 p-3 rounded bg-gray-50">
-              <div className="flex items-center flex-1">
-                <img
-                  src={getTeamLogo(match.away_team_id)}
-                  alt={getTeamName(match.away_team_id)}
-                  className="w-8 h-8 mr-3 rounded-full object-cover"
-                />
-                <span className={`${match.winner_team_id === match.away_team_id ? "font-bold text-fmf-green" : ""} text-sm`}>
-                  {getTeamName(match.away_team_id)}
-                </span>
-              </div>
-              {isEditing ? (
-                <Input
-                  type="number"
-                  min="0"
-                  className="w-16 h-8 text-center"
-                  value={matchResults[match.id]?.awayScore || ''}
-                  onChange={(e) => setMatchResults(prev => ({
-                    ...prev,
-                    [match.id]: { ...prev[match.id], awayScore: e.target.value }
-                  }))}
-                />
-              ) : (
-                <span className="font-mono font-bold text-lg bg-fmf-yellow px-3 py-1 rounded min-w-[2rem] text-center">
-                  {match.is_played ? match.away_score : "-"}
-                </span>
-              )}
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex gap-2 mt-3">
-              {!match.is_played && (
-                <>
-                  {isEditing ? (
-                    <>
-                      <Button
-                        size="sm"
-                        onClick={() => updateMatchResult(match.id)}
-                        className="bg-fmf-green hover:bg-fmf-green/90 flex-1"
-                      >
-                        <Save className="w-3 h-3 mr-1" />
-                        Valider
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setEditingMatch(null);
-                          setMatchResults(prev => ({ ...prev, [match.id]: { homeScore: '', awayScore: '' } }));
-                        }}
-                      >
-                        Annuler
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setEditingMatch(match.id);
-                        setMatchResults(prev => ({
-                          ...prev,
-                          [match.id]: { homeScore: '', awayScore: '' }
-                        }));
-                      }}
-                      className="flex-1"
-                    >
-                      <Edit className="w-3 h-3 mr-1" />
-                      Saisir résultat
-                    </Button>
-                  )}
-                </>
-              )}
-              {match.is_played && (
-                <div className="flex-1 text-center text-xs text-green-600 font-medium py-2">
-                  ✓ Match terminé
-                </div>
-              )}
-            </div>
-          </>
-        ) : (
-          <div className="py-8 text-center text-gray-500 text-sm bg-gray-100 rounded">
-            En attente des équipes qualifiées
-          </div>
-        )}
-      </Card>
-    );
-  };
-
-  const TeamSlot = ({ position, label }: { position: number; label: string }) => {
-    const teamId = bracketPositions[position];
-    const team = teams.find(t => t.id === teamId);
-    
-    return (
-      <div className="relative">
-        <Label className="text-xs text-gray-600 mb-1 block">{label}</Label>
-        <Select 
-          value={teamId || ""} 
-          onValueChange={(value) => handlePositionChange(position, value)}
-        >
-          <SelectTrigger className="h-16 w-40 bg-white border-2 border-fmf-yellow/30 hover:border-fmf-yellow/50">
-            <SelectValue placeholder="Équipe" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">-- Vide --</SelectItem>
-            {teams.map((team) => (
-              <SelectItem 
-                key={team.id} 
-                value={team.id}
-                disabled={bracketPositions.includes(team.id)}
-              >
-                <div className="flex items-center gap-2">
-                  <img 
-                    src={team.logo || "/placeholder.svg"} 
-                    alt={team.name}
-                    className="w-4 h-4 rounded-full object-cover"
-                  />
-                  {team.name}
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {team && (
-          <div className="absolute left-2 top-7 flex items-center gap-2 pointer-events-none">
-            <img 
-              src={team.logo || "/placeholder.svg"} 
-              alt={team.name}
-              className="w-6 h-6 rounded-full object-cover"
-            />
-            <span className="text-sm font-medium truncate max-w-28">{team.name}</span>
-          </div>
-        )}
-      </div>
-    );
+  const handleResultChange = (matchId: string, field: 'homeScore' | 'awayScore', value: string) => {
+    setMatchResults(prev => ({
+      ...prev,
+      [matchId]: { ...prev[matchId], [field]: value }
+    }));
   };
 
   if (loading) {
@@ -459,168 +293,48 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
           <Trophy className="h-5 w-5" />
           Gestion du Tableau - Coupe
         </CardTitle>
-        <Button variant="outline" onClick={onClose}>
-          Fermer
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={fetchMatches}
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Actualiser
+          </Button>
+          <Button variant="outline" onClick={onClose}>
+            Fermer
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-8">
         {/* Setup Phase */}
         {matches.length === 0 && (
-          <>
-            {/* Action Buttons */}
-            <div className="flex items-center justify-between">
-              <div className="flex gap-4">
-                <Button 
-                  onClick={generateBracket}
-                  className="bg-fmf-green hover:bg-fmf-green/90"
-                  disabled={bracketPositions.filter(pos => pos !== "").length !== 16}
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  Générer le Tableau
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={fetchMatches}
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Actualiser
-                </Button>
-              </div>
-              <Button 
-                variant="outline" 
-                onClick={randomizePositions}
-                className="flex items-center gap-2"
-              >
-                <Shuffle className="w-4 h-4" />
-                Mélanger
-              </Button>
-            </div>
-
-            {/* Progress indicator */}
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-                <span>Équipes placées:</span>
-                <span className={`font-bold ${bracketPositions.filter(pos => pos !== "").length === 16 ? 'text-fmf-green' : 'text-orange-500'}`}>
-                  {bracketPositions.filter(pos => pos !== "").length}/16
-                </span>
-              </div>
-              {bracketPositions.filter(pos => pos !== "").length === 16 && (
-                <div className="mt-2 text-fmf-green text-sm font-medium">
-                  ✓ Toutes les équipes sont placées. Vous pouvez générer le tableau !
-                </div>
-              )}
-            </div>
-
-            {/* Team Selection Grid */}
-            <div className="bg-gradient-to-br from-gray-50 to-white p-8 rounded-lg border-2 border-fmf-yellow/20">
-              <h3 className="text-lg font-semibold mb-6 text-center bg-fmf-green text-white py-3 px-6 rounded-lg">
-                Sélection des 16 équipes
-              </h3>
-              
-              <div className="grid grid-cols-4 gap-4">
-                {Array.from({ length: 16 }, (_, i) => (
-                  <TeamSlot key={i} position={i} label={`Équipe ${i + 1}`} />
-                ))}
-              </div>
-            </div>
-          </>
+          <TeamSelectionGrid
+            teams={teams}
+            bracketPositions={bracketPositions}
+            onPositionChange={handlePositionChange}
+            onRandomize={randomizePositions}
+            onGenerateBracket={generateBracket}
+          />
         )}
 
         {/* Tournament Bracket Phase */}
         {matches.length > 0 && (
-          <div className="bg-gradient-to-br from-gray-50 to-white p-8 rounded-lg border-2 border-fmf-yellow/20 overflow-x-auto">
-            <h3 className="text-lg font-semibold mb-8 text-center bg-fmf-green text-white py-3 px-6 rounded-lg">
-              Tableau de la Compétition
-            </h3>
-            
-            <div className="flex justify-center items-start min-w-max space-x-12">
-              {/* Round 1 - 8 matches */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-2 px-3 rounded mb-6">
-                  8èmes de finale
-                </h4>
-                <div className="space-y-6">
-                  {matches.filter(m => m.round === 1).map((match) => (
-                    <MatchCard key={match.id} match={match} />
-                  ))}
-                </div>
-              </div>
-
-              {/* Round 2 - 4 matches */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-2 px-3 rounded mb-6">
-                  Quarts de finale
-                </h4>
-                <div className="space-y-12">
-                  {matches.filter(m => m.round === 2).map((match) => (
-                    <MatchCard key={match.id} match={match} />
-                  ))}
-                </div>
-              </div>
-
-              {/* Round 3 - 2 matches */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-2 px-3 rounded mb-6">
-                  Demi-finales
-                </h4>
-                <div className="space-y-24">
-                  {matches.filter(m => m.round === 3).map((match) => (
-                    <MatchCard key={match.id} match={match} />
-                  ))}
-                </div>
-              </div>
-
-              {/* Round 4 - Final */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-semibold text-center bg-fmf-yellow text-fmf-dark py-2 px-3 rounded mb-6">
-                  Finale
-                </h4>
-                <div className="pt-32">
-                  {matches.filter(m => m.round === 4).map((match) => (
-                    <div key={match.id} className="relative">
-                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                        <Trophy className="w-8 h-8 text-yellow-500" />
-                      </div>
-                      <MatchCard match={match} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          <TournamentBracketView
+            matches={matches}
+            teams={teams}
+            editingMatch={editingMatch}
+            matchResults={matchResults}
+            onEditStart={handleEditStart}
+            onEditCancel={handleEditCancel}
+            onResultChange={handleResultChange}
+            onResultSave={updateMatchResult}
+          />
         )}
 
         {/* Current Tournament Status */}
         {matches.length > 0 && (
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="text-lg font-semibold mb-4">Statistiques de la compétition</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div className="text-center">
-                <div className="font-medium">8èmes de finale</div>
-                <div className="text-gray-600">
-                  {matches.filter(m => m.round === 1 && m.is_played).length}/{matches.filter(m => m.round === 1).length} terminés
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="font-medium">Quarts de finale</div>
-                <div className="text-gray-600">
-                  {matches.filter(m => m.round === 2 && m.is_played).length}/{matches.filter(m => m.round === 2).length} terminés
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="font-medium">Demi-finales</div>
-                <div className="text-gray-600">
-                  {matches.filter(m => m.round === 3 && m.is_played).length}/{matches.filter(m => m.round === 3).length} terminés
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="font-medium">Finale</div>
-                <div className="text-gray-600">
-                  {matches.filter(m => m.round === 4 && m.is_played).length}/{matches.filter(m => m.round === 4).length} terminée
-                </div>
-              </div>
-            </div>
-          </div>
+          <TournamentStats matches={matches} />
         )}
       </CardContent>
     </Card>
