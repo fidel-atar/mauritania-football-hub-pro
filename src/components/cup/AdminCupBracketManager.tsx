@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -226,7 +227,7 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
                   <img 
                     src={team.logo || "/placeholder.svg"} 
                     alt={team.name}
-                    className="w-4 h-4 rounded-full"
+                    className="w-4 h-4 rounded-full object-cover"
                   />
                   {team.name}
                 </div>
@@ -239,7 +240,7 @@ const AdminCupBracketManager = ({ cupId, onClose }: AdminCupBracketManagerProps)
             <img 
               src={team.logo || "/placeholder.svg"} 
               alt={team.name}
-              className="w-6 h-6 rounded-full"
+              className="w-6 h-6 rounded-full object-cover"
             />
             <span className="text-sm font-medium truncate max-w-28">{team.name}</span>
           </div>
