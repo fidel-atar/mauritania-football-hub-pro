@@ -8,7 +8,7 @@ const BottomNavigation = () => {
   
   const navItems = [
     { name: "Accueil", path: "/", icon: <Home size={20} /> },
-    { name: "Live", path: "/live", icon: <Play size={20} /> },
+    { name: "Actualités", path: "/actualites", icon: <Newspaper size={20} /> },
     { name: "Stats", path: "/statistiques", icon: <TrendingUp size={20} /> },
     { name: "Coupe", path: "/coupe", icon: <Trophy size={20} /> },
     { name: "Shop", path: "/boutique", icon: <ShoppingBag size={20} /> }
