@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,14 +65,13 @@ const AdminPlayersPanel = () => {
       if (error) throw error;
       setTeams(data || []);
     } catch (error) {
-      console.error('Error fetching teams:', error);
+      console.error('Error fetching teams');
       toast.error('Erreur lors du chargement des équipes');
     }
   };
 
   const fetchPlayers = async () => {
     try {
-      console.log('Fetching players from database...');
       const { data, error } = await supabase
         .from('players')
         .select(`
@@ -83,13 +81,12 @@ const AdminPlayersPanel = () => {
         .order('name');
       
       if (error) {
-        console.error('Supabase error:', error);
         toast.error('Erreur lors du chargement des joueurs');
         return;
       }
       setPlayers(data || []);
     } catch (error) {
-      console.error('Error fetching players:', error);
+      console.error('Error fetching players');
       toast.error('Erreur lors du chargement des joueurs');
     } finally {
       setLoading(false);
@@ -160,7 +157,6 @@ const AdminPlayersPanel = () => {
     if (!validateForm()) return;
 
     try {
-      console.log('Adding player:', formData);
       const { error } = await supabase
         .from('players')
         .insert({
@@ -179,7 +175,6 @@ const AdminPlayersPanel = () => {
         });
 
       if (error) {
-        console.error('Error adding player:', error);
         toast.error('Erreur lors de l\'ajout du joueur');
         return;
       }
@@ -189,7 +184,7 @@ const AdminPlayersPanel = () => {
       resetForm();
       fetchPlayers();
     } catch (error) {
-      console.error('Error adding player:', error);
+      console.error('Error adding player');
       toast.error('Erreur lors de l\'ajout du joueur');
     }
   };
@@ -216,7 +211,6 @@ const AdminPlayersPanel = () => {
     if (!validateForm()) return;
 
     try {
-      console.log('Updating player:', editingId, formData);
       const { error } = await supabase
         .from('players')
         .update({
@@ -236,7 +230,6 @@ const AdminPlayersPanel = () => {
         .eq('id', editingId);
 
       if (error) {
-        console.error('Error updating player:', error);
         toast.error('Erreur lors de la mise à jour du joueur');
         return;
       }
@@ -246,7 +239,7 @@ const AdminPlayersPanel = () => {
       resetForm();
       fetchPlayers();
     } catch (error) {
-      console.error('Error updating player:', error);
+      console.error('Error updating player');
       toast.error('Erreur lors de la mise à jour du joueur');
     }
   };
@@ -257,14 +250,12 @@ const AdminPlayersPanel = () => {
     }
 
     try {
-      console.log('Deleting player:', id);
       const { error } = await supabase
         .from('players')
         .delete()
         .eq('id', id);
 
       if (error) {
-        console.error('Error deleting player:', error);
         toast.error('Erreur lors de la suppression du joueur');
         return;
       }
@@ -272,7 +263,7 @@ const AdminPlayersPanel = () => {
       toast.success('Joueur supprimé avec succès');
       fetchPlayers();
     } catch (error) {
-      console.error('Error deleting player:', error);
+      console.error('Error deleting player');
       toast.error('Erreur lors de la suppression du joueur');
     }
   };
