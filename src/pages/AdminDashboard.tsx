@@ -14,6 +14,7 @@ import AdminNewsManager from "@/components/admin/AdminNewsManager";
 import AdminProductsManager from "@/components/admin/AdminProductsManager";
 import AdminCupsManager from "@/components/admin/AdminCupsManager";
 import AdminStandingsManager from "@/components/admin/AdminStandingsManager";
+import AdminStadiumsManager from "@/components/admin/AdminStadiumsManager";
 import AdminSearchBar from "@/components/admin/AdminSearchBar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
@@ -37,7 +38,8 @@ const AdminDashboardContent = () => {
       'player': 'players', 
       'match': 'matches',
       'news': 'news',
-      'product': 'products'
+      'product': 'products',
+      'stadium': 'stadiums'
     };
 
     const targetTab = tabMap[result.type as keyof typeof tabMap];
@@ -86,8 +88,9 @@ const AdminDashboardContent = () => {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-7 mb-6">
+        <TabsList className="grid w-full grid-cols-8 mb-6">
           <TabsTrigger value="teams">Équipes</TabsTrigger>
+          <TabsTrigger value="stadiums">Stades</TabsTrigger>
           <TabsTrigger value="players">Joueurs</TabsTrigger>
           <TabsTrigger value="matches">Matchs</TabsTrigger>
           <TabsTrigger value="standings">Classement</TabsTrigger>
@@ -98,6 +101,10 @@ const AdminDashboardContent = () => {
 
         <TabsContent value="teams">
           <AdminTeamsManager />
+        </TabsContent>
+
+        <TabsContent value="stadiums">
+          <AdminStadiumsManager />
         </TabsContent>
 
         <TabsContent value="players">
