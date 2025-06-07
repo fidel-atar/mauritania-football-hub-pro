@@ -30,6 +30,83 @@ export type Database = {
         }
         Relationships: []
       }
+      cup_matches: {
+        Row: {
+          away_score: number | null
+          away_team_id: string | null
+          created_at: string
+          cup_id: string
+          home_score: number | null
+          home_team_id: string | null
+          id: string
+          is_played: boolean
+          match_date: string | null
+          match_number: number
+          round: number
+          updated_at: string
+          winner_team_id: string | null
+        }
+        Insert: {
+          away_score?: number | null
+          away_team_id?: string | null
+          created_at?: string
+          cup_id: string
+          home_score?: number | null
+          home_team_id?: string | null
+          id?: string
+          is_played?: boolean
+          match_date?: string | null
+          match_number: number
+          round: number
+          updated_at?: string
+          winner_team_id?: string | null
+        }
+        Update: {
+          away_score?: number | null
+          away_team_id?: string | null
+          created_at?: string
+          cup_id?: string
+          home_score?: number | null
+          home_team_id?: string | null
+          id?: string
+          is_played?: boolean
+          match_date?: string | null
+          match_number?: number
+          round?: number
+          updated_at?: string
+          winner_team_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cup_matches_away_team_id_fkey"
+            columns: ["away_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cup_matches_cup_id_fkey"
+            columns: ["cup_id"]
+            isOneToOne: false
+            referencedRelation: "cups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cup_matches_home_team_id_fkey"
+            columns: ["home_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cup_matches_winner_team_id_fkey"
+            columns: ["winner_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cups: {
         Row: {
           created_at: string | null

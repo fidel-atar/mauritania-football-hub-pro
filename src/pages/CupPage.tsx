@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import TournamentBracket from "@/components/cup/TournamentBracket";
 
 const CupPage = () => {
   // Fetch cups data from Supabase
@@ -21,6 +22,36 @@ const CupPage = () => {
       }
       return data || [];
     },
+  });
+
+  // Get the current active cup (first ongoing or upcoming cup)
+  const activeCup = cups.find(cup => cup.status === 'ongoing') || cups.find(cup => cup.status === 'upcoming');
+
+  // Fetch cup matches for the active cup
+  const { data: cupMatches = [], isLoading: matchesLoading } = useQuery({
+    queryKey: ['cup-matches', activeCup?.id],
+    queryFn: async () => {
+      if (!activeCup?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('cup_matches')
+        .select(`
+          *,
+          home_team:teams!cup_matches_home_team_id_fkey(id, name, logo),
+          away_team:teams!cup_matches_away_team_id_fkey(id, name, logo),
+          winner_team:teams!cup_matches_winner_team_id_fkey(id, name, logo)
+        `)
+        .eq('cup_id', activeCup.id)
+        .order('round')
+        .order('match_number');
+      
+      if (error) {
+        console.error('Error fetching cup matches:', error);
+        return [];
+      }
+      return data || [];
+    },
+    enabled: !!activeCup?.id
   });
 
   if (isLoading) {
@@ -45,6 +76,31 @@ const CupPage = () => {
           <p>Suivez l'évolution de la prestigieuse Coupe du Président, la plus grande compétition à élimination directe de Mauritanie.</p>
         </CardContent>
       </Card>
+
+      {activeCup && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5" />
+              {activeCup.name} - Tableau de la compétition
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {matchesLoading ? (
+              <div className="text-center py-8">Chargement du tableau...</div>
+            ) : cupMatches.length > 0 ? (
+              <TournamentBracket matches={cupMatches} />
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-600">Le tableau de la compétition sera disponible bientôt.</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  L'administrateur doit configurer les équipes participantes.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
       
       {cups.length === 0 ? (
         <div className="text-center py-12">
@@ -128,7 +184,7 @@ const CupPage = () => {
               </li>
               <li className="flex justify-between">
                 <span>Nombre d'équipes</span>
-                <span className="font-medium">32</span>
+                <span className="font-medium">16</span>
               </li>
               <li className="flex justify-between">
                 <span>Tenant du titre</span>

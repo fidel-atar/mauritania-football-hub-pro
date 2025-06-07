@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Edit, Trash2, Save, X, Trophy } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Save, X, Trophy, Users } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import AdminCupBracketManager from "@/components/cup/AdminCupBracketManager";
 
 interface Cup {
   id: string;
@@ -26,6 +26,7 @@ const AdminCupsManager = () => {
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [managingBracketId, setManagingBracketId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -215,6 +216,16 @@ const AdminCupsManager = () => {
     return <div className="text-center py-8">Chargement des coupes...</div>;
   }
 
+  // Show bracket manager if selected
+  if (managingBracketId) {
+    return (
+      <AdminCupBracketManager 
+        cupId={managingBracketId} 
+        onClose={() => setManagingBracketId(null)} 
+      />
+    );
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -343,6 +354,14 @@ const AdminCupsManager = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setManagingBracketId(cup.id)}
+                    className="bg-fmf-green text-white hover:bg-fmf-green/90"
+                  >
+                    <Users className="w-4 h-4" />
+                  </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
