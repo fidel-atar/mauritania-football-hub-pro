@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { PlusCircle, Edit, Trash2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import ImageUpload from "./ImageUpload";
 
 interface NewsArticle {
   id: string;
@@ -252,13 +253,10 @@ const AdminNewsManager = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="image">URL de l'image</Label>
-                <Input 
-                  id="image"
+                <ImageUpload
                   value={formData.image}
-                  onChange={(e) => setFormData({...formData, image: e.target.value})}
-                  placeholder="https://example.com/image.jpg"
-                  type="url"
+                  onChange={(value) => setFormData({...formData, image: value})}
+                  label="Image de l'actualité"
                 />
               </div>
             </div>
