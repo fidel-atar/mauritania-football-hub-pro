@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,7 +43,7 @@ const AdminPlayersPanel = () => {
     nationality: "",
     age: "",
     number: "",
-    team_id: "",
+    team_id: "no-team",
     image: "",
     matches: "0",
     goals: "0",
@@ -109,7 +108,7 @@ const AdminPlayersPanel = () => {
       nationality: "",
       age: "",
       number: "",
-      team_id: "",
+      team_id: "no-team",
       image: "",
       matches: "0",
       goals: "0",
@@ -152,7 +151,7 @@ const AdminPlayersPanel = () => {
           nationality: formData.nationality.trim(),
           age: parseInt(formData.age),
           number: parseInt(formData.number),
-          team_id: formData.team_id || null,
+          team_id: formData.team_id === "no-team" ? null : formData.team_id,
           image: formData.image.trim() || null,
           matches: parseInt(formData.matches) || 0,
           goals: parseInt(formData.goals) || 0,
@@ -185,7 +184,7 @@ const AdminPlayersPanel = () => {
       nationality: player.nationality,
       age: player.age.toString(),
       number: player.number.toString(),
-      team_id: player.team_id || "",
+      team_id: player.team_id || "no-team",
       image: player.image || "",
       matches: player.matches.toString(),
       goals: player.goals.toString(),
@@ -208,7 +207,7 @@ const AdminPlayersPanel = () => {
           nationality: formData.nationality.trim(),
           age: parseInt(formData.age),
           number: parseInt(formData.number),
-          team_id: formData.team_id || null,
+          team_id: formData.team_id === "no-team" ? null : formData.team_id,
           image: formData.image.trim() || null,
           matches: parseInt(formData.matches) || 0,
           goals: parseInt(formData.goals) || 0,
@@ -345,7 +344,7 @@ const AdminPlayersPanel = () => {
                     <SelectValue placeholder="Sélectionner une équipe" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Aucune équipe</SelectItem>
+                    <SelectItem value="no-team">Aucune équipe</SelectItem>
                     {teams.map((team) => (
                       <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
                     ))}
