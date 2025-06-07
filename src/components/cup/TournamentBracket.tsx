@@ -1,7 +1,7 @@
-
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export interface CupMatch {
   id: string;
@@ -64,91 +64,104 @@ const TournamentBracket = ({ matches }: TournamentBracketProps) => {
     );
   }
 
-  const MatchCard = ({ match, isFinal = false }: { match: CupMatch; isFinal?: boolean }) => (
-    <Card className={`p-4 transition-shadow border-2 ${isFinal ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-300 w-80' : 'bg-white border-fmf-yellow/30 w-64'} hover:shadow-md`}>
-      {match.home_team && match.away_team ? (
-        <div className="space-y-3">
-          {isFinal && (
-            <div className="text-center mb-4">
-              <Trophy className="w-8 h-8 mx-auto text-yellow-600 mb-2" />
-              <div className="text-sm font-bold text-yellow-700">FINALE</div>
-              {match.match_date && (
-                <div className="text-xs text-gray-600 mt-1">
-                  {new Date(match.match_date).toLocaleDateString('fr-FR')} • 19:00
+  const MatchCard = ({ match, isFinal = false }: { match: CupMatch; isFinal?: boolean }) => {
+    const matchContent = (
+      <Card className={`p-4 transition-shadow border-2 ${isFinal ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-300 w-80' : 'bg-white border-fmf-yellow/30 w-64'} hover:shadow-md ${match.home_team && match.away_team ? 'cursor-pointer hover:shadow-lg' : ''}`}>
+        {match.home_team && match.away_team ? (
+          <div className="space-y-3">
+            {isFinal && (
+              <div className="text-center mb-4">
+                <Trophy className="w-8 h-8 mx-auto text-yellow-600 mb-2" />
+                <div className="text-sm font-bold text-yellow-700">FINALE</div>
+                {match.match_date && (
+                  <div className="text-xs text-gray-600 mt-1">
+                    {new Date(match.match_date).toLocaleDateString('fr-FR')} • 19:00
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Home Team */}
+            <div className="flex justify-between items-center p-3 rounded bg-gray-50">
+              <div className="flex items-center flex-1">
+                <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden mr-3">
+                  <img
+                    src={match.home_team.logo || "/placeholder.svg"}
+                    alt={match.home_team.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder.svg";
+                    }}
+                  />
                 </div>
-              )}
-            </div>
-          )}
-          
-          {/* Home Team */}
-          <div className="flex justify-between items-center p-3 rounded bg-gray-50">
-            <div className="flex items-center flex-1">
-              <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden mr-3">
-                <img
-                  src={match.home_team.logo || "/placeholder.svg"}
-                  alt={match.home_team.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "/placeholder.svg";
-                  }}
-                />
+                <span className={`${match.winner_team_id === match.home_team.id ? "font-bold text-fmf-green" : ""} text-sm font-medium truncate`}>
+                  {match.home_team.name}
+                </span>
               </div>
-              <span className={`${match.winner_team_id === match.home_team.id ? "font-bold text-fmf-green" : ""} text-sm font-medium truncate`}>
-                {match.home_team.name}
+              <span className={`font-mono font-bold text-xl px-3 py-2 rounded min-w-[3rem] text-center ${isFinal ? 'bg-yellow-200 text-yellow-800' : 'bg-fmf-yellow text-fmf-dark'}`}>
+                {match.is_played ? match.home_score : "-"}
               </span>
             </div>
-            <span className={`font-mono font-bold text-xl px-3 py-2 rounded min-w-[3rem] text-center ${isFinal ? 'bg-yellow-200 text-yellow-800' : 'bg-fmf-yellow text-fmf-dark'}`}>
-              {match.is_played ? match.home_score : "-"}
-            </span>
-          </div>
-          
-          <div className="text-center text-xs text-gray-400 font-medium">VS</div>
-          
-          {/* Away Team */}
-          <div className="flex justify-between items-center p-3 rounded bg-gray-50">
-            <div className="flex items-center flex-1">
-              <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden mr-3">
-                <img
-                  src={match.away_team.logo || "/placeholder.svg"}
-                  alt={match.away_team.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "/placeholder.svg";
-                  }}
-                />
+            
+            <div className="text-center text-xs text-gray-400 font-medium">VS</div>
+            
+            {/* Away Team */}
+            <div className="flex justify-between items-center p-3 rounded bg-gray-50">
+              <div className="flex items-center flex-1">
+                <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden mr-3">
+                  <img
+                    src={match.away_team.logo || "/placeholder.svg"}
+                    alt={match.away_team.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder.svg";
+                    }}
+                  />
+                </div>
+                <span className={`${match.winner_team_id === match.away_team.id ? "font-bold text-fmf-green" : ""} text-sm font-medium truncate`}>
+                  {match.away_team.name}
+                </span>
               </div>
-              <span className={`${match.winner_team_id === match.away_team.id ? "font-bold text-fmf-green" : ""} text-sm font-medium truncate`}>
-                {match.away_team.name}
+              <span className={`font-mono font-bold text-xl px-3 py-2 rounded min-w-[3rem] text-center ${isFinal ? 'bg-yellow-200 text-yellow-800' : 'bg-fmf-yellow text-fmf-dark'}`}>
+                {match.is_played ? match.away_score : "-"}
               </span>
             </div>
-            <span className={`font-mono font-bold text-xl px-3 py-2 rounded min-w-[3rem] text-center ${isFinal ? 'bg-yellow-200 text-yellow-800' : 'bg-fmf-yellow text-fmf-dark'}`}>
-              {match.is_played ? match.away_score : "-"}
-            </span>
+            
+            {!isFinal && match.match_date && (
+              <div className="text-xs text-gray-500 mt-2 text-center">
+                {new Date(match.match_date).toLocaleDateString('fr-FR')}
+              </div>
+            )}
+            
+            {match.is_played && (
+              <div className="text-center">
+                <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
+                  ✓ Terminé
+                </span>
+              </div>
+            )}
           </div>
-          
-          {!isFinal && match.match_date && (
-            <div className="text-xs text-gray-500 mt-2 text-center">
-              {new Date(match.match_date).toLocaleDateString('fr-FR')}
-            </div>
-          )}
-          
-          {match.is_played && (
-            <div className="text-center">
-              <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
-                ✓ Terminé
-              </span>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="py-8 text-center text-gray-500 text-sm bg-gray-100 rounded">
-          En attente des équipes qualifiées
-        </div>
-      )}
-    </Card>
-  );
+        ) : (
+          <div className="py-8 text-center text-gray-500 text-sm bg-gray-100 rounded">
+            En attente des équipes qualifiées
+          </div>
+        )}
+      </Card>
+    );
+
+    // Only wrap in Link if both teams are present
+    if (match.home_team && match.away_team) {
+      return (
+        <Link to={`/matches/${match.id}`}>
+          {matchContent}
+        </Link>
+      );
+    }
+
+    return matchContent;
+  };
 
   const ConnectorLine = ({ position, round }: { position: number; round: number }) => {
     if (round >= maxRound) return null;

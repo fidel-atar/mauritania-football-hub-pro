@@ -32,6 +32,7 @@ const App = () => (
               <Route index element={<Index />} />
               {/* English routes */}
               <Route path="matches" element={<MatchDetailPage />} />
+              <Route path="matches/:id" element={<MatchDetailPage />} />
               <Route path="news" element={<NewsPage />} />
               <Route path="news/:id" element={<NewsDetailPage />} />
               <Route path="teams" element={<TeamsPage />} />
