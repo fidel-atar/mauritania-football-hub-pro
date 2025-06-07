@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { PlusCircle, Edit, Trash2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import ImageUpload from "./ImageUpload";
+import AddTeamsButton from "./AddTeamsButton";
 
 interface Team {
   id: string;
@@ -186,13 +188,16 @@ const AdminTeamsManager = () => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Gestion des Équipes ({teams.length} équipes)</CardTitle>
-        <Button 
-          onClick={() => setIsAdding(!isAdding)} 
-          className="bg-fmf-green hover:bg-fmf-green/90"
-        >
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Nouvelle Équipe
-        </Button>
+        <div className="flex gap-2">
+          <AddTeamsButton />
+          <Button 
+            onClick={() => setIsAdding(!isAdding)} 
+            className="bg-fmf-green hover:bg-fmf-green/90"
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Nouvelle Équipe
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {(isAdding || editingId) && (
@@ -239,12 +244,10 @@ const AdminTeamsManager = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="logo">URL du logo</Label>
-                <Input 
-                  id="logo"
+                <ImageUpload
                   value={formData.logo}
-                  onChange={(e) => setFormData({...formData, logo: e.target.value})}
-                  placeholder="URL du logo"
+                  onChange={(value) => setFormData({...formData, logo: value})}
+                  label="Logo de l'équipe"
                 />
               </div>
             </div>
