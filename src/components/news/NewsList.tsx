@@ -75,6 +75,7 @@ const NewsList = () => {
           {news.map((article) => (
             <NewsCard
               key={article.id}
+              id={article.id}
               title={article.title}
               summary={article.content.substring(0, 150) + "..."}
               date={article.created_at}

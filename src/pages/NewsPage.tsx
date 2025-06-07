@@ -127,6 +127,7 @@ const NewsPage = () => {
           {filteredNews.map((article, index) => (
             <React.Fragment key={article.id}>
               <NewsCard
+                id={article.id}
                 title={article.title}
                 summary={article.content.substring(0, 150) + "..."}
                 date={article.created_at}

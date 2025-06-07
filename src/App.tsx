@@ -8,6 +8,7 @@ import Layout from "@/components/layout/Layout";
 import Index from "@/pages/Index";
 import MatchDetailPage from "@/pages/MatchDetailPage";
 import NewsPage from "@/pages/NewsPage";
+import NewsDetailPage from "@/pages/NewsDetailPage";
 import TeamsPage from "@/pages/TeamsPage";
 import TeamPage from "@/pages/TeamPage";
 import CupPage from "@/pages/CupPage";
@@ -32,6 +33,7 @@ const App = () => (
               {/* English routes */}
               <Route path="matches" element={<MatchDetailPage />} />
               <Route path="news" element={<NewsPage />} />
+              <Route path="news/:id" element={<NewsDetailPage />} />
               <Route path="teams" element={<TeamsPage />} />
               <Route path="teams/:id" element={<TeamPage />} />
               <Route path="cup" element={<CupPage />} />
@@ -44,6 +46,7 @@ const App = () => (
               <Route path="equipes" element={<TeamsPage />} />
               <Route path="equipe/:id" element={<TeamPage />} />
               <Route path="actualites" element={<NewsPage />} />
+              <Route path="actualites/:id" element={<NewsDetailPage />} />
               <Route path="coupe" element={<CupPage />} />
               <Route path="classement" element={<StandingsPage />} />
               <Route path="boutique" element={<ShopPage />} />
