@@ -18,12 +18,14 @@ interface MatchEvent {
   description?: string;
   players?: {
     name: string;
+    number: number;
   };
 }
 
 interface Player {
   id: string;
   name: string;
+  number: number;
   team_id: string;
 }
 
@@ -46,11 +48,11 @@ interface Match {
 
 const eventTypes = [
   { value: "goal", label: "But" },
+  { value: "penalty", label: "Penalty" },
+  { value: "own_goal", label: "But contre son camp" },
   { value: "yellow_card", label: "Carton jaune" },
   { value: "red_card", label: "Carton rouge" },
-  { value: "substitution", label: "Remplacement" },
-  { value: "penalty", label: "Penalty" },
-  { value: "own_goal", label: "But contre son camp" }
+  { value: "substitution", label: "Remplacement" }
 ];
 
 const AdminMatchEventsManager = () => {
@@ -81,6 +83,7 @@ const AdminMatchEventsManager = () => {
 
   const fetchMatches = async () => {
     try {
+      console.log('Fetching matches for admin...');
       const { data, error } = await supabase
         .from('matches')
         .select(`
@@ -93,7 +96,10 @@ const AdminMatchEventsManager = () => {
         `)
         .order('match_date', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching matches:', error);
+        throw error;
+      }
 
       const formattedMatches: Match[] = (data || []).map((match) => ({
         id: match.id,
@@ -104,6 +110,7 @@ const AdminMatchEventsManager = () => {
         status: match.status,
       }));
 
+      console.log('Fetched matches:', formattedMatches);
       setMatches(formattedMatches);
     } catch (error) {
       console.error('Error fetching matches:', error);
@@ -117,16 +124,22 @@ const AdminMatchEventsManager = () => {
     if (!selectedMatch) return;
 
     try {
+      console.log('Fetching events for selected match:', selectedMatch);
       const { data, error } = await supabase
         .from('match_events')
         .select(`
           *,
-          players(name)
+          players(name, number)
         `)
         .eq('match_id', selectedMatch)
         .order('minute');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching match events:', error);
+        throw error;
+      }
+      
+      console.log('Fetched match events:', data);
       setEvents(data || []);
     } catch (error) {
       console.error('Error fetching match events:', error);
@@ -141,12 +154,23 @@ const AdminMatchEventsManager = () => {
     if (!match?.home_team?.id || !match?.away_team?.id) return;
 
     try {
+      console.log('Fetching players for match teams:', { 
+        homeTeam: match.home_team.id, 
+        awayTeam: match.away_team.id 
+      });
+      
       const { data, error } = await supabase
         .from('players')
-        .select('id, name, team_id')
-        .in('team_id', [match.home_team.id, match.away_team.id]);
+        .select('id, name, number, team_id')
+        .in('team_id', [match.home_team.id, match.away_team.id])
+        .order('number', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching players:', error);
+        throw error;
+      }
+      
+      console.log('Fetched players:', data);
       setPlayers(data || []);
     } catch (error) {
       console.error('Error fetching players:', error);
@@ -161,6 +185,14 @@ const AdminMatchEventsManager = () => {
     }
 
     try {
+      console.log('Adding new event:', {
+        match_id: selectedMatch,
+        player_id: newEvent.player_id,
+        event_type: newEvent.event_type,
+        minute: parseInt(newEvent.minute),
+        description: newEvent.description || null
+      });
+
       const { error } = await supabase
         .from('match_events')
         .insert({
@@ -171,7 +203,10 @@ const AdminMatchEventsManager = () => {
           description: newEvent.description || null
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding event:', error);
+        throw error;
+      }
 
       toast.success('Événement ajouté avec succès');
       setNewEvent({ player_id: "", event_type: "", minute: "", description: "" });
@@ -187,12 +222,16 @@ const AdminMatchEventsManager = () => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet événement?')) return;
 
     try {
+      console.log('Deleting event:', eventId);
       const { error } = await supabase
         .from('match_events')
         .delete()
         .eq('id', eventId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting event:', error);
+        throw error;
+      }
 
       toast.success('Événement supprimé avec succès');
       fetchMatchEvents();
@@ -205,7 +244,12 @@ const AdminMatchEventsManager = () => {
   const selectedMatchData = matches.find(m => m.id === selectedMatch);
 
   if (loading) {
-    return <div className="text-center py-8">Chargement...</div>;
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fmf-green mx-auto mb-2"></div>
+        <p className="text-gray-600">Chargement...</p>
+      </div>
+    );
   }
 
   return (
@@ -253,6 +297,9 @@ const AdminMatchEventsManager = () => {
                 <p className="text-sm text-gray-600 mt-2">
                   {new Date(selectedMatchData.match_date).toLocaleDateString()} - {selectedMatchData.stadium}
                 </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Joueurs disponibles: {players.length}
+                </p>
               </div>
 
               <div className="flex justify-between items-center">
@@ -266,7 +313,16 @@ const AdminMatchEventsManager = () => {
                 </Button>
               </div>
 
-              {isAddingEvent && (
+              {players.length === 0 && selectedMatch && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <p className="text-yellow-800 text-sm">
+                    Aucun joueur trouvé pour les équipes de ce match. 
+                    Veuillez vous assurer que les joueurs sont bien assignés aux équipes participantes.
+                  </p>
+                </div>
+              )}
+
+              {isAddingEvent && players.length > 0 && (
                 <Card>
                   <CardContent className="pt-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -282,7 +338,7 @@ const AdminMatchEventsManager = () => {
                           <SelectContent>
                             {players.map((player) => (
                               <SelectItem key={player.id} value={player.id}>
-                                {player.name}
+                                #{player.number} {player.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -352,7 +408,10 @@ const AdminMatchEventsManager = () => {
                     <div key={event.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center space-x-3">
                         <span className="font-bold text-fmf-green">{event.minute}'</span>
-                        <span className="font-medium">{event.players?.name}</span>
+                        <span className="font-medium">
+                          {event.players?.number && `#${event.players.number} `}
+                          {event.players?.name || 'Joueur inconnu'}
+                        </span>
                         <span className="text-sm bg-white px-2 py-1 rounded">
                           {eventTypes.find(t => t.value === event.event_type)?.label || event.event_type}
                         </span>

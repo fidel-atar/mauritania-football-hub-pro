@@ -21,11 +21,20 @@ interface EventFormProps {
   onEventAdded: () => void;
 }
 
+const eventTypes = [
+  { value: "goal", label: "But" },
+  { value: "penalty", label: "Penalty" },
+  { value: "own_goal", label: "But contre son camp" },
+  { value: "yellow_card", label: "Carton jaune" },
+  { value: "red_card", label: "Carton rouge" },
+  { value: "substitution", label: "Remplacement" }
+];
+
 const EventForm = ({ matchId, players, onEventAdded }: EventFormProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     player_id: '',
-    event_type: 'goal' as 'goal' | 'yellow_card' | 'red_card',
+    event_type: 'goal' as 'goal' | 'yellow_card' | 'red_card' | 'substitution' | 'penalty' | 'own_goal',
     minute: '',
     description: ''
   });
@@ -37,6 +46,14 @@ const EventForm = ({ matchId, players, onEventAdded }: EventFormProps) => {
     }
 
     try {
+      console.log('Adding event:', {
+        match_id: matchId,
+        player_id: newEvent.player_id,
+        event_type: newEvent.event_type,
+        minute: parseInt(newEvent.minute),
+        description: newEvent.description || null
+      });
+
       const { error } = await supabase
         .from('match_events')
         .insert([{
@@ -47,7 +64,10 @@ const EventForm = ({ matchId, players, onEventAdded }: EventFormProps) => {
           description: newEvent.description || null
         }]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding event:', error);
+        throw error;
+      }
 
       toast.success('Événement ajouté avec succès');
       setNewEvent({ player_id: '', event_type: 'goal', minute: '', description: '' });
@@ -62,7 +82,7 @@ const EventForm = ({ matchId, players, onEventAdded }: EventFormProps) => {
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className="bg-fmf-green hover:bg-fmf-green/90">
           <Plus className="w-4 h-4 mr-2" />
           Ajouter un événement
         </Button>
@@ -74,16 +94,21 @@ const EventForm = ({ matchId, players, onEventAdded }: EventFormProps) => {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">Type d'événement</label>
-            <Select value={newEvent.event_type} onValueChange={(value: 'goal' | 'yellow_card' | 'red_card') => 
-              setNewEvent({ ...newEvent, event_type: value })
-            }>
+            <Select 
+              value={newEvent.event_type} 
+              onValueChange={(value: 'goal' | 'yellow_card' | 'red_card' | 'substitution' | 'penalty' | 'own_goal') => 
+                setNewEvent({ ...newEvent, event_type: value })
+              }
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="goal">But</SelectItem>
-                <SelectItem value="yellow_card">Carton jaune</SelectItem>
-                <SelectItem value="red_card">Carton rouge</SelectItem>
+                {eventTypes.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -127,7 +152,7 @@ const EventForm = ({ matchId, players, onEventAdded }: EventFormProps) => {
             />
           </div>
           
-          <Button onClick={handleAddEvent} className="w-full">
+          <Button onClick={handleAddEvent} className="w-full bg-fmf-green hover:bg-fmf-green/90">
             Ajouter l'événement
           </Button>
         </div>

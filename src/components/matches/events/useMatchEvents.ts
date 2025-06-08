@@ -53,15 +53,23 @@ export const useMatchEvents = (matchId: string, homeTeamId: string, awayTeamId: 
 
   const fetchPlayers = async () => {
     try {
+      console.log('Fetching players for teams:', { homeTeamId, awayTeamId });
       const { data, error } = await supabase
         .from('players')
         .select('id, name, number, team_id')
-        .in('team_id', [homeTeamId, awayTeamId]);
+        .in('team_id', [homeTeamId, awayTeamId])
+        .order('number', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching players:', error);
+        throw error;
+      }
+      
+      console.log('Fetched players:', data);
       setPlayers(data || []);
     } catch (error) {
       console.error('Error fetching players:', error);
+      toast.error('Erreur lors du chargement des joueurs');
     } finally {
       setLoading(false);
     }
@@ -73,12 +81,16 @@ export const useMatchEvents = (matchId: string, homeTeamId: string, awayTeamId: 
     }
 
     try {
+      console.log('Deleting event:', eventId);
       const { error } = await supabase
         .from('match_events')
         .delete()
         .eq('id', eventId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting event:', error);
+        throw error;
+      }
 
       toast.success('Événement supprimé avec succès');
       fetchEvents();
@@ -89,29 +101,35 @@ export const useMatchEvents = (matchId: string, homeTeamId: string, awayTeamId: 
   };
 
   useEffect(() => {
-    fetchEvents();
-    fetchPlayers();
-    
-    // Set up real-time subscription for events
-    const channel = supabase
-      .channel('match-events')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'match_events',
-          filter: `match_id=eq.${matchId}`
-        }, 
-        () => {
-          console.log('Match events updated, refetching...');
-          fetchEvents();
-        }
-      )
-      .subscribe();
+    if (matchId && homeTeamId && awayTeamId) {
+      console.log('Initializing match events for:', { matchId, homeTeamId, awayTeamId });
+      fetchEvents();
+      fetchPlayers();
+      
+      // Set up real-time subscription for events
+      const channel = supabase
+        .channel(`match-events-${matchId}`)
+        .on('postgres_changes', 
+          { 
+            event: '*', 
+            schema: 'public', 
+            table: 'match_events',
+            filter: `match_id=eq.${matchId}`
+          }, 
+          (payload) => {
+            console.log('Match events updated via realtime:', payload);
+            fetchEvents();
+          }
+        )
+        .subscribe((status) => {
+          console.log('Realtime subscription status:', status);
+        });
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+      return () => {
+        console.log('Cleaning up realtime subscription');
+        supabase.removeChannel(channel);
+      };
+    }
   }, [matchId, homeTeamId, awayTeamId]);
 
   return {
