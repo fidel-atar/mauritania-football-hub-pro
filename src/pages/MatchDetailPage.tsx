@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,12 +36,33 @@ const MatchDetailPage = () => {
   const [activeTab, setActiveTab] = useState("summary");
   const [matchData, setMatchData] = useState<MatchData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (id) {
       fetchMatchData(id);
+      checkAdminStatus();
     }
   }, [id]);
+
+  const checkAdminStatus = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data, error } = await supabase
+          .from('admin_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (!error && data) {
+          setIsAdmin(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  };
 
   const fetchMatchData = async (matchId: string) => {
     try {
@@ -315,6 +337,7 @@ const MatchDetailPage = () => {
                 homeTeamId={matchData.home_team.id}
                 awayTeamId={matchData.away_team.id}
                 isFinished={isFinished}
+                isAdmin={isAdmin}
               />
             )}
           </TabsContent>

@@ -44,7 +44,7 @@ const MatchCard = ({ match }: { match: MatchProps }) => {
         </div>
       </div>
 
-      <Link to={`/match/${match.id}`} className="block">
+      <Link to={`/match/${match.id}`} className="block hover:bg-gray-50 rounded-lg p-2 transition-colors">
         <div className="flex items-center justify-between">
           <div className="w-2/5">
             <TeamLink team={match.homeTeam} />
