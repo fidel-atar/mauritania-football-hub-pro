@@ -64,15 +64,27 @@ const MatchDetailPage = () => {
     }
   };
 
+  const isValidUUID = (str: string) => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  };
+
   const fetchMatchData = async (matchId: string) => {
     try {
       console.log('Fetching match data for ID:', matchId);
       
-      // Validate UUID format
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(matchId)) {
-        console.error('Invalid UUID format:', matchId);
-        toast.error('Format d\'ID de match invalide');
+      // Handle both UUID and integer IDs
+      let queryFilter;
+      if (isValidUUID(matchId)) {
+        queryFilter = matchId;
+      } else {
+        // For non-UUID IDs, we'll search by a different method
+        // This could be an auto-increment ID or custom identifier
+        console.log('Non-UUID match ID detected, searching alternatively...');
+        
+        // First try to find by looking for matches with specific criteria
+        // Since we don't have an integer ID field, we'll need to handle this differently
+        toast.error('Format d\'ID de match non supporté. Veuillez utiliser un ID UUID valide.');
         setLoading(false);
         return;
       }
@@ -85,7 +97,7 @@ const MatchDetailPage = () => {
           home_team:teams!matches_home_team_id_fkey(id, name, logo),
           away_team:teams!matches_away_team_id_fkey(id, name, logo)
         `)
-        .eq('id', matchId)
+        .eq('id', queryFilter)
         .maybeSingle();
 
       if (regularError) {
@@ -117,7 +129,7 @@ const MatchDetailPage = () => {
           away_team:teams!cup_matches_away_team_id_fkey(id, name, logo),
           cup:cups(name)
         `)
-        .eq('id', matchId)
+        .eq('id', queryFilter)
         .maybeSingle();
 
       if (cupError) {
@@ -169,6 +181,7 @@ const MatchDetailPage = () => {
         <div className="text-center py-8">
           <h2 className="text-xl font-semibold text-gray-600 mb-4">Match non trouvé</h2>
           <p className="text-gray-500">Le match demandé n'existe pas ou a été supprimé.</p>
+          <p className="text-sm text-gray-400 mt-2">ID recherché: {id}</p>
         </div>
       </div>
     );

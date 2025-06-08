@@ -17,7 +17,7 @@ interface MatchEvent {
   id: string;
   match_id: string;
   player_id: string;
-  event_type: 'goal' | 'yellow_card' | 'red_card';
+  event_type: 'goal' | 'yellow_card' | 'red_card' | 'substitution' | 'penalty' | 'own_goal';
   minute: number;
   description?: string;
   created_at: string;
@@ -126,18 +126,19 @@ const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmi
   };
 
   const groupEventsByType = () => {
-    const goals = events.filter(e => e.event_type === 'goal');
+    const goals = events.filter(e => ['goal', 'penalty', 'own_goal'].includes(e.event_type));
     const yellowCards = events.filter(e => e.event_type === 'yellow_card');
     const redCards = events.filter(e => e.event_type === 'red_card');
+    const substitutions = events.filter(e => e.event_type === 'substitution');
     
-    return { goals, yellowCards, redCards };
+    return { goals, yellowCards, redCards, substitutions };
   };
 
   if (loading) {
     return <div className="text-center py-4">Chargement des événements...</div>;
   }
 
-  const { goals, yellowCards, redCards } = groupEventsByType();
+  const { goals, yellowCards, redCards, substitutions } = groupEventsByType();
 
   return (
     <div className="space-y-6">
@@ -153,11 +154,12 @@ const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmi
       </div>
 
       <Tabs defaultValue="timeline" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="timeline">Chronologie</TabsTrigger>
           <TabsTrigger value="goals">Buts ({goals.length})</TabsTrigger>
           <TabsTrigger value="yellow">Cartons J. ({yellowCards.length})</TabsTrigger>
           <TabsTrigger value="red">Cartons R. ({redCards.length})</TabsTrigger>
+          <TabsTrigger value="substitutions">Rempl. ({substitutions.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="timeline">
@@ -191,6 +193,15 @@ const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmi
           <EventsList 
             events={redCards}
             eventType="red_card"
+            isAdmin={isAdmin}
+            onDelete={handleDeleteEvent}
+          />
+        </TabsContent>
+
+        <TabsContent value="substitutions">
+          <EventsList 
+            events={substitutions}
+            eventType="substitution"
             isAdmin={isAdmin}
             onDelete={handleDeleteEvent}
           />

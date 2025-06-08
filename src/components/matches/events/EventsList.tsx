@@ -91,65 +91,6 @@ const EventsList = ({ events, eventType = 'all', isAdmin = false, onDelete }: Ev
     }
   };
 
-  const renderSpecializedCard = (event: MatchEvent) => {
-    if (eventType === 'goal' || eventType === 'penalty' || eventType === 'own_goal') {
-      return (
-        <Card key={event.id} className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              {getEventIcon(event.event_type)}
-              <div>
-                <div className="font-medium">#{event.player.number} {event.player.name}</div>
-                <div className="text-sm text-gray-600">{event.minute}' minute</div>
-                {event.description && <div className="text-sm">{event.description}</div>}
-                <div className="text-xs text-gray-500 mt-1">
-                  {getEventLabel(event.event_type)}
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      );
-    }
-
-    if (eventType === 'yellow_card' || eventType === 'red_card') {
-      return (
-        <Card key={event.id} className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              {getEventIcon(event.event_type)}
-              <div>
-                <div className="font-medium">#{event.player.number} {event.player.name}</div>
-                <div className="text-sm text-gray-600">{event.minute}' minute</div>
-                {event.description && <div className="text-sm">{event.description}</div>}
-              </div>
-            </div>
-          </div>
-        </Card>
-      );
-    }
-
-    if (eventType === 'substitution') {
-      return (
-        <Card key={event.id} className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              {getEventIcon(event.event_type)}
-              <div>
-                <div className="font-medium">#{event.player.number} {event.player.name}</div>
-                <div className="text-sm text-gray-600">{event.minute}' minute</div>
-                {event.description && <div className="text-sm">{event.description}</div>}
-                <div className="text-xs text-gray-500 mt-1">Remplacement</div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      );
-    }
-
-    return <EventCard key={event.id} event={event} isAdmin={isAdmin} onDelete={onDelete} />;
-  };
-
   if (filteredEvents.length === 0) {
     return (
       <p className="text-gray-500 text-center py-8">{getEmptyMessage()}</p>
@@ -158,7 +99,14 @@ const EventsList = ({ events, eventType = 'all', isAdmin = false, onDelete }: Ev
 
   return (
     <div className="space-y-3">
-      {filteredEvents.map(renderSpecializedCard)}
+      {filteredEvents.map(event => (
+        <EventCard 
+          key={event.id} 
+          event={event} 
+          isAdmin={isAdmin} 
+          onDelete={onDelete} 
+        />
+      ))}
     </div>
   );
 };
