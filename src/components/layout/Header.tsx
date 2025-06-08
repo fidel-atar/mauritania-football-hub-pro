@@ -34,9 +34,9 @@ const Header = () => {
             <CartIcon />
             {isAdmin && (
               <Link to="/admin">
-                <Button variant="outline" size="sm">
+                <Button variant="default" className="bg-fmf-green hover:bg-fmf-green/90 text-white">
                   <Settings className="w-4 h-4 mr-2" />
-                  Admin
+                  Administration
                 </Button>
               </Link>
             )}
@@ -47,7 +47,7 @@ const Header = () => {
             <CartIcon />
             {isAdmin && (
               <Link to="/admin">
-                <Button variant="outline" size="sm">
+                <Button variant="default" size="sm" className="bg-fmf-green hover:bg-fmf-green/90 text-white">
                   <Settings className="w-4 h-4" />
                 </Button>
               </Link>
@@ -100,6 +100,16 @@ const Header = () => {
               >
                 Boutique
               </Link>
+              {isAdmin && (
+                <Link 
+                  to="/admin" 
+                  className="text-fmf-green font-semibold hover:text-fmf-green/90 transition-colors border-t pt-4"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Settings className="w-4 h-4 inline mr-2" />
+                  Administration
+                </Link>
+              )}
             </nav>
           </div>
         )}
