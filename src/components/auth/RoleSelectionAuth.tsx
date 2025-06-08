@@ -7,13 +7,13 @@ import UserSignup from './UserSignup';
 import AdminRequestForm from './AdminRequestForm';
 
 type AuthMode = 'selection' | 'user_signup' | 'admin_request';
-type RoleType = 'user' | 'admin_matches' | 'admin_teams' | 'admin_players' | 'super_admin';
+type AppRoleType = 'user' | 'admin_matches' | 'admin_teams' | 'admin_players' | 'super_admin';
 
 const RoleSelectionAuth = () => {
   const [authMode, setAuthMode] = useState<AuthMode>('selection');
-  const [selectedRole, setSelectedRole] = useState<RoleType | null>(null);
+  const [selectedRole, setSelectedRole] = useState<AppRoleType | null>(null);
 
-  const handleRoleSelect = (role: RoleType) => {
+  const handleRoleSelect = (role: AppRoleType) => {
     setSelectedRole(role);
     if (role === 'user') {
       setAuthMode('user_signup');

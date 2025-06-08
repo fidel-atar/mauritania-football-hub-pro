@@ -11,10 +11,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-type RoleType = 'admin_matches' | 'admin_teams' | 'admin_players' | 'super_admin';
+type AdminRoleType = 'admin_matches' | 'admin_teams' | 'admin_players' | 'super_admin';
 
 interface AdminRequestFormProps {
-  role: RoleType;
+  role: AdminRoleType;
   onBack: () => void;
 }
 
@@ -29,7 +29,7 @@ const AdminRequestForm = ({ role, onBack }: AdminRequestFormProps) => {
   const [success, setSuccess] = useState(false);
   const { signUp } = useAuth();
 
-  const getRoleInfo = (role: RoleType) => {
+  const getRoleInfo = (role: AdminRoleType) => {
     switch (role) {
       case 'admin_matches':
         return {
