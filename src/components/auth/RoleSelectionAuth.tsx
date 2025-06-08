@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,7 +30,7 @@ const RoleSelectionAuth = () => {
     return <UserSignup onBack={handleBack} />;
   }
 
-  if (authMode === 'admin_request' && selectedRole) {
+  if (authMode === 'admin_request' && selectedRole && selectedRole !== 'user') {
     return <AdminRequestForm role={selectedRole} onBack={handleBack} />;
   }
 
