@@ -74,7 +74,17 @@ const AdminMatchEventsManager = () => {
         .order('match_date', { ascending: false });
 
       if (error) throw error;
-      setMatches(data || []);
+      
+      // Transform the data to match the expected interface
+      const transformedData = data?.map(match => ({
+        id: match.id,
+        match_date: match.match_date,
+        status: match.status,
+        home_team: Array.isArray(match.home_team) ? match.home_team[0] : match.home_team,
+        away_team: Array.isArray(match.away_team) ? match.away_team[0] : match.away_team
+      })) || [];
+      
+      setMatches(transformedData);
     } catch (error) {
       console.error('Error fetching matches:', error);
       toast.error('Erreur lors du chargement des matchs');
@@ -110,12 +120,24 @@ const AdminMatchEventsManager = () => {
       const match = matches.find(m => m.id === selectedMatch);
       if (!match) return;
 
+      const { data: homeTeamData, error: homeError } = await supabase
+        .from('teams')
+        .select('id')
+        .eq('name', match.home_team.name)
+        .single();
+
+      const { data: awayTeamData, error: awayError } = await supabase
+        .from('teams')
+        .select('id')
+        .eq('name', match.away_team.name)
+        .single();
+
+      if (homeError || awayError) throw homeError || awayError;
+
       const { data, error } = await supabase
         .from('players')
         .select('id, name, number, team_id')
-        .in('team_id', [
-          // We need to get team IDs from the match
-        ]);
+        .in('team_id', [homeTeamData.id, awayTeamData.id]);
 
       if (error) throw error;
       setPlayers(data || []);
