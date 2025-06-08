@@ -26,7 +26,7 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
   }
 
   // Check if user has admin privileges
-  const isAdmin = profile.role && ['admin_matches', 'admin_teams', 'admin_players', 'super_admin'].includes(profile.role);
+  const isAdmin = profile.role && ['admin_general', 'super_admin'].includes(profile.role);
   
   if (!isAdmin) {
     return (
@@ -42,7 +42,7 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
             Vous n'avez pas les permissions nécessaires pour accéder à cette section d'administration.
           </p>
           <p className="text-sm text-gray-500">
-            Rôle actuel: <span className="font-medium">{profile.role}</span>
+            Rôle actuel: <span className="font-medium">{profile.role === 'user' ? 'Utilisateur' : profile.role}</span>
           </p>
         </div>
       </div>

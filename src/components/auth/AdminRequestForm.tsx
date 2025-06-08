@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-type AdminRoleType = 'admin_matches' | 'admin_teams' | 'admin_players' | 'super_admin';
+type AdminRoleType = 'admin_general' | 'super_admin';
 
 interface AdminRequestFormProps {
   role: AdminRoleType;
@@ -31,26 +31,12 @@ const AdminRequestForm = ({ role, onBack }: AdminRequestFormProps) => {
 
   const getRoleInfo = (role: AdminRoleType) => {
     switch (role) {
-      case 'admin_matches':
+      case 'admin_general':
         return {
-          title: 'Admin Matchs',
+          title: 'Admin Général',
           icon: Shield,
           color: 'orange',
-          description: 'Gestion des matchs et événements'
-        };
-      case 'admin_teams':
-        return {
-          title: 'Admin Équipes',
-          icon: Shield,
-          color: 'purple',
-          description: 'Gestion des équipes'
-        };
-      case 'admin_players':
-        return {
-          title: 'Admin Joueurs',
-          icon: Shield,
-          color: 'green',
-          description: 'Gestion des joueurs'
+          description: 'Gestion des équipes et des matchs'
         };
       case 'super_admin':
         return {
@@ -110,7 +96,7 @@ const AdminRequestForm = ({ role, onBack }: AdminRequestFormProps) => {
     setLoading(true);
     
     try {
-      // First create the user account
+      // Create the user account
       const { error: signUpError } = await signUp(email, password, fullName);
       
       if (signUpError) {
@@ -122,7 +108,7 @@ const AdminRequestForm = ({ role, onBack }: AdminRequestFormProps) => {
         return;
       }
 
-      // Wait a moment for the profile to be created
+      // Wait for the profile to be created
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Get the current user

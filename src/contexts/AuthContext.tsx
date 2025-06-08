@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-type RoleType = 'user' | 'admin_matches' | 'admin_teams' | 'admin_players' | 'super_admin';
+type RoleType = 'user' | 'admin_general' | 'super_admin';
 
 interface UserProfile {
   id: string;
@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const isAdmin = profile?.role && ['admin_matches', 'admin_teams', 'admin_players', 'super_admin'].includes(profile.role);
+  const isAdmin = profile?.role && ['admin_general', 'super_admin'].includes(profile.role);
   const adminRole = isAdmin ? profile?.role || null : null;
 
   const fetchProfile = async (userId: string) => {
