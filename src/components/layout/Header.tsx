@@ -55,8 +55,10 @@ const Header = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuSeparator />
                   <div className="px-2 py-1.5 text-sm text-gray-500">
+                    {profile?.full_name || 'Mon Compte'}
+                  </div>
+                  <div className="px-2 py-1.5 text-xs text-gray-400">
                     {profile?.role === 'user' ? 'Utilisateur' : 
                      profile?.role === 'admin_general' ? 'Admin Général' : 
                      profile?.role === 'super_admin' ? 'Super Admin' : 'Utilisateur'}
