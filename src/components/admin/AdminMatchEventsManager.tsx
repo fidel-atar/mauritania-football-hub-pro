@@ -1,12 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Target, Trash2, Edit } from "lucide-react";
+import { Plus, Target, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -76,13 +74,19 @@ const AdminMatchEventsManager = () => {
       if (error) throw error;
       
       // Transform the data to match the expected interface
-      const transformedData = data?.map(match => ({
+      const transformedData: Match[] = (data || []).map(match => ({
         id: match.id,
         match_date: match.match_date,
         status: match.status,
-        home_team: Array.isArray(match.home_team) ? match.home_team[0] : match.home_team,
-        away_team: Array.isArray(match.away_team) ? match.away_team[0] : match.away_team
-      })) || [];
+        home_team: {
+          name: match.home_team?.name || '',
+          logo: match.home_team?.logo || ''
+        },
+        away_team: {
+          name: match.away_team?.name || '',
+          logo: match.away_team?.logo || ''
+        }
+      }));
       
       setMatches(transformedData);
     } catch (error) {
