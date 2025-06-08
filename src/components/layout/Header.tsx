@@ -22,11 +22,11 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <img 
-              src="/lovable-uploads/ab2b0c67-0270-47b7-958a-30c825d9a30d.png" 
-              alt="FMF Logo" 
-              className="h-10 w-10"
+              src="/lovable-uploads/68710224-6f46-49c9-b634-136af2bbdd99.png" 
+              alt="Super D1 Logo" 
+              className="h-12 w-12 object-contain"
             />
-            <span className="font-bold text-xl text-fmf-green">FMF</span>
+            <span className="font-bold text-xl text-fmf-green">Super D1</span>
           </Link>
 
           {/* Desktop Navigation */}
