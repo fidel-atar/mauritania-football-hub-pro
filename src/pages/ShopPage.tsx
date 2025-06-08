@@ -8,10 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useCart } from "@/hooks/useCart";
+import { toast } from "sonner";
 
 const ShopPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | undefined>(undefined);
+  const { addToCart } = useCart();
 
   // Fetch products from Supabase
   const { data: products = [], isLoading } = useQuery({
@@ -40,6 +43,17 @@ const ShopPage = () => {
     const matchesCategory = !activeCategory || product.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const handleAddToCart = async (productId: string, productName: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error('Vous devez être connecté pour ajouter au panier');
+      return;
+    }
+
+    await addToCart(productId);
+  };
 
   if (isLoading) {
     return (
@@ -74,6 +88,7 @@ const ShopPage = () => {
               variant={activeCategory === undefined ? "default" : "outline"}
               size="sm"
               onClick={() => setActiveCategory(undefined)}
+              className={activeCategory === undefined ? "bg-fmf-green hover:bg-fmf-green/90" : ""}
             >
               Tous
             </Button>
@@ -83,6 +98,7 @@ const ShopPage = () => {
                 variant={activeCategory === category ? "default" : "outline"}
                 size="sm"
                 onClick={() => setActiveCategory(category)}
+                className={activeCategory === category ? "bg-fmf-green hover:bg-fmf-green/90" : ""}
               >
                 {category}
               </Button>
@@ -126,7 +142,10 @@ const ShopPage = () => {
                   </span>
                   <Badge variant="secondary">{product.category}</Badge>
                 </div>
-                <Button className="w-full bg-fmf-green hover:bg-fmf-green/90">
+                <Button 
+                  className="w-full bg-fmf-green hover:bg-fmf-green/90"
+                  onClick={() => handleAddToCart(product.id, product.name)}
+                >
                   <ShoppingCart className="w-4 h-4 mr-2" />
                   Ajouter au panier
                 </Button>

@@ -14,6 +14,8 @@ import TeamPage from "@/pages/TeamPage";
 import CupPage from "@/pages/CupPage";
 import StandingsPage from "@/pages/StandingsPage";
 import ShopPage from "@/pages/ShopPage";
+import CheckoutPage from "@/pages/CheckoutPage";
+import OrderSuccessPage from "@/pages/OrderSuccessPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import LiveScoresPage from "@/pages/LiveScoresPage";
 import CalendarPage from "@/pages/CalendarPage";
@@ -41,6 +43,8 @@ const App = () => (
               <Route path="cup" element={<CupPage />} />
               <Route path="standings" element={<StandingsPage />} />
               <Route path="shop" element={<ShopPage />} />
+              <Route path="checkout" element={<CheckoutPage />} />
+              <Route path="order-success" element={<OrderSuccessPage />} />
               <Route path="live" element={<LiveScoresPage />} />
               <Route path="calendar" element={<CalendarPage />} />
               <Route path="statistics" element={<StatisticsPage />} />
@@ -52,6 +56,8 @@ const App = () => (
               <Route path="coupe" element={<CupPage />} />
               <Route path="classement" element={<StandingsPage />} />
               <Route path="boutique" element={<ShopPage />} />
+              <Route path="commande" element={<CheckoutPage />} />
+              <Route path="commande-reussie" element={<OrderSuccessPage />} />
               <Route path="calendrier" element={<CalendarPage />} />
               <Route path="statistiques" element={<StatisticsPage />} />
             </Route>

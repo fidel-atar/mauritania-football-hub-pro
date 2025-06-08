@@ -1,37 +1,105 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Settings, Menu } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Menu, X } from "lucide-react";
+import { useState } from "react";
+import CartIcon from "@/components/shop/CartIcon";
 
 const Header = () => {
-  const isMobile = useIsMobile();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   return (
-    <header className="bg-fmf-green text-white py-3 md:py-4 sticky top-0 z-40 shadow-lg">
-      <div className="container mx-auto flex justify-between items-center px-3 md:px-4">
-        <Link to="/" className="flex items-center space-x-2 md:space-x-3">
-          <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center p-1">
+    <header className="bg-white shadow-sm border-b">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2">
             <img 
-              src="/lovable-uploads/c3f543fe-e10f-4b4a-8e3a-a88246d17aa6.png" 
-              alt="Super D1 Logo" 
-              className="w-full h-full object-contain"
+              src="/lovable-uploads/ab2b0c67-0270-47b7-958a-30c825d9a30d.png" 
+              alt="FMF Logo" 
+              className="h-10 w-10"
             />
+            <span className="font-bold text-xl text-fmf-green">FMF</span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link to="/" className="text-gray-700 hover:text-fmf-green transition-colors">
+              Accueil
+            </Link>
+            <Link to="/actualites" className="text-gray-700 hover:text-fmf-green transition-colors">
+              Actualités
+            </Link>
+            <Link to="/equipes" className="text-gray-700 hover:text-fmf-green transition-colors">
+              Équipes
+            </Link>
+            <Link to="/classement" className="text-gray-700 hover:text-fmf-green transition-colors">
+              Classement
+            </Link>
+            <Link to="/boutique" className="text-gray-700 hover:text-fmf-green transition-colors">
+              Boutique
+            </Link>
+            <CartIcon />
+          </nav>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center gap-2">
+            <CartIcon />
+            <button 
+              onClick={toggleMenu}
+              className="text-gray-700 hover:text-fmf-green transition-colors"
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
-          <span className="font-bold text-base md:text-lg">Super D1</span>
-        </Link>
-        
-        <Link to="/admin">
-          <Button 
-            variant="outline" 
-            size={isMobile ? "sm" : "default"}
-            className="bg-white text-fmf-green hover:bg-gray-100 text-xs md:text-sm"
-          >
-            <Settings className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-            Admin
-          </Button>
-        </Link>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4 border-t">
+            <nav className="flex flex-col space-y-4">
+              <Link 
+                to="/" 
+                className="text-gray-700 hover:text-fmf-green transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Accueil
+              </Link>
+              <Link 
+                to="/actualites" 
+                className="text-gray-700 hover:text-fmf-green transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Actualités
+              </Link>
+              <Link 
+                to="/equipes" 
+                className="text-gray-700 hover:text-fmf-green transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Équipes
+              </Link>
+              <Link 
+                to="/classement" 
+                className="text-gray-700 hover:text-fmf-green transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Classement
+              </Link>
+              <Link 
+                to="/boutique" 
+                className="text-gray-700 hover:text-fmf-green transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Boutique
+              </Link>
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );
