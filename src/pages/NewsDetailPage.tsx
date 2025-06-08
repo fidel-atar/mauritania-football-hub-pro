@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar, ArrowLeft, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import NewsReactions from "@/components/news/NewsReactions";
+import NewsComments from "@/components/news/NewsComments";
 
 interface NewsArticle {
   id: string;
@@ -89,7 +91,7 @@ const NewsDetailPage = () => {
         </Button>
       </div>
 
-      <Card>
+      <Card className="mb-6">
         <CardContent className="p-0">
           {article.image && (
             <img 
@@ -131,7 +133,19 @@ const NewsDetailPage = () => {
                 {article.content}
               </div>
             </div>
+
+            {/* Reactions Section */}
+            <div className="border-t border-gray-200 mt-6 pt-4">
+              <NewsReactions newsId={article.id} />
+            </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Comments Section */}
+      <Card>
+        <CardContent className="p-6">
+          <NewsComments newsId={article.id} />
         </CardContent>
       </Card>
     </div>
