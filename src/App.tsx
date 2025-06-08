@@ -20,7 +20,6 @@ import AdminDashboard from "@/pages/AdminDashboard";
 import LiveScoresPage from "@/pages/LiveScoresPage";
 import CalendarPage from "@/pages/CalendarPage";
 import StatisticsPage from "@/pages/StatisticsPage";
-import RoleSelectionAuth from "@/components/auth/RoleSelectionAuth";
 
 const queryClient = new QueryClient();
 
@@ -61,8 +60,6 @@ const App = () => (
               <Route path="commande-reussie" element={<OrderSuccessPage />} />
               <Route path="calendrier" element={<CalendarPage />} />
               <Route path="statistiques" element={<StatisticsPage />} />
-              {/* Auth route */}
-              <Route path="auth" element={<RoleSelectionAuth />} />
             </Route>
             {/* Admin routes - outside of main layout */}
             <Route path="admin" element={<AdminDashboard />} />

@@ -9,42 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      admin_role_requests: {
-        Row: {
-          id: string
-          reason: string | null
-          requested_at: string | null
-          requested_role: Database["public"]["Enums"]["role_type"]
-          review_notes: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: Database["public"]["Enums"]["request_status"] | null
-          user_id: string | null
-        }
-        Insert: {
-          id?: string
-          reason?: string | null
-          requested_at?: string | null
-          requested_role: Database["public"]["Enums"]["role_type"]
-          review_notes?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: Database["public"]["Enums"]["request_status"] | null
-          user_id?: string | null
-        }
-        Update: {
-          id?: string
-          reason?: string | null
-          requested_at?: string | null
-          requested_role?: Database["public"]["Enums"]["role_type"]
-          review_notes?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: Database["public"]["Enums"]["request_status"] | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       admin_roles: {
         Row: {
           created_at: string | null
@@ -608,33 +572,6 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
-        Row: {
-          created_at: string | null
-          email: string
-          full_name: string | null
-          id: string
-          role: Database["public"]["Enums"]["role_type"] | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          full_name?: string | null
-          id: string
-          role?: Database["public"]["Enums"]["role_type"] | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          full_name?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["role_type"] | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       standings: {
         Row: {
           created_at: string | null
@@ -735,32 +672,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_user_role: {
-        Args: { user_id?: string }
-        Returns: Database["public"]["Enums"]["role_type"]
-      }
       is_admin: {
         Args: Record<PropertyKey, never> | { user_id?: string }
-        Returns: boolean
-      }
-      is_admin_of_type: {
-        Args: {
-          admin_type: Database["public"]["Enums"]["role_type"]
-          user_id?: string
-        }
         Returns: boolean
       }
     }
     Enums: {
       admin_role: "super_admin" | "admin" | "moderator"
       match_status: "scheduled" | "live" | "finished"
-      request_status: "pending" | "approved" | "rejected"
-      role_type:
-        | "user"
-        | "admin_matches"
-        | "admin_teams"
-        | "admin_players"
-        | "super_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -878,14 +797,6 @@ export const Constants = {
     Enums: {
       admin_role: ["super_admin", "admin", "moderator"],
       match_status: ["scheduled", "live", "finished"],
-      request_status: ["pending", "approved", "rejected"],
-      role_type: [
-        "user",
-        "admin_matches",
-        "admin_teams",
-        "admin_players",
-        "super_admin",
-      ],
     },
   },
 } as const
