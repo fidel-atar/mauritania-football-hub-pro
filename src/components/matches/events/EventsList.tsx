@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card } from "@/components/ui/card";
-import { Target, Users } from "lucide-react";
+import { Target } from "lucide-react";
 import EventCard from "./EventCard";
 
 interface Player {
@@ -15,7 +15,7 @@ interface MatchEvent {
   id: string;
   match_id: string;
   player_id: string;
-  event_type: 'goal' | 'yellow_card' | 'red_card' | 'substitution' | 'penalty' | 'own_goal';
+  event_type: 'goal' | 'yellow_card' | 'red_card';
   minute: number;
   description?: string;
   created_at: string;
@@ -24,7 +24,7 @@ interface MatchEvent {
 
 interface EventsListProps {
   events: MatchEvent[];
-  eventType?: 'goal' | 'yellow_card' | 'red_card' | 'substitution' | 'penalty' | 'own_goal' | 'all';
+  eventType?: 'goal' | 'yellow_card' | 'red_card' | 'all';
   isAdmin?: boolean;
   onDelete?: (eventId: string) => void;
 }
@@ -42,53 +42,64 @@ const EventsList = ({ events, eventType = 'all', isAdmin = false, onDelete }: Ev
         return 'Aucun carton jaune';
       case 'red_card':
         return 'Aucun carton rouge';
-      case 'substitution':
-        return 'Aucun remplacement';
-      case 'penalty':
-        return 'Aucun penalty';
-      case 'own_goal':
-        return 'Aucun but contre son camp';
       default:
         return 'Aucun événement enregistré';
     }
   };
 
-  const getEventIcon = (eventType: string) => {
-    switch (eventType) {
-      case 'goal':
-        return <Target className="w-6 h-6 text-green-600" />;
-      case 'own_goal':
-        return <Target className="w-6 h-6 text-red-600" />;
-      case 'penalty':
-        return <Target className="w-6 h-6 text-blue-600" />;
-      case 'substitution':
-        return <Users className="w-6 h-6 text-gray-600" />;
-      case 'yellow_card':
-        return <div className="w-6 h-4 bg-yellow-500 rounded" />;
-      case 'red_card':
-        return <div className="w-6 h-4 bg-red-500 rounded" />;
-      default:
-        return null;
+  const renderSpecializedCard = (event: MatchEvent) => {
+    if (eventType === 'goal') {
+      return (
+        <Card key={event.id} className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Target className="w-6 h-6 text-green-600" />
+              <div>
+                <div className="font-medium">#{event.player.number} {event.player.name}</div>
+                <div className="text-sm text-gray-600">{event.minute}' minute</div>
+                {event.description && <div className="text-sm">{event.description}</div>}
+              </div>
+            </div>
+          </div>
+        </Card>
+      );
     }
-  };
 
-  const getEventLabel = (eventType: string) => {
-    switch (eventType) {
-      case 'goal':
-        return 'But';
-      case 'own_goal':
-        return 'But contre son camp';
-      case 'penalty':
-        return 'Penalty';
-      case 'yellow_card':
-        return 'Carton jaune';
-      case 'red_card':
-        return 'Carton rouge';
-      case 'substitution':
-        return 'Remplacement';
-      default:
-        return eventType;
+    if (eventType === 'yellow_card') {
+      return (
+        <Card key={event.id} className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-4 bg-yellow-500 rounded" />
+              <div>
+                <div className="font-medium">#{event.player.number} {event.player.name}</div>
+                <div className="text-sm text-gray-600">{event.minute}' minute</div>
+                {event.description && <div className="text-sm">{event.description}</div>}
+              </div>
+            </div>
+          </div>
+        </Card>
+      );
     }
+
+    if (eventType === 'red_card') {
+      return (
+        <Card key={event.id} className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-4 bg-red-500 rounded" />
+              <div>
+                <div className="font-medium">#{event.player.number} {event.player.name}</div>
+                <div className="text-sm text-gray-600">{event.minute}' minute</div>
+                {event.description && <div className="text-sm">{event.description}</div>}
+              </div>
+            </div>
+          </div>
+        </Card>
+      );
+    }
+
+    return <EventCard key={event.id} event={event} isAdmin={isAdmin} onDelete={onDelete} />;
   };
 
   if (filteredEvents.length === 0) {
@@ -99,14 +110,7 @@ const EventsList = ({ events, eventType = 'all', isAdmin = false, onDelete }: Ev
 
   return (
     <div className="space-y-3">
-      {filteredEvents.map(event => (
-        <EventCard 
-          key={event.id} 
-          event={event} 
-          isAdmin={isAdmin} 
-          onDelete={onDelete} 
-        />
-      ))}
+      {filteredEvents.map(renderSpecializedCard)}
     </div>
   );
 };
