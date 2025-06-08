@@ -140,7 +140,10 @@ const MatchDetailPage = () => {
   if (loading) {
     return (
       <div className="page-container pb-20">
-        <div className="text-center py-8">Chargement du match...</div>
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fmf-green mx-auto mb-2"></div>
+          <p className="text-gray-600">Chargement du match...</p>
+        </div>
       </div>
     );
   }
@@ -148,7 +151,10 @@ const MatchDetailPage = () => {
   if (!matchData) {
     return (
       <div className="page-container pb-20">
-        <div className="text-center py-8">Match non trouvé</div>
+        <div className="text-center py-8">
+          <h2 className="text-xl font-semibold text-gray-600 mb-4">Match non trouvé</h2>
+          <p className="text-gray-500">Le match demandé n'existe pas ou a été supprimé.</p>
+        </div>
       </div>
     );
   }

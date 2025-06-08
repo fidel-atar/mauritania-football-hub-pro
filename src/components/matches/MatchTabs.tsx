@@ -36,19 +36,19 @@ interface MatchTabsProps {
 }
 
 const MatchTabs = ({ matchData, isAdmin }: MatchTabsProps) => {
-  const [activeTab, setActiveTab] = useState("summary");
-  const isFinished = matchData.status === 'finished' || (matchData.is_cup_match && matchData.home_score !== null);
+  const [activeTab, setActiveTab] = useState("events");
+  const isFinished = matchData.status === 'finished' || matchData.status === 'completed' || (matchData.is_cup_match && matchData.home_score !== null);
 
   return (
-    <Tabs defaultValue="summary" value={activeTab} onValueChange={setActiveTab}>
+    <Tabs defaultValue="events" value={activeTab} onValueChange={setActiveTab}>
       <TabsList className="w-full justify-start overflow-x-auto p-0 bg-white border-b">
-        <TabsTrigger value="summary" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-fmf-green data-[state=active]:shadow-none rounded-none">
-          <Info className="w-4 h-4 mr-2" />
-          Résumé
-        </TabsTrigger>
         <TabsTrigger value="events" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-fmf-green data-[state=active]:shadow-none rounded-none">
           <Zap className="w-4 h-4 mr-2" />
           Événements
+        </TabsTrigger>
+        <TabsTrigger value="summary" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-fmf-green data-[state=active]:shadow-none rounded-none">
+          <Info className="w-4 h-4 mr-2" />
+          Résumé
         </TabsTrigger>
         <TabsTrigger value="timeline" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-fmf-green data-[state=active]:shadow-none rounded-none">
           <Clock className="w-4 h-4 mr-2" />
@@ -64,13 +64,9 @@ const MatchTabs = ({ matchData, isAdmin }: MatchTabsProps) => {
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="summary">
-        <MatchSummaryTab matchData={matchData} />
-      </TabsContent>
-
       <TabsContent value="events">
         <div className="p-6">
-          {matchData.home_team?.id && matchData.away_team?.id && (
+          {matchData.home_team?.id && matchData.away_team?.id ? (
             <MatchEventManager
               matchId={matchData.id}
               homeTeamId={matchData.home_team.id}
@@ -78,8 +74,16 @@ const MatchTabs = ({ matchData, isAdmin }: MatchTabsProps) => {
               isFinished={isFinished}
               isAdmin={isAdmin}
             />
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Événements indisponibles - équipes non définies</p>
+            </div>
           )}
         </div>
+      </TabsContent>
+
+      <TabsContent value="summary">
+        <MatchSummaryTab matchData={matchData} />
       </TabsContent>
 
       <TabsContent value="timeline">
