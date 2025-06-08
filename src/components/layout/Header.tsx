@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, Settings } from "lucide-react";
@@ -34,9 +33,8 @@ const Header = () => {
             <CartIcon />
             {isAdmin && (
               <Link to="/admin">
-                <Button variant="default" className="bg-fmf-green hover:bg-fmf-green/90 text-white">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Administration
+                <Button variant="outline" size="sm" className="relative">
+                  <Settings className="w-4 h-4" />
                 </Button>
               </Link>
             )}
@@ -47,7 +45,7 @@ const Header = () => {
             <CartIcon />
             {isAdmin && (
               <Link to="/admin">
-                <Button variant="default" size="sm" className="bg-fmf-green hover:bg-fmf-green/90 text-white">
+                <Button variant="outline" size="sm" className="relative">
                   <Settings className="w-4 h-4" />
                 </Button>
               </Link>
