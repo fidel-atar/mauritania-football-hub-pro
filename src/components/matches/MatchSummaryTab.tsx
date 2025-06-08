@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Trophy } from "lucide-react";
+import { Trophy, Info } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 interface MatchData {
@@ -93,6 +93,18 @@ const MatchSummaryTab = ({ matchData }: MatchSummaryTabProps) => {
               <p>{matchData.cup_name} - {getRoundName(matchData.round || 1)}</p>
             </div>
           )}
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <Info className="w-5 h-5 text-blue-600 mr-2" />
+              <div>
+                <h4 className="font-medium text-blue-800">Informations du match</h4>
+                <p className="text-sm text-blue-600">
+                  Les détails et événements du match seront disponibles une fois que le match aura commencé.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

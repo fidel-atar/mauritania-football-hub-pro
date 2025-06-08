@@ -56,11 +56,29 @@ const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmi
         </div>
       )}
 
-      <EventTabs 
-        events={events}
-        isAdmin={isAdmin}
-        onDelete={handleDeleteEvent}
-      />
+      {events.length === 0 && !loading ? (
+        <div className="text-center py-12">
+          <div className="bg-gray-50 rounded-lg p-8">
+            <h4 className="text-lg font-medium text-gray-600 mb-2">
+              Aucune information disponible
+            </h4>
+            <p className="text-gray-500 mb-4">
+              Aucun événement n'a encore été enregistré pour ce match.
+            </p>
+            {isAdmin && players.length > 0 && (
+              <p className="text-sm text-gray-400">
+                Utilisez le bouton "Ajouter un événement" ci-dessus pour commencer à enregistrer les événements du match.
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <EventTabs 
+          events={events}
+          isAdmin={isAdmin}
+          onDelete={handleDeleteEvent}
+        />
+      )}
     </div>
   );
 };
