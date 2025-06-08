@@ -35,9 +35,13 @@ const MatchDetailPage = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    if (id) {
+    if (id && id !== 'undefined' && id !== 'NaN' && id !== 'null') {
       fetchMatchData(id);
       checkAdminStatus();
+    } else {
+      console.error('Invalid match ID:', id);
+      toast.error('ID de match invalide');
+      setLoading(false);
     }
   }, [id]);
 
@@ -62,6 +66,17 @@ const MatchDetailPage = () => {
 
   const fetchMatchData = async (matchId: string) => {
     try {
+      console.log('Fetching match data for ID:', matchId);
+      
+      // Validate UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(matchId)) {
+        console.error('Invalid UUID format:', matchId);
+        toast.error('Format d\'ID de match invalide');
+        setLoading(false);
+        return;
+      }
+
       // First try to fetch from regular matches table
       const { data: regularMatch, error: regularError } = await supabase
         .from('matches')

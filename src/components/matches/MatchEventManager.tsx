@@ -40,10 +40,32 @@ const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmi
   useEffect(() => {
     fetchEvents();
     fetchPlayers();
+    
+    // Set up real-time subscription for events
+    const channel = supabase
+      .channel('match-events')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'match_events',
+          filter: `match_id=eq.${matchId}`
+        }, 
+        () => {
+          console.log('Match events updated, refetching...');
+          fetchEvents();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [matchId, homeTeamId, awayTeamId]);
 
   const fetchEvents = async () => {
     try {
+      console.log('Fetching events for match:', matchId);
       const { data, error } = await supabase
         .from('match_events')
         .select(`
@@ -53,10 +75,16 @@ const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmi
         .eq('match_id', matchId)
         .order('minute', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching events:', error);
+        throw error;
+      }
+      
+      console.log('Fetched events:', data);
       setEvents(data || []);
     } catch (error) {
       console.error('Error fetching events:', error);
+      toast.error('Erreur lors du chargement des événements');
     }
   };
 
