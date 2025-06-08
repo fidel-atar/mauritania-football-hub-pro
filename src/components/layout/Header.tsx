@@ -1,12 +1,15 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Settings } from "lucide-react";
 import { useState } from "react";
 import CartIcon from "@/components/shop/CartIcon";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAdmin } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -27,28 +30,28 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-gray-700 hover:text-fmf-green transition-colors">
-              Accueil
-            </Link>
-            <Link to="/actualites" className="text-gray-700 hover:text-fmf-green transition-colors">
-              Actualités
-            </Link>
-            <Link to="/equipes" className="text-gray-700 hover:text-fmf-green transition-colors">
-              Équipes
-            </Link>
-            <Link to="/classement" className="text-gray-700 hover:text-fmf-green transition-colors">
-              Classement
-            </Link>
-            <Link to="/boutique" className="text-gray-700 hover:text-fmf-green transition-colors">
-              Boutique
-            </Link>
+          <div className="hidden md:flex items-center space-x-4">
             <CartIcon />
-          </nav>
+            {isAdmin && (
+              <Link to="/admin">
+                <Button variant="outline" size="sm">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Admin
+                </Button>
+              </Link>
+            )}
+          </div>
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center gap-2">
             <CartIcon />
+            {isAdmin && (
+              <Link to="/admin">
+                <Button variant="outline" size="sm">
+                  <Settings className="w-4 h-4" />
+                </Button>
+              </Link>
+            )}
             <button 
               onClick={toggleMenu}
               className="text-gray-700 hover:text-fmf-green transition-colors"
