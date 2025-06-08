@@ -15,23 +15,8 @@ interface MatchEventManagerProps {
 const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmin = false }: MatchEventManagerProps) => {
   const { events, players, loading, fetchEvents, handleDeleteEvent } = useMatchEvents(matchId, homeTeamId, awayTeamId);
 
-  console.log('MatchEventManager render:', { 
-    matchId, 
-    homeTeamId, 
-    awayTeamId, 
-    isAdmin, 
-    eventsCount: events.length, 
-    playersCount: players.length,
-    loading 
-  });
-
   if (loading) {
-    return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fmf-green mx-auto mb-2"></div>
-        <p className="text-gray-600">Chargement des événements...</p>
-      </div>
-    );
+    return <div className="text-center py-4">Chargement des événements...</div>;
   }
 
   return (
@@ -46,15 +31,6 @@ const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmi
           />
         )}
       </div>
-
-      {players.length === 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-          <p className="text-yellow-800 text-sm">
-            Aucun joueur trouvé pour les équipes de ce match. 
-            Veuillez vous assurer que les joueurs sont bien assignés aux équipes.
-          </p>
-        </div>
-      )}
 
       <EventTabs 
         events={events}
