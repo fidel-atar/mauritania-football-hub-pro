@@ -41,48 +41,79 @@ const UserProfile = () => {
 
   const fetchProfile = async () => {
     try {
+      console.log('Fetching profile for user:', user?.id);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user?.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching profile:', error);
-        toast.error('Erreur lors du chargement du profil');
+        if (error.code === 'PGRST116') {
+          // Profile doesn't exist, create a new one
+          console.log('Profile not found, creating new profile');
+          await createInitialProfile();
+        } else {
+          toast.error('Erreur lors du chargement du profil');
+        }
         return;
       }
 
-      if (data) {
-        setProfile(data);
-        setFormData({
-          full_name: data.full_name || '',
-          bio: data.bio || '',
-          phone: data.phone || '',
-          date_of_birth: data.date_of_birth || '',
-          location: data.location || '',
-        });
-      } else {
-        // Create profile if it doesn't exist
-        const newProfile = {
-          id: user?.id,
-          email: user?.email || '',
-          full_name: user?.email || '',
-        };
-        setProfile(newProfile as UserProfileData);
-        setFormData({
-          full_name: user?.email || '',
-          bio: '',
-          phone: '',
-          date_of_birth: '',
-          location: '',
-        });
-      }
+      console.log('Profile data fetched:', data);
+      setProfile(data);
+      setFormData({
+        full_name: data.full_name || '',
+        bio: data.bio || '',
+        phone: data.phone || '',
+        date_of_birth: data.date_of_birth || '',
+        location: data.location || '',
+      });
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast.error('Erreur lors du chargement du profil');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createInitialProfile = async () => {
+    try {
+      const newProfileData = {
+        id: user?.id,
+        email: user?.email || '',
+        full_name: user?.email || '',
+        bio: null,
+        avatar_url: null,
+        phone: null,
+        date_of_birth: null,
+        location: null,
+      };
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert(newProfileData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating profile:', error);
+        throw error;
+      }
+
+      console.log('New profile created:', data);
+      setProfile(data);
+      setFormData({
+        full_name: data.full_name || '',
+        bio: data.bio || '',
+        phone: data.phone || '',
+        date_of_birth: data.date_of_birth || '',
+        location: data.location || '',
+      });
+    } catch (error) {
+      console.error('Error creating initial profile:', error);
+      toast.error('Erreur lors de la création du profil');
     }
   };
 
@@ -94,27 +125,36 @@ const UserProfile = () => {
   };
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!user) {
+      toast.error('Vous devez être connecté pour sauvegarder');
+      return;
+    }
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      console.log('Saving profile data:', formData);
+      
+      const updateData = {
+        ...formData,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { data, error } = await supabase
         .from('profiles')
-        .upsert({
-          id: user.id,
-          email: user.email,
-          ...formData,
-          updated_at: new Date().toISOString(),
-        });
+        .update(updateData)
+        .eq('id', user.id)
+        .select()
+        .single();
 
       if (error) {
         console.error('Error updating profile:', error);
-        toast.error('Erreur lors de la mise à jour du profil');
+        toast.error(`Erreur lors de la mise à jour: ${error.message}`);
         return;
       }
 
+      console.log('Profile updated successfully:', data);
       toast.success('Profil mis à jour avec succès');
-      fetchProfile();
+      setProfile(data);
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Erreur lors de la mise à jour du profil');
