@@ -12,16 +12,17 @@ import { useNavigate } from 'react-router-dom';
 
 interface UserAuthProps {
   onAuthSuccess?: () => void;
+  userType?: 'admin' | 'user'; // Add prop to know if this is admin login
 }
 
-const UserAuth = ({ onAuthSuccess }: UserAuthProps) => {
+const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, checkAdminStatus } = useAuth();
   const navigate = useNavigate();
 
   const validateInput = (email: string, password: string) => {
@@ -73,15 +74,23 @@ const UserAuth = ({ onAuthSuccess }: UserAuthProps) => {
         toast.success('Compte créé avec succès ! Vérifiez votre email pour confirmer votre compte.');
       } else {
         toast.success('Connexion réussie');
+        
+        // If this is an admin login, check admin status and redirect to admin dashboard
+        if (userType === 'admin') {
+          setTimeout(async () => {
+            await checkAdminStatus();
+            navigate('/admin-dashboard');
+          }, 500);
+        } else {
+          // For regular users, go to home page
+          navigate('/');
+        }
       }
       
       // Call the success callback if provided
       if (onAuthSuccess) {
         onAuthSuccess();
       }
-      
-      // Navigate to home page
-      navigate('/');
       
     } catch (error) {
       console.error('Auth error:', error);

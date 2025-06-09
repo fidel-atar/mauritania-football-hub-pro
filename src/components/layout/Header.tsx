@@ -254,9 +254,12 @@ const Header = () => {
                 ×
               </button>
             </div>
-            <UserAuth onAuthSuccess={() => {
-              setShowUserAuth(false);
-            }} />
+            <UserAuth 
+              userType="user" 
+              onAuthSuccess={() => {
+                setShowUserAuth(false);
+              }} 
+            />
           </div>
         </div>
       )}
