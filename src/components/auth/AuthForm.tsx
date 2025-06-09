@@ -92,7 +92,7 @@ const AuthForm = ({
       >
         {loading 
           ? (isSignUp ? 'Création...' : 'Connexion...') 
-          : (isSignUp ? 'Créer un compte' : 'Se connecter')
+          : (isSignUp ? 'Créer un compte' : 'Connexion')
         }
       </Button>
     </form>

@@ -30,6 +30,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
+      console.log('Checking admin status for user:', user.id);
+      
       // Use a direct query to check admin status
       const { data, error } = await supabase
         .from('admin_roles')
@@ -37,20 +39,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('user_id', user.id)
         .maybeSingle();
 
+      console.log('Admin check result:', { data, error });
+
       if (error) {
-        // Log admin check failures for security monitoring
-        console.warn('Admin status check failed');
+        console.warn('Admin status check failed:', error);
         setIsAdmin(false);
         setAdminRole(null);
       } else if (data) {
+        console.log('User is admin with role:', data.role);
         setIsAdmin(true);
         setAdminRole(data.role);
       } else {
+        console.log('User is not admin');
         setIsAdmin(false);
         setAdminRole(null);
       }
     } catch (error) {
-      console.error('Unexpected error during admin check');
+      console.error('Unexpected error during admin check:', error);
       setIsAdmin(false);
       setAdminRole(null);
     }
@@ -66,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setUser(session?.user ?? null);
         setLoading(false);
         
@@ -93,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      console.warn('Authentication failed');
+      console.warn('Authentication failed:', error.message);
     }
     return { error };
   };
