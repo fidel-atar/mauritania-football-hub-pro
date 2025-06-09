@@ -19,6 +19,7 @@ const HomePage = () => {
   const { data: matches = [], isLoading, refetch } = useQuery({
     queryKey: ['home-matches'],
     queryFn: async (): Promise<MatchProps[]> => {
+      console.log('Fetching matches from Supabase...');
       const { data, error } = await supabase
         .from('matches')
         .select(`
@@ -34,6 +35,8 @@ const HomePage = () => {
         return [];
       }
 
+      console.log('Raw matches data:', data);
+
       // Transform data to match MatchProps interface
       return (data || []).map(match => {
         let status: "scheduled" | "live" | "finished";
@@ -45,8 +48,19 @@ const HomePage = () => {
           status = 'scheduled';
         }
 
+        // Ensure we have valid UUIDs for match ID
+        const matchId = match.id;
+        console.log('Processing match with ID:', matchId, 'Type:', typeof matchId);
+
+        // Validate that the match ID is a proper UUID format
+        const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(matchId);
+        
+        if (!isValidUUID) {
+          console.warn('Invalid UUID format for match:', matchId);
+        }
+
         return {
-          id: match.id, // Keep as string (UUID format)
+          id: matchId, // Keep as string (UUID format)
           homeTeam: {
             id: parseInt(match.home_team?.id || '0'),
             name: match.home_team?.name || 'TBD',
@@ -63,6 +77,13 @@ const HomePage = () => {
           awayScore: match.away_score,
           status: status
         };
+      }).filter(match => {
+        // Filter out matches with invalid UUIDs to prevent timer errors
+        const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(match.id);
+        if (!isValidUUID) {
+          console.warn('Filtering out match with invalid UUID:', match.id);
+        }
+        return isValidUUID;
       });
     },
   });

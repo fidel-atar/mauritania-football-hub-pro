@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -25,17 +24,34 @@ export const useMatchTimer = (matchId: string) => {
 
   // Fetch timer data
   const fetchTimerData = useCallback(async () => {
+    // Validate UUID format before making the request
+    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(matchId);
+    
+    if (!isValidUUID) {
+      console.warn('Invalid UUID format for match timer:', matchId);
+      setTimerData(null);
+      setLoading(false);
+      return;
+    }
+
     try {
+      console.log('Fetching timer data for match:', matchId);
       const { data, error } = await supabase
         .from('match_timers')
         .select('*')
         .eq('match_id', matchId)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching timer data:', error);
+        throw error;
+      }
+      
+      console.log('Timer data fetched:', data);
       setTimerData(data);
     } catch (error) {
       console.error('Error fetching timer data:', error);
+      setTimerData(null);
     } finally {
       setLoading(false);
     }
@@ -43,6 +59,15 @@ export const useMatchTimer = (matchId: string) => {
 
   // Initialize timer for a match
   const initializeTimer = async () => {
+    // Validate UUID format before making the request
+    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(matchId);
+    
+    if (!isValidUUID) {
+      console.warn('Cannot initialize timer for invalid UUID:', matchId);
+      toast.error('Invalid match ID format');
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('match_timers')
