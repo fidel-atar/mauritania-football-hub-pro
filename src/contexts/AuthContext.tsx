@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdminStatus } from '@/hooks/useAdminStatus';
 
 interface AuthContextType {
   user: User | null;
@@ -18,49 +19,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminRole, setAdminRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const checkAdminStatus = async () => {
-    if (!user) {
-      console.log('AuthContext: No user, setting admin status to false');
-      setIsAdmin(false);
-      setAdminRole(null);
-      return;
-    }
-
-    try {
-      console.log('AuthContext: Checking admin status for user:', user.id, user.email);
-      
-      // Use a direct query to check admin status
-      const { data, error } = await supabase
-        .from('admin_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      console.log('AuthContext: Admin check result:', { data, error, userEmail: user.email });
-
-      if (error) {
-        console.warn('AuthContext: Admin status check failed:', error);
-        setIsAdmin(false);
-        setAdminRole(null);
-      } else if (data) {
-        console.log('AuthContext: User is admin with role:', data.role);
-        setIsAdmin(true);
-        setAdminRole(data.role);
-      } else {
-        console.log('AuthContext: User is not admin');
-        setIsAdmin(false);
-        setAdminRole(null);
-      }
-    } catch (error) {
-      console.error('AuthContext: Unexpected error during admin check:', error);
-      setIsAdmin(false);
-      setAdminRole(null);
-    }
-  };
+  
+  const { isAdmin, adminRole, checkAdminStatus } = useAdminStatus(user);
 
   useEffect(() => {
     // Get initial session
@@ -80,62 +41,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Log security events (without sensitive data)
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('AuthContext: User authentication successful');
-          // Check admin status immediately after sign in with a longer delay
-          setTimeout(() => {
-            console.log('AuthContext: Triggering admin status check after sign in');
-            if (session?.user) {
-              // Set the user first, then check admin status
-              setUser(session.user);
-              // Force a re-check with the new user
-              setTimeout(async () => {
-                try {
-                  const { data, error } = await supabase
-                    .from('admin_roles')
-                    .select('role')
-                    .eq('user_id', session.user.id)
-                    .maybeSingle();
-
-                  console.log('AuthContext: Immediate admin check after login:', { data, error });
-
-                  if (data) {
-                    console.log('AuthContext: Setting admin status to true with role:', data.role);
-                    setIsAdmin(true);
-                    setAdminRole(data.role);
-                  } else {
-                    console.log('AuthContext: Setting admin status to false');
-                    setIsAdmin(false);
-                    setAdminRole(null);
-                  }
-                } catch (err) {
-                  console.error('AuthContext: Error in immediate admin check:', err);
-                  setIsAdmin(false);
-                  setAdminRole(null);
-                }
-              }, 500);
-            }
-          }, 100);
         } else if (event === 'SIGNED_OUT') {
           console.log('AuthContext: User signed out');
-          // Clear admin status on sign out
-          setIsAdmin(false);
-          setAdminRole(null);
         }
       }
     );
 
     return () => subscription.unsubscribe();
   }, []);
-
-  useEffect(() => {
-    if (user) {
-      console.log('AuthContext: User changed, checking admin status for:', user.email);
-      checkAdminStatus();
-    } else {
-      console.log('AuthContext: No user, clearing admin status');
-      setIsAdmin(false);
-      setAdminRole(null);
-    }
-  }, [user]);
 
   const signIn = async (email: string, password: string) => {
     console.log('AuthContext: Attempting sign in for:', email);

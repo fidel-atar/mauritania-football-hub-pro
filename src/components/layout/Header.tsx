@@ -1,14 +1,14 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Shield } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Menu, X } from "lucide-react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/hooks/useCart";
-import { Button } from "@/components/ui/button";
 import UserMenu from "./UserMenu";
 import MobileNavigation from "./MobileNavigation";
 import ModalManager from "./ModalManager";
+import AdminButton from "./AdminButton";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -19,13 +19,8 @@ const Header = () => {
   const { getTotalItems, isLoading } = useCart();
   const totalItems = getTotalItems();
 
-  // Debug logging for admin status
-  useEffect(() => {
-    console.log('Header: Admin status changed:', { user: user?.email, isAdmin });
-  }, [user, isAdmin]);
-
   // Listen for admin login events from UserMenu
-  useEffect(() => {
+  React.useEffect(() => {
     const handleOpenAdminLogin = (event: CustomEvent) => {
       console.log(`Header: Admin login requested for: ${event.detail}`);
       setShowAdminLogin(true);
@@ -80,18 +75,7 @@ const Header = () => {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-2">
               {/* Admin Button - Show when user is admin */}
-              {user && isAdmin && (
-                <Link to="/admin-dashboard">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="bg-fmf-green text-white hover:bg-fmf-green/90 border-fmf-green"
-                  >
-                    <Shield className="w-4 h-4 mr-2" />
-                    Admin
-                  </Button>
-                </Link>
-              )}
+              {user && isAdmin && <AdminButton />}
               
               <UserMenu
                 user={user}
@@ -106,17 +90,7 @@ const Header = () => {
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-2">
               {/* Admin Button for Mobile - Show when user is admin */}
-              {user && isAdmin && (
-                <Link to="/admin-dashboard">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="bg-fmf-green text-white hover:bg-fmf-green/90 border-fmf-green"
-                  >
-                    <Shield className="w-4 h-4" />
-                  </Button>
-                </Link>
-              )}
+              {user && isAdmin && <AdminButton isMobile />}
               
               <UserMenu
                 user={user}

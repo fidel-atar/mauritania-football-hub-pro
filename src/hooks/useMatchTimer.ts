@@ -1,11 +1,11 @@
 
 import { useEffect } from "react";
-import { useTimerState } from "./timer/useTimerState";
+import { useSimpleTimerState } from "./timer/useSimpleTimerState";
 import { useTimerOperations } from "./timer/useTimerOperations";
 import { useTimerUpdates } from "./timer/useTimerUpdates";
 
 export const useMatchTimer = (matchId: string) => {
-  const { timerData, setTimerData, loading, fetchTimerData } = useTimerState(matchId);
+  const { timerData, setTimerData, loading, fetchTimerData } = useSimpleTimerState(matchId);
   
   const { initializeTimer, startTimer, pauseTimer } = useTimerOperations(
     matchId,
