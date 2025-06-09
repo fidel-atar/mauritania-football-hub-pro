@@ -1,12 +1,10 @@
 
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageCircle, Reply, Trash2 } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import CommentForm from "./CommentForm";
+import CommentItem from "./CommentItem";
 
 interface Comment {
   id: string;
@@ -184,34 +182,6 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const renderUserInfo = (comment: Comment) => {
-    const displayName = comment.user_name || 'Utilisateur';
-    const avatarFallback = displayName.charAt(0).toUpperCase();
-
-    return (
-      <div className="flex items-center gap-2">
-        <Avatar className="w-8 h-8">
-          <AvatarImage src={comment.user_avatar || undefined} />
-          <AvatarFallback className="text-xs">{avatarFallback}</AvatarFallback>
-        </Avatar>
-        <div className="text-sm">
-          <span className="font-medium text-gray-900">{displayName}</span>
-          <span className="text-gray-500 ml-2">• {formatDate(comment.created_at)}</span>
-        </div>
-      </div>
-    );
-  };
-
   if (loading) {
     return <div className="text-sm text-gray-500">Chargement des commentaires...</div>;
   }
@@ -226,132 +196,50 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
       </div>
 
       {/* Add new comment */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex gap-3">
-            {currentUser && (
-              <Avatar className="w-8 h-8">
-                <AvatarImage src={userProfile?.avatar_url || undefined} />
-                <AvatarFallback className="text-xs">
-                  {userProfile?.full_name?.charAt(0)?.toUpperCase() || currentUser.email?.charAt(0)?.toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-            )}
-            <div className="flex-1">
-              <Textarea
-                placeholder="Ajouter un commentaire..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                rows={3}
-              />
-              <div className="flex justify-end mt-2">
-                <Button onClick={handleAddComment} disabled={!newComment.trim()}>
-                  Publier
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {currentUser && (
+        <CommentForm
+          value={newComment}
+          onChange={setNewComment}
+          onSubmit={handleAddComment}
+          placeholder="Ajouter un commentaire..."
+          buttonText="Publier"
+          disabled={!newComment.trim()}
+          userAvatar={userProfile?.avatar_url}
+          userName={userProfile?.full_name}
+          userEmail={currentUser.email}
+        />
+      )}
 
       {/* Comments list */}
       <div className="space-y-4">
         {comments.map((comment) => (
-          <Card key={comment.id}>
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start mb-2">
-                {renderUserInfo(comment)}
-                {currentUser?.id === comment.user_id && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteComment(comment.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-              
-              <p className="text-gray-800 mb-3 ml-10">{comment.content}</p>
-              
-              <div className="flex items-center gap-2 ml-10">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setReplyToId(replyToId === comment.id ? null : comment.id)}
-                >
-                  <Reply className="w-4 h-4 mr-1" />
-                  Répondre
-                </Button>
-              </div>
-
-              {/* Reply form */}
-              {replyToId === comment.id && (
-                <div className="mt-3 ml-10 pl-4 border-l-2 border-gray-200">
-                  <div className="flex gap-3">
-                    {currentUser && (
-                      <Avatar className="w-6 h-6">
-                        <AvatarImage src={userProfile?.avatar_url || undefined} />
-                        <AvatarFallback className="text-xs">
-                          {userProfile?.full_name?.charAt(0)?.toUpperCase() || currentUser.email?.charAt(0)?.toUpperCase() || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                    <div className="flex-1">
-                      <Textarea
-                        placeholder="Écrire une réponse..."
-                        value={replyContent}
-                        onChange={(e) => setReplyContent(e.target.value)}
-                        rows={2}
-                      />
-                      <div className="flex gap-2 mt-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleAddReply(comment.id)}
-                          disabled={!replyContent.trim()}
-                        >
-                          Répondre
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setReplyToId(null);
-                            setReplyContent('');
-                          }}
-                        >
-                          Annuler
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Replies */}
-              {comment.replies && comment.replies.length > 0 && (
-                <div className="mt-3 ml-10 pl-4 border-l-2 border-gray-200 space-y-3">
-                  {comment.replies.map((reply) => (
-                    <div key={reply.id} className="bg-gray-50 p-3 rounded">
-                      <div className="flex justify-between items-start mb-2">
-                        {renderUserInfo(reply)}
-                        {currentUser?.id === reply.user_id && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteComment(reply.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                      <p className="text-gray-800 ml-10">{reply.content}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <CommentItem
+            key={comment.id}
+            comment={comment}
+            currentUserId={currentUser?.id}
+            onReply={(commentId) => setReplyToId(replyToId === commentId ? null : commentId)}
+            onDelete={handleDeleteComment}
+          >
+            {/* Reply form */}
+            {replyToId === comment.id && currentUser && (
+              <CommentForm
+                value={replyContent}
+                onChange={setReplyContent}
+                onSubmit={() => handleAddReply(comment.id)}
+                placeholder="Écrire une réponse..."
+                buttonText="Répondre"
+                disabled={!replyContent.trim()}
+                userAvatar={userProfile?.avatar_url}
+                userName={userProfile?.full_name}
+                userEmail={currentUser.email}
+                onCancel={() => {
+                  setReplyToId(null);
+                  setReplyContent('');
+                }}
+                showCancel={true}
+              />
+            )}
+          </CommentItem>
         ))}
 
         {comments.length === 0 && (

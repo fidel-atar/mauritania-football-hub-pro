@@ -2,14 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Camera, Save } from 'lucide-react';
+import { User, Save } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import ProfileAvatar from './ProfileAvatar';
+import ProfileForm from './ProfileForm';
 
 interface UserProfileData {
   id: string;
@@ -151,73 +149,15 @@ const UserProfile = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Avatar Section */}
-          <div className="flex items-center gap-4">
-            <Avatar className="w-20 h-20">
-              <AvatarImage src={profile?.avatar_url || undefined} />
-              <AvatarFallback>
-                {formData.full_name ? formData.full_name.charAt(0).toUpperCase() : 'U'}
-              </AvatarFallback>
-            </Avatar>
-            <Button variant="outline" size="sm">
-              <Camera className="w-4 h-4 mr-2" />
-              Changer la photo
-            </Button>
-          </div>
-
-          {/* Form Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="full_name">Nom complet</Label>
-              <Input
-                id="full_name"
-                value={formData.full_name}
-                onChange={(e) => handleInputChange('full_name', e.target.value)}
-                placeholder="Votre nom complet"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="phone">Téléphone</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                placeholder="Votre numéro de téléphone"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="date_of_birth">Date de naissance</Label>
-              <Input
-                id="date_of_birth"
-                type="date"
-                value={formData.date_of_birth}
-                onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="location">Localisation</Label>
-              <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => handleInputChange('location', e.target.value)}
-                placeholder="Votre ville"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="bio">Biographie</Label>
-            <Textarea
-              id="bio"
-              value={formData.bio}
-              onChange={(e) => handleInputChange('bio', e.target.value)}
-              placeholder="Parlez-nous de vous..."
-              rows={4}
-            />
-          </div>
+          <ProfileAvatar 
+            avatarUrl={profile?.avatar_url} 
+            fullName={formData.full_name} 
+          />
+          
+          <ProfileForm 
+            formData={formData} 
+            onInputChange={handleInputChange} 
+          />
 
           <div className="flex justify-end">
             <Button onClick={handleSave} disabled={saving}>

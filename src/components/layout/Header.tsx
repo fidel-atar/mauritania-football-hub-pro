@@ -1,23 +1,13 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, User, ShoppingCart } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useCart } from "@/hooks/useCart";
-import { Badge } from "@/components/ui/badge";
-import CartSheet from "@/components/shop/CartSheet";
-import SecureAdminLogin from "@/components/admin/SecureAdminLogin";
-import UserAuth from "@/components/auth/UserAuth";
-import UserProfile from "@/components/profile/UserProfile";
+import UserMenu from "./UserMenu";
+import MobileNavigation from "./MobileNavigation";
+import ModalManager from "./ModalManager";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -36,10 +26,8 @@ const Header = () => {
     console.log(`Selected user type: ${userType}`);
     
     if (userType === 'admin-principal' || userType === 'mini-admin') {
-      // Show the admin login modal
       setShowAdminLogin(true);
     } else if (userType === 'utilisateur') {
-      // Show the user auth modal
       setShowUserAuth(true);
     }
   };
@@ -69,140 +57,26 @@ const Header = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-2">
-              {/* Combined Menu with Compt, Connexion, and Panier */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="relative">
-                    <Menu className="w-4 h-4" />
-                    {!isLoading && totalItems > 0 && (
-                      <Badge 
-                        variant="destructive" 
-                        className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center p-0 text-xs"
-                      >
-                        {totalItems > 99 ? '99+' : totalItems}
-                      </Badge>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
-                  {/* Cart Section */}
-                  <CartSheet>
-                    <DropdownMenuItem className="cursor-pointer hover:bg-gray-100">
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      Panier
-                      {!isLoading && totalItems > 0 && (
-                        <Badge 
-                          variant="destructive" 
-                          className="ml-auto w-5 h-5 flex items-center justify-center p-0 text-xs"
-                        >
-                          {totalItems > 99 ? '99+' : totalItems}
-                        </Badge>
-                      )}
-                    </DropdownMenuItem>
-                  </CartSheet>
-                  
-                  <DropdownMenuSeparator />
-                  
-                  {/* Connexion Section */}
-                  {user ? (
-                    <DropdownMenuItem 
-                      onClick={handleSignOut}
-                      className="cursor-pointer hover:bg-gray-100"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Se déconnecter
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem 
-                      onClick={() => handleUserTypeSelect('utilisateur')}
-                      className="cursor-pointer hover:bg-gray-100"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Connexion
-                    </DropdownMenuItem>
-                  )}
-                  
-                  <DropdownMenuSeparator />
-                  
-                  {/* Compt Section */}
-                  <DropdownMenuItem 
-                    onClick={handleShowProfile}
-                    className="cursor-pointer hover:bg-gray-100"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Compt
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <UserMenu
+                user={user}
+                totalItems={totalItems}
+                isLoading={isLoading}
+                onSignOut={handleSignOut}
+                onShowAuth={() => handleUserTypeSelect('utilisateur')}
+                onShowProfile={handleShowProfile}
+              />
             </div>
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-2">
-              {/* Mobile Combined Menu with Compt, Connexion, and Panier */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="relative">
-                    <Menu className="w-4 h-4" />
-                    {!isLoading && totalItems > 0 && (
-                      <Badge 
-                        variant="destructive" 
-                        className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center p-0 text-xs"
-                      >
-                        {totalItems > 99 ? '99+' : totalItems}
-                      </Badge>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
-                  {/* Cart Section */}
-                  <CartSheet>
-                    <DropdownMenuItem className="cursor-pointer hover:bg-gray-100">
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      Panier
-                      {!isLoading && totalItems > 0 && (
-                        <Badge 
-                          variant="destructive" 
-                          className="ml-auto w-5 h-5 flex items-center justify-center p-0 text-xs"
-                        >
-                          {totalItems > 99 ? '99+' : totalItems}
-                        </Badge>
-                      )}
-                    </DropdownMenuItem>
-                  </CartSheet>
-                  
-                  <DropdownMenuSeparator />
-                  
-                  {/* Connexion Section */}
-                  {user ? (
-                    <DropdownMenuItem 
-                      onClick={handleSignOut}
-                      className="cursor-pointer hover:bg-gray-100"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Se déconnecter
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem 
-                      onClick={() => handleUserTypeSelect('utilisateur')}
-                      className="cursor-pointer hover:bg-gray-100"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Connexion
-                    </DropdownMenuItem>
-                  )}
-                  
-                  <DropdownMenuSeparator />
-                  
-                  {/* Compt Section */}
-                  <DropdownMenuItem 
-                    onClick={handleShowProfile}
-                    className="cursor-pointer hover:bg-gray-100"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Compt
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <UserMenu
+                user={user}
+                totalItems={totalItems}
+                isLoading={isLoading}
+                onSignOut={handleSignOut}
+                onShowAuth={() => handleUserTypeSelect('utilisateur')}
+                onShowProfile={handleShowProfile}
+              />
               
               <button 
                 onClick={toggleMenu}
@@ -213,109 +87,23 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Mobile Navigation */}
-          {isMenuOpen && (
-            <div className="md:hidden py-4 border-t">
-              <nav className="flex flex-col space-y-4">
-                <Link 
-                  to="/" 
-                  className="text-gray-700 hover:text-fmf-green transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Accueil
-                </Link>
-                <Link 
-                  to="/actualites" 
-                  className="text-gray-700 hover:text-fmf-green transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Actualités
-                </Link>
-                <Link 
-                  to="/equipes" 
-                  className="text-gray-700 hover:text-fmf-green transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Équipes
-                </Link>
-                <Link 
-                  to="/classement" 
-                  className="text-gray-700 hover:text-fmf-green transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Classement
-                </Link>
-                <Link 
-                  to="/boutique" 
-                  className="text-gray-700 hover:text-fmf-green transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Boutique
-                </Link>
-              </nav>
-            </div>
-          )}
+          <MobileNavigation 
+            isMenuOpen={isMenuOpen} 
+            onMenuClose={() => setIsMenuOpen(false)} 
+          />
         </div>
       </header>
 
-      {/* Admin Login Modal */}
-      {showAdminLogin && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-1 max-w-md w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <button
-                onClick={() => setShowAdminLogin(false)}
-                className="text-gray-500 hover:text-gray-700 text-xl font-bold"
-              >
-                ×
-              </button>
-            </div>
-            <SecureAdminLogin onLoginSuccess={() => {
-              setShowAdminLogin(false);
-            }} />
-          </div>
-        </div>
-      )}
-
-      {/* User Auth Modal */}
-      {showUserAuth && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-1 max-w-md w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <button
-                onClick={() => setShowUserAuth(false)}
-                className="text-gray-500 hover:text-gray-700 text-xl font-bold"
-              >
-                ×
-              </button>
-            </div>
-            <UserAuth 
-              userType="user" 
-              onAuthSuccess={() => {
-                setShowUserAuth(false);
-              }} 
-            />
-          </div>
-        </div>
-      )}
-
-      {/* User Profile Modal */}
-      {showUserProfile && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-1 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4 p-4">
-              <h2 className="text-lg font-semibold">Mon Profil</h2>
-              <button
-                onClick={() => setShowUserProfile(false)}
-                className="text-gray-500 hover:text-gray-700 text-xl font-bold"
-              >
-                ×
-              </button>
-            </div>
-            <UserProfile />
-          </div>
-        </div>
-      )}
+      <ModalManager
+        showAdminLogin={showAdminLogin}
+        showUserAuth={showUserAuth}
+        showUserProfile={showUserProfile}
+        onCloseAdminLogin={() => setShowAdminLogin(false)}
+        onCloseUserAuth={() => setShowUserAuth(false)}
+        onCloseUserProfile={() => setShowUserProfile(false)}
+        onAdminLoginSuccess={() => setShowAdminLogin(false)}
+        onUserAuthSuccess={() => setShowUserAuth(false)}
+      />
     </>
   );
 };
