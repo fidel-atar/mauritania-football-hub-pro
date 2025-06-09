@@ -61,14 +61,13 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
         
         // For admin login, check admin status and redirect to admin dashboard
         if (isAdminLogin) {
-          console.log('Admin login detected, checking status and redirecting...');
+          console.log('Admin login detected, checking admin status...');
           // Wait a bit for the auth context to update, then check admin status
           setTimeout(async () => {
             await checkAdminStatus();
-            // Navigate to admin dashboard
+            console.log('Admin status checked, redirecting to admin dashboard...');
             navigate('/admin-dashboard');
-            console.log('Redirected to admin dashboard');
-          }, 1500);
+          }, 1000);
         } else {
           // For regular users, redirect to home
           navigate('/');

@@ -26,6 +26,7 @@ const Header = () => {
     console.log(`Selected user type: ${userType}`);
     
     if (userType === 'admin-principal' || userType === 'mini-admin') {
+      console.log('Opening admin login modal');
       setShowAdminLogin(true);
     } else if (userType === 'utilisateur') {
       setShowUserAuth(true);
@@ -38,6 +39,16 @@ const Header = () => {
 
   const handleShowProfile = () => {
     setShowUserProfile(true);
+  };
+
+  const handleAdminLoginSuccess = () => {
+    console.log('Admin login successful, closing modal');
+    setShowAdminLogin(false);
+    // The UserAuth component will handle the redirect to admin dashboard
+  };
+
+  const handleUserAuthSuccess = () => {
+    setShowUserAuth(false);
   };
 
   return (
@@ -89,7 +100,8 @@ const Header = () => {
 
           <MobileNavigation 
             isMenuOpen={isMenuOpen} 
-            onMenuClose={() => setIsMenuOpen(false)} 
+            onMenuClose={() => setIsMenuOpen(false)}
+            onAdminLogin={() => handleUserTypeSelect('admin-principal')}
           />
         </div>
       </header>
@@ -101,8 +113,8 @@ const Header = () => {
         onCloseAdminLogin={() => setShowAdminLogin(false)}
         onCloseUserAuth={() => setShowUserAuth(false)}
         onCloseUserProfile={() => setShowUserProfile(false)}
-        onAdminLoginSuccess={() => setShowAdminLogin(false)}
-        onUserAuthSuccess={() => setShowUserAuth(false)}
+        onAdminLoginSuccess={handleAdminLoginSuccess}
+        onUserAuthSuccess={handleUserAuthSuccess}
       />
     </>
   );
