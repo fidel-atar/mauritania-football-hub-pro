@@ -262,6 +262,68 @@ export type Database = {
           },
         ]
       }
+      match_timers: {
+        Row: {
+          created_at: string | null
+          current_minutes: number
+          current_period: string
+          current_seconds: number
+          extra_time_first_extra: number
+          extra_time_first_half: number
+          extra_time_second_extra: number
+          extra_time_second_half: number
+          id: string
+          is_paused: boolean
+          is_running: boolean
+          match_id: string
+          paused_at: string | null
+          started_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_minutes?: number
+          current_period?: string
+          current_seconds?: number
+          extra_time_first_extra?: number
+          extra_time_first_half?: number
+          extra_time_second_extra?: number
+          extra_time_second_half?: number
+          id?: string
+          is_paused?: boolean
+          is_running?: boolean
+          match_id: string
+          paused_at?: string | null
+          started_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_minutes?: number
+          current_period?: string
+          current_seconds?: number
+          extra_time_first_extra?: number
+          extra_time_first_half?: number
+          extra_time_second_extra?: number
+          extra_time_second_half?: number
+          id?: string
+          is_paused?: boolean
+          is_running?: boolean
+          match_id?: string
+          paused_at?: string | null
+          started_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_timers_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           away_score: number | null

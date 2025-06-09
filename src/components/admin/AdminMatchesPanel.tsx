@@ -6,6 +6,9 @@ import { toast } from "sonner";
 import MatchForm from "./matches/MatchForm";
 import MatchTable from "./matches/MatchTable";
 import { supabase } from "@/integrations/supabase/client";
+import MatchTimer from "@/components/matches/MatchTimer";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 
 interface Team {
   id: string;
@@ -320,6 +323,45 @@ const AdminMatchesPanel = () => {
               <p className="text-sm mt-2">Cliquez sur "Ajouter un match" pour créer votre premier match!</p>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Timer Management Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Gestion des Timers de Match</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {matchesList
+              .filter(match => match.status === 'live' || match.status === 'scheduled')
+              .map((match) => (
+                <Collapsible key={match.id}>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between">
+                      <span>
+                        {match.homeTeam.name} vs {match.awayTeam.name}
+                        {match.status === 'live' && (
+                          <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">
+                            LIVE
+                          </span>
+                        )}
+                      </span>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-4">
+                    <MatchTimer matchId={match.id} isAdmin={true} />
+                  </CollapsibleContent>
+                </Collapsible>
+              ))}
+            
+            {matchesList.filter(match => match.status === 'live' || match.status === 'scheduled').length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <p>Aucun match en cours ou programmé nécessitant un timer.</p>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

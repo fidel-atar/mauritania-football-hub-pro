@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import MatchHeader from "@/components/matches/MatchHeader";
 import MatchTabs from "@/components/matches/MatchTabs";
+import MatchTimer from "@/components/matches/MatchTimer";
 
 interface MatchData {
   id: string;
@@ -178,6 +178,14 @@ const MatchDetailPage = () => {
     <div className="page-container pb-20">
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <MatchHeader matchData={matchData} />
+        
+        {/* Add timer section for live or scheduled matches */}
+        {(matchData.status === 'live' || matchData.status === 'scheduled') && (
+          <div className="p-4 border-b">
+            <MatchTimer matchId={matchData.id} isAdmin={isAdmin} />
+          </div>
+        )}
+        
         <MatchTabs matchData={matchData} isAdmin={isAdmin} />
       </div>
     </div>
