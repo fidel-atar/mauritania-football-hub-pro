@@ -9,7 +9,11 @@ import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
-const SecureAdminLogin = () => {
+interface SecureAdminLoginProps {
+  onLoginSuccess?: () => void;
+}
+
+const SecureAdminLogin = ({ onLoginSuccess }: SecureAdminLoginProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -59,6 +63,11 @@ const SecureAdminLogin = () => {
       }
       
       toast.success('Connexion réussie');
+      
+      // Call the success callback if provided
+      if (onLoginSuccess) {
+        onLoginSuccess();
+      }
     } catch (error) {
       console.error('Login error:', error);
       setError('Une erreur inattendue s\'est produite');
