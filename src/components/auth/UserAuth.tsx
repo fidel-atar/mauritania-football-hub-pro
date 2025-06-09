@@ -30,6 +30,8 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
     e.preventDefault();
     setError('');
     
+    console.log(`UserAuth: Starting ${isSignUp ? 'signup' : 'login'} for ${userType} user`);
+    
     const validationError = validateAuthInput(email, password);
     if (validationError) {
       setError(validationError);
@@ -44,6 +46,7 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
         : await signIn(email, password);
       
       if (error) {
+        console.error('Auth error:', error);
         if (error.message.includes('Invalid login credentials')) {
           setError('Email ou mot de passe incorrect');
         } else if (error.message.includes('User already registered')) {
@@ -61,26 +64,28 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
         
         // For admin login, check admin status and redirect to admin dashboard
         if (isAdminLogin) {
-          console.log('Admin login detected, checking admin status...');
+          console.log('UserAuth: Admin login detected, checking admin status...');
           // Wait a bit for the auth context to update, then check admin status
           setTimeout(async () => {
+            console.log('UserAuth: Checking admin status and redirecting...');
             await checkAdminStatus();
-            console.log('Admin status checked, redirecting to admin dashboard...');
             navigate('/admin-dashboard');
-          }, 1000);
+          }, 500);
         } else {
           // For regular users, redirect to home
+          console.log('UserAuth: Regular user login, redirecting to home');
           navigate('/');
         }
       }
       
       // Call the success callback if provided
       if (onAuthSuccess) {
+        console.log('UserAuth: Calling onAuthSuccess callback');
         onAuthSuccess();
       }
       
     } catch (error) {
-      console.error('Auth error:', error);
+      console.error('Unexpected auth error:', error);
       setError('Une erreur inattendue s\'est produite');
     } finally {
       setLoading(false);

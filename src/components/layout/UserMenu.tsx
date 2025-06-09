@@ -33,11 +33,15 @@ const UserMenu = ({
   onShowProfile 
 }: UserMenuProps) => {
   const handleUserTypeSelect = (userType: string) => {
+    console.log(`UserMenu: Handling user type selection: ${userType}`);
+    
     if (userType === 'admin-principal' || userType === 'mini-admin') {
       // For admin types, we need to trigger admin login
+      console.log('UserMenu: Dispatching openAdminLogin event');
       window.dispatchEvent(new CustomEvent('openAdminLogin', { detail: userType }));
     } else {
       // For regular user
+      console.log('UserMenu: Calling onShowAuth for regular user');
       onShowAuth();
     }
   };
@@ -119,13 +123,13 @@ const UserMenu = ({
         
         <DropdownMenuSeparator />
         
-        {/* Compt Section */}
+        {/* Compte Section */}
         <DropdownMenuItem 
           onClick={onShowProfile}
           className="cursor-pointer hover:bg-gray-100"
         >
           <User className="w-4 h-4 mr-2" />
-          Compt
+          Compte
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

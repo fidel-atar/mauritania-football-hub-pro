@@ -26,18 +26,18 @@ const ProtectedAdminRoute = ({ children }: ProtectedAdminRouteProps) => {
 
   // If no user is logged in, show admin login form
   if (!user) {
-    console.log('No user found, showing admin login');
+    console.log('ProtectedAdminRoute: No user found, showing admin login');
     return <SecureAdminLogin />;
   }
 
   // If user is logged in but not admin, redirect to home with message
   if (!isAdmin) {
-    console.log('User is not admin, redirecting to home');
+    console.log('ProtectedAdminRoute: User is not admin, redirecting to home');
     return <Navigate to="/" replace />;
   }
 
   // User is authenticated and is admin, show admin content
-  console.log('User is admin, showing admin content');
+  console.log('ProtectedAdminRoute: User is admin, showing admin content');
   return <>{children}</>;
 };
 

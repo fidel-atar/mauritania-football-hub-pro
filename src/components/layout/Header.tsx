@@ -21,7 +21,7 @@ const Header = () => {
   // Listen for admin login events from UserMenu
   useEffect(() => {
     const handleOpenAdminLogin = (event: CustomEvent) => {
-      console.log(`Admin login requested for: ${event.detail}`);
+      console.log(`Header: Admin login requested for: ${event.detail}`);
       setShowAdminLogin(true);
     };
 
@@ -37,31 +37,34 @@ const Header = () => {
   };
 
   const handleUserTypeSelect = (userType: string) => {
-    console.log(`Selected user type: ${userType}`);
+    console.log(`Header: Selected user type: ${userType}`);
     
     if (userType === 'admin-principal' || userType === 'mini-admin') {
-      console.log('Opening admin login modal');
+      console.log('Header: Opening admin login modal');
       setShowAdminLogin(true);
     } else if (userType === 'utilisateur') {
+      console.log('Header: Opening user auth modal');
       setShowUserAuth(true);
     }
   };
 
   const handleSignOut = async () => {
+    console.log('Header: Signing out user');
     await signOut();
   };
 
   const handleShowProfile = () => {
+    console.log('Header: Showing user profile');
     setShowUserProfile(true);
   };
 
   const handleAdminLoginSuccess = () => {
-    console.log('Admin login successful, closing modal');
+    console.log('Header: Admin login successful, closing modal');
     setShowAdminLogin(false);
-    // The UserAuth component will handle the redirect to admin dashboard
   };
 
   const handleUserAuthSuccess = () => {
+    console.log('Header: User auth successful, closing modal');
     setShowUserAuth(false);
   };
 
