@@ -63,7 +63,7 @@ const Header = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-2">
-              {/* Compt Menu */}
+              {/* Combined Menu with Compt, Connexion, and Panier */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="relative">
@@ -76,7 +76,6 @@ const Header = () => {
                         {totalItems > 99 ? '99+' : totalItems}
                       </Badge>
                     )}
-                    <span className="ml-2">Compt</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
@@ -116,13 +115,21 @@ const Header = () => {
                       Connexion
                     </DropdownMenuItem>
                   )}
+                  
+                  <DropdownMenuSeparator />
+                  
+                  {/* Compt Section */}
+                  <DropdownMenuItem className="cursor-pointer hover:bg-gray-100">
+                    <User className="w-4 h-4 mr-2" />
+                    Compt
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-2">
-              {/* Mobile Compt Menu */}
+              {/* Mobile Combined Menu with Compt, Connexion, and Panier */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="relative">
@@ -135,7 +142,6 @@ const Header = () => {
                         {totalItems > 99 ? '99+' : totalItems}
                       </Badge>
                     )}
-                    <span className="ml-2">Compt</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
@@ -175,6 +181,14 @@ const Header = () => {
                       Connexion
                     </DropdownMenuItem>
                   )}
+                  
+                  <DropdownMenuSeparator />
+                  
+                  {/* Compt Section */}
+                  <DropdownMenuItem className="cursor-pointer hover:bg-gray-100">
+                    <User className="w-4 h-4 mr-2" />
+                    Compt
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               
