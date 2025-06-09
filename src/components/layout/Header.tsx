@@ -1,17 +1,20 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X, User, ShoppingCart } from "lucide-react";
 import { useState } from "react";
-import CartIcon from "@/components/shop/CartIcon";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useCart } from "@/hooks/useCart";
+import { Badge } from "@/components/ui/badge";
+import CartSheet from "@/components/shop/CartSheet";
 import SecureAdminLogin from "@/components/admin/SecureAdminLogin";
 import UserAuth from "@/components/auth/UserAuth";
 
@@ -20,6 +23,8 @@ const Header = () => {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showUserAuth, setShowUserAuth] = useState(false);
   const { isAdmin, user, signOut } = useAuth();
+  const { getTotalItems, isLoading } = useCart();
+  const totalItems = getTotalItems();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -58,18 +63,42 @@ const Header = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-2">
-              <CartIcon />
-              
-              {/* Compt Button */}
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <User className="w-4 h-4 mr-2" />
-                      {user.email}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
+              {/* Combined Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="relative">
+                    <Menu className="w-4 h-4" />
+                    {!isLoading && totalItems > 0 && (
+                      <Badge 
+                        variant="destructive" 
+                        className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center p-0 text-xs"
+                      >
+                        {totalItems > 99 ? '99+' : totalItems}
+                      </Badge>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
+                  {/* Cart Section */}
+                  <CartSheet>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-gray-100">
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Panier
+                      {!isLoading && totalItems > 0 && (
+                        <Badge 
+                          variant="destructive" 
+                          className="ml-auto w-5 h-5 flex items-center justify-center p-0 text-xs"
+                        >
+                          {totalItems > 99 ? '99+' : totalItems}
+                        </Badge>
+                      )}
+                    </DropdownMenuItem>
+                  </CartSheet>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  {/* Connexion Section */}
+                  {user ? (
                     <DropdownMenuItem 
                       onClick={handleSignOut}
                       className="cursor-pointer hover:bg-gray-100"
@@ -77,56 +106,73 @@ const Header = () => {
                       <User className="w-4 h-4 mr-2" />
                       Se déconnecter
                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <User className="w-4 h-4 mr-2" />
-                      Compt
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
-                    <DropdownMenuItem 
-                      onClick={() => handleUserTypeSelect('utilisateur')}
-                      className="cursor-pointer hover:bg-gray-100"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Utilisateur
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => handleUserTypeSelect('admin-principal')}
-                      className="cursor-pointer hover:bg-gray-100"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Admin Principal
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => handleUserTypeSelect('mini-admin')}
-                      className="cursor-pointer hover:bg-gray-100"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Mini-Admin
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+                  ) : (
+                    <>
+                      <DropdownMenuItem 
+                        onClick={() => handleUserTypeSelect('utilisateur')}
+                        className="cursor-pointer hover:bg-gray-100"
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        Connexion Utilisateur
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleUserTypeSelect('admin-principal')}
+                        className="cursor-pointer hover:bg-gray-100"
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        Connexion Admin Principal
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleUserTypeSelect('mini-admin')}
+                        className="cursor-pointer hover:bg-gray-100"
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        Connexion Mini-Admin
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-2">
-              <CartIcon />
-              
-              {/* Mobile Compt Button */}
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <User className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
+              {/* Mobile Combined Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="relative">
+                    <Menu className="w-4 h-4" />
+                    {!isLoading && totalItems > 0 && (
+                      <Badge 
+                        variant="destructive" 
+                        className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center p-0 text-xs"
+                      >
+                        {totalItems > 99 ? '99+' : totalItems}
+                      </Badge>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
+                  {/* Cart Section */}
+                  <CartSheet>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-gray-100">
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Panier
+                      {!isLoading && totalItems > 0 && (
+                        <Badge 
+                          variant="destructive" 
+                          className="ml-auto w-5 h-5 flex items-center justify-center p-0 text-xs"
+                        >
+                          {totalItems > 99 ? '99+' : totalItems}
+                        </Badge>
+                      )}
+                    </DropdownMenuItem>
+                  </CartSheet>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  {/* Connexion Section */}
+                  {user ? (
                     <DropdownMenuItem 
                       onClick={handleSignOut}
                       className="cursor-pointer hover:bg-gray-100"
@@ -134,40 +180,33 @@ const Header = () => {
                       <User className="w-4 h-4 mr-2" />
                       Se déconnecter
                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <User className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
-                    <DropdownMenuItem 
-                      onClick={() => handleUserTypeSelect('utilisateur')}
-                      className="cursor-pointer hover:bg-gray-100"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Utilisateur
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => handleUserTypeSelect('admin-principal')}
-                      className="cursor-pointer hover:bg-gray-100"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Admin Principal
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => handleUserTypeSelect('mini-admin')}
-                      className="cursor-pointer hover:bg-gray-100"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Mini-Admin
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+                  ) : (
+                    <>
+                      <DropdownMenuItem 
+                        onClick={() => handleUserTypeSelect('utilisateur')}
+                        className="cursor-pointer hover:bg-gray-100"
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        Connexion Utilisateur
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleUserTypeSelect('admin-principal')}
+                        className="cursor-pointer hover:bg-gray-100"
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        Connexion Admin Principal
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleUserTypeSelect('mini-admin')}
+                        className="cursor-pointer hover:bg-gray-100"
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        Connexion Mini-Admin
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
               
               <button 
                 onClick={toggleMenu}
