@@ -63,7 +63,7 @@ const Header = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-2">
-              {/* Combined Menu */}
+              {/* Compt Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="relative">
@@ -76,6 +76,7 @@ const Header = () => {
                         {totalItems > 99 ? '99+' : totalItems}
                       </Badge>
                     )}
+                    <span className="ml-2">Compt</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
@@ -107,29 +108,13 @@ const Header = () => {
                       Se déconnecter
                     </DropdownMenuItem>
                   ) : (
-                    <>
-                      <DropdownMenuItem 
-                        onClick={() => handleUserTypeSelect('utilisateur')}
-                        className="cursor-pointer hover:bg-gray-100"
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Connexion Utilisateur
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleUserTypeSelect('admin-principal')}
-                        className="cursor-pointer hover:bg-gray-100"
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Connexion Admin Principal
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleUserTypeSelect('mini-admin')}
-                        className="cursor-pointer hover:bg-gray-100"
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Connexion Mini-Admin
-                      </DropdownMenuItem>
-                    </>
+                    <DropdownMenuItem 
+                      onClick={() => handleUserTypeSelect('utilisateur')}
+                      className="cursor-pointer hover:bg-gray-100"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Connexion
+                    </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -137,7 +122,7 @@ const Header = () => {
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-2">
-              {/* Mobile Combined Menu */}
+              {/* Mobile Compt Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="relative">
@@ -150,6 +135,7 @@ const Header = () => {
                         {totalItems > 99 ? '99+' : totalItems}
                       </Badge>
                     )}
+                    <span className="ml-2">Compt</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
@@ -181,29 +167,13 @@ const Header = () => {
                       Se déconnecter
                     </DropdownMenuItem>
                   ) : (
-                    <>
-                      <DropdownMenuItem 
-                        onClick={() => handleUserTypeSelect('utilisateur')}
-                        className="cursor-pointer hover:bg-gray-100"
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Connexion Utilisateur
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleUserTypeSelect('admin-principal')}
-                        className="cursor-pointer hover:bg-gray-100"
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Connexion Admin Principal
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleUserTypeSelect('mini-admin')}
-                        className="cursor-pointer hover:bg-gray-100"
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Connexion Mini-Admin
-                      </DropdownMenuItem>
-                    </>
+                    <DropdownMenuItem 
+                      onClick={() => handleUserTypeSelect('utilisateur')}
+                      className="cursor-pointer hover:bg-gray-100"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Connexion
+                    </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
