@@ -15,6 +15,7 @@ import AdminProductsManager from "@/components/admin/AdminProductsManager";
 import AdminCupsManager from "@/components/admin/AdminCupsManager";
 import AdminStandingsManager from "@/components/admin/AdminStandingsManager";
 import AdminStadiumsManager from "@/components/admin/AdminStadiumsManager";
+import AdminCupInfoManager from "@/components/admin/AdminCupInfoManager";
 import AdminSearchBar from "@/components/admin/AdminSearchBar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
@@ -112,13 +113,13 @@ const AdminDashboardContent = () => {
           </div>
         </Button>
         <Button 
-          onClick={() => setActiveTab("players")} 
+          onClick={() => setActiveTab("cup-info")} 
           className="bg-fmf-green hover:bg-fmf-green/90 h-16"
-          variant={activeTab === "players" ? "default" : "outline"}
+          variant={activeTab === "cup-info" ? "default" : "outline"}
         >
           <div className="text-center">
-            <div className="w-6 h-6 mx-auto mb-1 bg-current rounded-full"></div>
-            <span>Gérer Joueurs</span>
+            <Trophy className="w-6 h-6 mx-auto mb-1" />
+            <span>Info Coupe</span>
           </div>
         </Button>
       </div>
@@ -133,13 +134,14 @@ const AdminDashboardContent = () => {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-8 mb-6">
+        <TabsList className="grid w-full grid-cols-9 mb-6">
           <TabsTrigger value="teams">Équipes</TabsTrigger>
           <TabsTrigger value="stadiums">Stades</TabsTrigger>
           <TabsTrigger value="players">Joueurs</TabsTrigger>
           <TabsTrigger value="matches">Matchs</TabsTrigger>
           <TabsTrigger value="standings">Classement</TabsTrigger>
           <TabsTrigger value="cups">Coupes</TabsTrigger>
+          <TabsTrigger value="cup-info">Info Coupe</TabsTrigger>
           <TabsTrigger value="news">Actualités</TabsTrigger>
           <TabsTrigger value="products">Boutique</TabsTrigger>
         </TabsList>
@@ -166,6 +168,10 @@ const AdminDashboardContent = () => {
 
         <TabsContent value="cups">
           <AdminCupsManager />
+        </TabsContent>
+
+        <TabsContent value="cup-info">
+          <AdminCupInfoManager />
         </TabsContent>
 
         <TabsContent value="news">

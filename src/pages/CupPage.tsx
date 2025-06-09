@@ -4,13 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import TournamentBracket from "@/components/cup/TournamentBracket";
-import CupInfoEditor from "@/components/cup/admin/CupInfoEditor";
 
 const CupPage = () => {
-  const { isAdmin } = useAuth();
-
   // Fetch cups data from Supabase
   const { data: cups = [], isLoading } = useQuery({
     queryKey: ['cups'],
@@ -117,9 +113,64 @@ const CupPage = () => {
           </p>
         </div>
       )}
-      
-      <div className="mt-6">
-        <CupInfoEditor isAdmin={isAdmin} />
+
+      {/* Static information sections - read-only for users */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Palmarès</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              <li className="flex justify-between">
+                <span>2022</span>
+                <span className="font-medium">FC Nouakchott</span>
+              </li>
+              <li className="flex justify-between">
+                <span>2021</span>
+                <span className="font-medium">Nouadhibou FC</span>
+              </li>
+              <li className="flex justify-between">
+                <span>2020</span>
+                <span className="font-medium">AS Garde</span>
+              </li>
+              <li className="flex justify-between">
+                <span>2019</span>
+                <span className="font-medium">Tevragh-Zeina FC</span>
+              </li>
+              <li className="flex justify-between">
+                <span>2018</span>
+                <span className="font-medium">FC Nouakchott</span>
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Informations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              <li className="flex justify-between">
+                <span>Format</span>
+                <span className="font-medium">Élimination directe</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Nombre d'équipes</span>
+                <span className="font-medium">16</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Tenant du titre</span>
+                <span className="font-medium">FC Nouakchott</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Lieu de la finale</span>
+                <span className="font-medium">Stade Olympique, Nouakchott</span>
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
