@@ -57,6 +57,8 @@ const Header = () => {
     setShowUserAuth(false);
   };
 
+  console.log('Header: Current user:', user?.email, 'isAdmin:', isAdmin);
+
   return (
     <>
       <header className="bg-white shadow-sm border-b">
@@ -74,8 +76,10 @@ const Header = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-2">
-              {/* Admin Button - Show when user is admin */}
-              {user && isAdmin && <AdminButton />}
+              {/* Admin Button - Show only when user is admin */}
+              {user && isAdmin && (
+                <AdminButton />
+              )}
               
               <UserMenu
                 user={user}
@@ -89,8 +93,10 @@ const Header = () => {
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-2">
-              {/* Admin Button for Mobile - Show when user is admin */}
-              {user && isAdmin && <AdminButton isMobile />}
+              {/* Admin Button for Mobile - Show only when user is admin */}
+              {user && isAdmin && (
+                <AdminButton isMobile />
+              )}
               
               <UserMenu
                 user={user}

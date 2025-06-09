@@ -21,7 +21,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   
-  const { isAdmin, adminRole, checkAdminStatus } = useAdminStatus(user);
+  const { isAdmin, adminRole, loading: adminLoading, checkAdminStatus } = useAdminStatus(user);
 
   useEffect(() => {
     // Get initial session
@@ -91,7 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user,
       isAdmin,
       adminRole,
-      loading,
+      loading: loading || adminLoading,
       signIn,
       signUp,
       signOut,
