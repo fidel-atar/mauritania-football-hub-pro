@@ -1,14 +1,13 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { User, Mail, Eye, EyeOff, Shield } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { validateAuthInput } from '@/utils/authValidation';
+import AuthHeader from './AuthHeader';
+import AuthForm from './AuthForm';
+import AuthFooter from './AuthFooter';
 
 interface UserAuthProps {
   onAuthSuccess?: () => void;
@@ -25,51 +24,13 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
   const { signIn, signUp, checkAdminStatus } = useAuth();
   const navigate = useNavigate();
 
-  // Configure titles and descriptions based on user type
   const isAdminLogin = userType === 'admin';
-  const IconComponent = isAdminLogin ? Shield : User;
-  const iconBgColor = isAdminLogin ? 'bg-red-600' : 'bg-blue-600';
-  
-  const getTitle = () => {
-    if (isAdminLogin) {
-      return isSignUp ? 'Créer un compte admin' : 'Connexion admin';
-    }
-    return isSignUp ? 'Créer un compte' : 'Connexion utilisateur';
-  };
-  
-  const getDescription = () => {
-    if (isAdminLogin) {
-      return isSignUp 
-        ? 'Créez votre compte administrateur pour accéder au panneau d\'administration'
-        : 'Connectez-vous avec votre compte administrateur';
-    }
-    return isSignUp 
-      ? 'Créez votre compte pour accéder à toutes les fonctionnalités'
-      : 'Connectez-vous avec votre compte utilisateur';
-  };
-
-  const validateInput = (email: string, password: string) => {
-    if (!email || !password) {
-      return 'Tous les champs sont requis';
-    }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return 'Format d\'email invalide';
-    }
-    
-    if (password.length < 6) {
-      return 'Le mot de passe doit contenir au moins 6 caractères';
-    }
-    
-    return null;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    const validationError = validateInput(email, password);
+    const validationError = validateAuthInput(email, password);
     if (validationError) {
       setError(validationError);
       return;
@@ -128,113 +89,35 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
     }
   };
 
+  const handleToggleSignUp = () => {
+    setIsSignUp(!isSignUp);
+    setError('');
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className={`mx-auto w-12 h-12 ${iconBgColor} rounded-full flex items-center justify-center mb-4`}>
-            <IconComponent className="w-6 h-6 text-white" />
-          </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">
-            {getTitle()}
-          </CardTitle>
-          <p className="text-gray-600">
-            {getDescription()}
-          </p>
-        </CardHeader>
+        <AuthHeader isAdminLogin={isAdminLogin} isSignUp={isSignUp} />
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value.trim())}
-                  placeholder="votre@email.com"
-                  className="pl-10"
-                  required
-                  disabled={loading}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="pl-10 pr-10"
-                  required
-                  disabled={loading}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-1 top-1 h-8 w-8 p-0"
-                  onClick={() => setShowPassword(!showPassword)}
-                  disabled={loading}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-            
-            <Button 
-              type="submit" 
-              className={`w-full ${isAdminLogin ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`}
-              disabled={loading}
-            >
-              {loading 
-                ? (isSignUp ? 'Création...' : 'Connexion...') 
-                : (isSignUp ? 'Créer un compte' : 'Se connecter')
-              }
-            </Button>
-          </form>
-          
-          <div className="mt-4 text-center">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setIsSignUp(!isSignUp);
-                setError('');
-              }}
-              disabled={loading}
-            >
-              {isSignUp 
-                ? 'Déjà un compte ? Se connecter'
-                : 'Pas de compte ? Créer un compte'
-              }
-            </Button>
-          </div>
-          
-          <div className="mt-6 text-center text-sm text-gray-600">
-            <p>
-              {isAdminLogin 
-                ? 'Accédez au panneau d\'administration'
-                : 'Accédez à toutes les fonctionnalités de l\'application'
-              }
-            </p>
-            {isSignUp && (
-              <p className="text-xs mt-2 text-gray-500">
-                En créant un compte, vous acceptez nos conditions d'utilisation
-              </p>
-            )}
-          </div>
+          <AuthForm
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            showPassword={showPassword}
+            setShowPassword={setShowPassword}
+            loading={loading}
+            error={error}
+            isSignUp={isSignUp}
+            isAdminLogin={isAdminLogin}
+            onSubmit={handleSubmit}
+          />
+          <AuthFooter
+            isSignUp={isSignUp}
+            isAdminLogin={isAdminLogin}
+            loading={loading}
+            onToggleSignUp={handleToggleSignUp}
+          />
         </CardContent>
       </Card>
     </div>
