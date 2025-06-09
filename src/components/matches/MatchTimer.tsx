@@ -50,7 +50,12 @@ const MatchTimer = ({ matchId, isAdmin }: MatchTimerProps) => {
     );
   }
 
-  // Don't show anything if no timer data and not admin
+  // Hide timer completely if no timer data and not admin
+  if (!timerData && !isAdmin) {
+    return null;
+  }
+
+  // If there's timer data, show it to everyone but controls only to admins
   if (!timerData) {
     return null;
   }
