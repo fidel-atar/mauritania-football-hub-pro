@@ -24,6 +24,8 @@ const MatchTimer = ({ matchId, isAdmin }: MatchTimerProps) => {
 
   const [extraTimeInput, setExtraTimeInput] = useState("");
 
+  console.log('MatchTimer - isAdmin:', isAdmin);
+
   if (loading) {
     return (
       <Card>
@@ -92,11 +94,39 @@ const MatchTimer = ({ matchId, isAdmin }: MatchTimerProps) => {
   };
 
   const handleAddExtraTime = () => {
+    if (!isAdmin) {
+      console.warn('Non-admin user attempted to add extra time');
+      return;
+    }
     const minutes = parseInt(extraTimeInput);
     if (isNaN(minutes) || minutes < 0) return;
     
     updateExtraTime(timerData.current_period, minutes);
     setExtraTimeInput("");
+  };
+
+  const handleStartTimer = () => {
+    if (!isAdmin) {
+      console.warn('Non-admin user attempted to start timer');
+      return;
+    }
+    startTimer();
+  };
+
+  const handlePauseTimer = () => {
+    if (!isAdmin) {
+      console.warn('Non-admin user attempted to pause timer');
+      return;
+    }
+    pauseTimer();
+  };
+
+  const handleNextPeriod = () => {
+    if (!isAdmin) {
+      console.warn('Non-admin user attempted to move to next period');
+      return;
+    }
+    nextPeriod();
   };
 
   return (
@@ -132,7 +162,7 @@ const MatchTimer = ({ matchId, isAdmin }: MatchTimerProps) => {
             <div className="flex gap-2">
               {!timerData.is_running ? (
                 <Button 
-                  onClick={startTimer} 
+                  onClick={handleStartTimer} 
                   className="flex-1 bg-green-600 hover:bg-green-700"
                 >
                   <Play className="w-4 h-4 mr-2" />
@@ -140,7 +170,7 @@ const MatchTimer = ({ matchId, isAdmin }: MatchTimerProps) => {
                 </Button>
               ) : (
                 <Button 
-                  onClick={pauseTimer} 
+                  onClick={handlePauseTimer} 
                   variant="outline" 
                   className="flex-1"
                 >
@@ -150,7 +180,7 @@ const MatchTimer = ({ matchId, isAdmin }: MatchTimerProps) => {
               )}
               
               <Button 
-                onClick={nextPeriod}
+                onClick={handleNextPeriod}
                 variant="outline"
                 disabled={timerData.current_period === 'penalty'}
               >
@@ -194,6 +224,13 @@ const MatchTimer = ({ matchId, isAdmin }: MatchTimerProps) => {
                 {timerData.current_period === 'extra_time_2' && 'Will auto-pause at 120 + extra time'}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Non-admin message */}
+        {!isAdmin && (
+          <div className="text-center text-sm text-gray-500 mt-4">
+            Timer controls are only available to administrators
           </div>
         )}
       </CardContent>

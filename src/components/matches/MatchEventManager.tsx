@@ -22,6 +22,8 @@ const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmi
     groupEventsByType
   } = useMatchEvents(matchId, homeTeamId, awayTeamId);
 
+  console.log('MatchEventManager - isAdmin:', isAdmin);
+
   if (loading) {
     return <div className="text-center py-4">Chargement des événements...</div>;
   }
@@ -29,6 +31,10 @@ const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmi
   const { goals, yellowCards, redCards } = groupEventsByType();
 
   const onDeleteEvent = (eventId: string) => {
+    if (!isAdmin) {
+      console.warn('Non-admin user attempted to delete event');
+      return;
+    }
     handleDeleteEvent(eventId, isAdmin);
   };
 
@@ -43,6 +49,10 @@ const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmi
             players={players}
             onEventAdded={fetchEvents}
           />
+        )}
+        {/* Show message for non-admin users */}
+        {!isAdmin && (
+          <p className="text-sm text-gray-500">Seuls les administrateurs peuvent ajouter des événements</p>
         )}
       </div>
 

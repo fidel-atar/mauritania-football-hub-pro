@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Player {
   id: string;
@@ -22,6 +23,7 @@ interface EventFormProps {
 }
 
 const EventForm = ({ matchId, players, onEventAdded }: EventFormProps) => {
+  const { isAdmin } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     player_id: '',
@@ -31,6 +33,11 @@ const EventForm = ({ matchId, players, onEventAdded }: EventFormProps) => {
   });
 
   const handleAddEvent = async () => {
+    if (!isAdmin) {
+      toast.error('Vous n\'avez pas les permissions pour ajouter des événements');
+      return;
+    }
+
     if (!newEvent.player_id || !newEvent.minute || newEvent.player_id === 'none') {
       toast.error('Veuillez remplir tous les champs obligatoires');
       return;
@@ -58,6 +65,11 @@ const EventForm = ({ matchId, players, onEventAdded }: EventFormProps) => {
       toast.error('Erreur lors de l\'ajout de l\'événement');
     }
   };
+
+  // Don't render if not admin
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

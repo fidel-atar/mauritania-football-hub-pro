@@ -3,6 +3,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Target, Trash2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Player {
   id: string;
@@ -29,6 +30,8 @@ interface EventCardProps {
 }
 
 const EventCard = ({ event, isAdmin = false, onDelete }: EventCardProps) => {
+  const { isAdmin: userIsAdmin } = useAuth();
+
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
       case 'goal':
@@ -55,6 +58,16 @@ const EventCard = ({ event, isAdmin = false, onDelete }: EventCardProps) => {
     }
   };
 
+  const handleDelete = () => {
+    if (!userIsAdmin) {
+      console.warn('Non-admin user attempted to delete event');
+      return;
+    }
+    if (onDelete) {
+      onDelete(event.id);
+    }
+  };
+
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between">
@@ -72,11 +85,11 @@ const EventCard = ({ event, isAdmin = false, onDelete }: EventCardProps) => {
             )}
           </div>
         </div>
-        {isAdmin && onDelete && (
+        {isAdmin && userIsAdmin && onDelete && (
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onDelete(event.id)}
+            onClick={handleDelete}
             className="text-red-600 hover:text-red-800 hover:bg-red-50"
           >
             <Trash2 className="w-4 h-4" />

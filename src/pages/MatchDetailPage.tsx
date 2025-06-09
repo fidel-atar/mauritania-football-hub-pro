@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import MatchHeader from "@/components/matches/MatchHeader";
 import MatchTabs from "@/components/matches/MatchTabs";
 import MatchTimer from "@/components/matches/MatchTimer";
@@ -30,39 +32,19 @@ interface MatchData {
 
 const MatchDetailPage = () => {
   const { id } = useParams();
+  const { isAdmin } = useAuth();
   const [matchData, setMatchData] = useState<MatchData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (id && id !== 'undefined' && id !== 'NaN' && id !== 'null') {
       fetchMatchData(id);
-      checkAdminStatus();
     } else {
       console.error('Invalid match ID:', id);
       toast.error('ID de match invalide');
       setLoading(false);
     }
   }, [id]);
-
-  const checkAdminStatus = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data, error } = await supabase
-          .from('admin_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        if (!error && data) {
-          setIsAdmin(true);
-        }
-      }
-    } catch (error) {
-      console.error('Error checking admin status:', error);
-    }
-  };
 
   const fetchMatchData = async (matchId: string) => {
     try {
@@ -173,6 +155,8 @@ const MatchDetailPage = () => {
       </div>
     );
   }
+
+  console.log('MatchDetailPage - isAdmin:', isAdmin);
 
   return (
     <div className="page-container pb-20">
