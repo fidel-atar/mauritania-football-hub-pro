@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface SecureAdminLoginProps {
   onLoginSuccess?: () => void;
@@ -20,6 +21,7 @@ const SecureAdminLogin = ({ onLoginSuccess }: SecureAdminLoginProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { signIn, checkAdminStatus } = useAuth();
+  const navigate = useNavigate();
 
   const validateInput = (email: string, password: string) => {
     if (!email || !password) {
@@ -71,6 +73,9 @@ const SecureAdminLogin = ({ onLoginSuccess }: SecureAdminLoginProps) => {
         if (onLoginSuccess) {
           onLoginSuccess();
         }
+        
+        // Navigate to admin dashboard using React Router
+        navigate('/admin-dashboard');
       }, 500);
       
     } catch (error) {

@@ -189,8 +189,6 @@ const Header = () => {
             </div>
             <SecureAdminLogin onLoginSuccess={() => {
               setShowAdminLogin(false);
-              // Force redirect to admin dashboard
-              window.location.href = '/admin-dashboard';
             }} />
           </div>
         </div>
