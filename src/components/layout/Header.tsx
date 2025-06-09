@@ -27,7 +27,7 @@ const Header = () => {
     console.log(`Selected user type: ${userType}`);
     
     if (userType === 'admin-principal' || userType === 'mini-admin') {
-      // Show the admin login modal instead of redirecting
+      // Show the admin login modal
       setShowAdminLogin(true);
     }
   };
@@ -189,7 +189,8 @@ const Header = () => {
             </div>
             <SecureAdminLogin onLoginSuccess={() => {
               setShowAdminLogin(false);
-              window.location.href = '/admin';
+              // Force redirect to admin dashboard
+              window.location.href = '/admin-dashboard';
             }} />
           </div>
         </div>

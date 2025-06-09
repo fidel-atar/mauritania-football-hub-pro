@@ -19,7 +19,7 @@ const SecureAdminLogin = ({ onLoginSuccess }: SecureAdminLoginProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { signIn } = useAuth();
+  const { signIn, checkAdminStatus } = useAuth();
 
   const validateInput = (email: string, password: string) => {
     if (!email || !password) {
@@ -62,12 +62,17 @@ const SecureAdminLogin = ({ onLoginSuccess }: SecureAdminLoginProps) => {
         return;
       }
       
-      toast.success('Connexion réussie');
+      // Wait a moment for auth state to update, then check admin status
+      setTimeout(async () => {
+        await checkAdminStatus();
+        toast.success('Connexion administrateur réussie');
+        
+        // Call the success callback if provided
+        if (onLoginSuccess) {
+          onLoginSuccess();
+        }
+      }, 500);
       
-      // Call the success callback if provided
-      if (onLoginSuccess) {
-        onLoginSuccess();
-      }
     } catch (error) {
       console.error('Login error:', error);
       setError('Une erreur inattendue s\'est produite');
@@ -153,6 +158,9 @@ const SecureAdminLogin = ({ onLoginSuccess }: SecureAdminLoginProps) => {
           
           <div className="mt-6 text-center text-sm text-gray-600">
             <p>Accès réservé aux administrateurs autorisés</p>
+            <p className="text-xs mt-2 text-gray-500">
+              Vous aurez accès à toutes les fonctionnalités d'administration
+            </p>
           </div>
         </CardContent>
       </Card>
