@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, LogOut, AlertTriangle, Trophy, BarChart3 } from "lucide-react";
+import { ArrowLeft, LogOut, Trophy, BarChart3, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import ProtectedAdminRoute from "@/components/admin/ProtectedAdminRoute";
@@ -17,7 +17,6 @@ import AdminStandingsManager from "@/components/admin/AdminStandingsManager";
 import AdminStadiumsManager from "@/components/admin/AdminStadiumsManager";
 import AdminCupInfoManager from "@/components/admin/AdminCupInfoManager";
 import AdminSearchBar from "@/components/admin/AdminSearchBar";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 
 const AdminDashboardContent = () => {
@@ -93,13 +92,23 @@ const AdminDashboardContent = () => {
           </div>
         </Button>
         <Button 
-          onClick={() => setActiveTab("stadiums")} 
+          onClick={() => setActiveTab("players")} 
           className="bg-fmf-green hover:bg-fmf-green/90 h-16"
-          variant={activeTab === "stadiums" ? "default" : "outline"}
+          variant={activeTab === "players" ? "default" : "outline"}
         >
           <div className="text-center">
-            <div className="w-6 h-6 mx-auto mb-1 bg-current rounded"></div>
-            <span>Gérer Stades</span>
+            <Users className="w-6 h-6 mx-auto mb-1" />
+            <span>Gérer Joueurs</span>
+          </div>
+        </Button>
+        <Button 
+          onClick={() => setActiveTab("matches")} 
+          className="bg-fmf-green hover:bg-fmf-green/90 h-16"
+          variant={activeTab === "matches" ? "default" : "outline"}
+        >
+          <div className="text-center">
+            <Trophy className="w-6 h-6 mx-auto mb-1" />
+            <span>Gérer Matchs</span>
           </div>
         </Button>
         <Button 
@@ -109,29 +118,10 @@ const AdminDashboardContent = () => {
         >
           <div className="text-center">
             <BarChart3 className="w-6 h-6 mx-auto mb-1" />
-            <span>Gérer Stats</span>
-          </div>
-        </Button>
-        <Button 
-          onClick={() => setActiveTab("cup-info")} 
-          className="bg-fmf-green hover:bg-fmf-green/90 h-16"
-          variant={activeTab === "cup-info" ? "default" : "outline"}
-        >
-          <div className="text-center">
-            <Trophy className="w-6 h-6 mx-auto mb-1" />
-            <span>Info Coupe</span>
+            <span>Gérer Classement</span>
           </div>
         </Button>
       </div>
-
-      {adminRole === 'moderator' && (
-        <Alert className="mb-6">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            Vous avez des permissions limitées en tant que modérateur. Certaines fonctions peuvent être restreintes.
-          </AlertDescription>
-        </Alert>
-      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-9 mb-6">
