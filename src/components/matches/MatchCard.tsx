@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Calendar } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import TeamLink from "./TeamLink";
+import { useMatchTimer } from "@/hooks/useMatchTimer";
 
 export interface MatchProps {
   id: number;
@@ -27,6 +28,28 @@ export interface MatchProps {
 const MatchCard = ({ match }: { match: MatchProps }) => {
   const isFinished = match.status === "finished";
   const isLive = match.status === "live";
+  
+  const { timerData } = useMatchTimer(match.id.toString());
+
+  const formatTime = (minutes: number, seconds: number) => {
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const getExtraTime = () => {
+    if (!timerData) return 0;
+    switch (timerData.current_period) {
+      case 'first_half':
+        return timerData.extra_time_first_half;
+      case 'second_half':
+        return timerData.extra_time_second_half;
+      case 'extra_time_1':
+        return timerData.extra_time_first_extra;
+      case 'extra_time_2':
+        return timerData.extra_time_second_extra;
+      default:
+        return 0;
+    }
+  };
   
   return (
     <div className="match-card mb-4 animate-fade-in">
@@ -56,7 +79,19 @@ const MatchCard = ({ match }: { match: MatchProps }) => {
                 <div className="text-xl font-bold">
                   {match.homeScore} - {match.awayScore}
                 </div>
-                {isLive && <div className="text-xs text-red-500 animate-pulse">Live</div>}
+                {isLive && timerData && (
+                  <div className="text-xs text-red-500">
+                    <div className="font-semibold">
+                      {formatTime(timerData.current_minutes, timerData.current_seconds)}'
+                    </div>
+                    {getExtraTime() > 0 && (
+                      <div className="text-amber-600">
+                        +{getExtraTime()}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {isLive && !timerData && <div className="text-xs text-red-500 animate-pulse">Live</div>}
               </div>
             ) : (
               <div className="text-sm font-medium">
