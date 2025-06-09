@@ -1,22 +1,33 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Settings } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
 import { useState } from "react";
 import CartIcon from "@/components/shop/CartIcon";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAdmin, user } = useAuth();
 
-  // Add debugging
-  console.log("Header - User:", user);
-  console.log("Header - Is Admin:", isAdmin);
-
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleUserTypeSelect = (userType: string) => {
+    console.log(`Selected user type: ${userType}`);
+    // Here you can add logic to handle user type selection
+    // For example, redirect to admin dashboard with specific permissions
+    if (userType === 'admin-principal' || userType === 'mini-admin') {
+      window.location.href = '/admin';
+    }
   };
 
   return (
@@ -36,41 +47,77 @@ const Header = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-2">
             <CartIcon />
-            {/* Always show admin button for testing - remove this later */}
-            <Link to="/admin">
-              <Button variant="default" className="bg-red-600 hover:bg-red-700 text-white">
-                <Settings className="w-4 h-4 mr-2" />
-                Administration
-              </Button>
-            </Link>
-            {/* Original conditional admin button */}
-            {isAdmin && (
-              <Link to="/admin">
-                <Button variant="default" className="bg-red-600 hover:bg-red-700 text-white ml-2">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Admin (Conditional)
+            
+            {/* Compt Button */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <User className="w-4 h-4 mr-2" />
+                  Compt
                 </Button>
-              </Link>
-            )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
+                <DropdownMenuItem 
+                  onClick={() => handleUserTypeSelect('utilisateur')}
+                  className="cursor-pointer hover:bg-gray-100"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Utilisateur
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => handleUserTypeSelect('admin-principal')}
+                  className="cursor-pointer hover:bg-gray-100"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Admin Principal
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => handleUserTypeSelect('mini-admin')}
+                  className="cursor-pointer hover:bg-gray-100"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Mini-Admin
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center gap-2">
             <CartIcon />
-            {/* Always show admin button for testing - remove this later */}
-            <Link to="/admin">
-              <Button variant="default" size="sm" className="bg-red-600 hover:bg-red-700 text-white">
-                <Settings className="w-4 h-4" />
-              </Button>
-            </Link>
-            {/* Original conditional admin button */}
-            {isAdmin && (
-              <Link to="/admin">
-                <Button variant="default" size="sm" className="bg-red-600 hover:bg-red-700 text-white">
-                  <Settings className="w-4 h-4" />
+            
+            {/* Mobile Compt Button */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <User className="w-4 h-4" />
                 </Button>
-              </Link>
-            )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
+                <DropdownMenuItem 
+                  onClick={() => handleUserTypeSelect('utilisateur')}
+                  className="cursor-pointer hover:bg-gray-100"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Utilisateur
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => handleUserTypeSelect('admin-principal')}
+                  className="cursor-pointer hover:bg-gray-100"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Admin Principal
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => handleUserTypeSelect('mini-admin')}
+                  className="cursor-pointer hover:bg-gray-100"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Mini-Admin
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             <button 
               onClick={toggleMenu}
               className="text-gray-700 hover:text-fmf-green transition-colors"
@@ -119,25 +166,6 @@ const Header = () => {
               >
                 Boutique
               </Link>
-              {/* Always show admin link for testing */}
-              <Link 
-                to="/admin" 
-                className="text-red-600 font-semibold hover:text-red-700 transition-colors border-t pt-4"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Settings className="w-4 h-4 inline mr-2" />
-                Administration (Always)
-              </Link>
-              {isAdmin && (
-                <Link 
-                  to="/admin" 
-                  className="text-red-600 font-semibold hover:text-red-700 transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <Settings className="w-4 h-4 inline mr-2" />
-                  Administration (Conditional)
-                </Link>
-              )}
             </nav>
           </div>
         )}
