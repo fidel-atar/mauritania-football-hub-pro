@@ -422,7 +422,9 @@ export type Database = {
           news_id: string
           parent_comment_id: string | null
           updated_at: string
+          user_avatar: string | null
           user_id: string
+          user_name: string | null
         }
         Insert: {
           content: string
@@ -431,7 +433,9 @@ export type Database = {
           news_id: string
           parent_comment_id?: string | null
           updated_at?: string
+          user_avatar?: string | null
           user_id: string
+          user_name?: string | null
         }
         Update: {
           content?: string
@@ -440,7 +444,9 @@ export type Database = {
           news_id?: string
           parent_comment_id?: string | null
           updated_at?: string
+          user_avatar?: string | null
           user_id?: string
+          user_name?: string | null
         }
         Relationships: [
           {
@@ -672,26 +678,41 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
+          bio: string | null
           created_at: string | null
+          date_of_birth: string | null
           email: string
           full_name: string | null
           id: string
+          location: string | null
+          phone: string | null
           role: Database["public"]["Enums"]["role_type"] | null
           updated_at: string | null
         }
         Insert: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           email: string
           full_name?: string | null
           id: string
+          location?: string | null
+          phone?: string | null
           role?: Database["public"]["Enums"]["role_type"] | null
           updated_at?: string | null
         }
         Update: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           email?: string
           full_name?: string | null
           id?: string
+          location?: string | null
+          phone?: string | null
           role?: Database["public"]["Enums"]["role_type"] | null
           updated_at?: string | null
         }

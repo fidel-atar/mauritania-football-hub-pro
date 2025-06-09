@@ -17,11 +17,13 @@ import { Badge } from "@/components/ui/badge";
 import CartSheet from "@/components/shop/CartSheet";
 import SecureAdminLogin from "@/components/admin/SecureAdminLogin";
 import UserAuth from "@/components/auth/UserAuth";
+import UserProfile from "@/components/profile/UserProfile";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showUserAuth, setShowUserAuth] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
   const { isAdmin, user, signOut } = useAuth();
   const { getTotalItems, isLoading } = useCart();
   const totalItems = getTotalItems();
@@ -44,6 +46,10 @@ const Header = () => {
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleShowProfile = () => {
+    setShowUserProfile(true);
   };
 
   return (
@@ -119,7 +125,10 @@ const Header = () => {
                   <DropdownMenuSeparator />
                   
                   {/* Compt Section */}
-                  <DropdownMenuItem className="cursor-pointer hover:bg-gray-100">
+                  <DropdownMenuItem 
+                    onClick={handleShowProfile}
+                    className="cursor-pointer hover:bg-gray-100"
+                  >
                     <User className="w-4 h-4 mr-2" />
                     Compt
                   </DropdownMenuItem>
@@ -185,7 +194,10 @@ const Header = () => {
                   <DropdownMenuSeparator />
                   
                   {/* Compt Section */}
-                  <DropdownMenuItem className="cursor-pointer hover:bg-gray-100">
+                  <DropdownMenuItem 
+                    onClick={handleShowProfile}
+                    className="cursor-pointer hover:bg-gray-100"
+                  >
                     <User className="w-4 h-4 mr-2" />
                     Compt
                   </DropdownMenuItem>
@@ -283,6 +295,24 @@ const Header = () => {
                 setShowUserAuth(false);
               }} 
             />
+          </div>
+        </div>
+      )}
+
+      {/* User Profile Modal */}
+      {showUserProfile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-1 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 p-4">
+              <h2 className="text-lg font-semibold">Mon Profil</h2>
+              <button
+                onClick={() => setShowUserProfile(false)}
+                className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            <UserProfile />
           </div>
         </div>
       )}
