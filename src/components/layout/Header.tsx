@@ -2,7 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/hooks/useCart";
 import UserMenu from "./UserMenu";
@@ -17,20 +17,6 @@ const Header = () => {
   const { isAdmin, user, signOut } = useAuth();
   const { getTotalItems, isLoading } = useCart();
   const totalItems = getTotalItems();
-
-  // Listen for admin login events from UserMenu
-  useEffect(() => {
-    const handleOpenAdminLogin = (event: CustomEvent) => {
-      console.log(`Admin login requested for: ${event.detail}`);
-      setShowAdminLogin(true);
-    };
-
-    window.addEventListener('openAdminLogin', handleOpenAdminLogin as EventListener);
-    
-    return () => {
-      window.removeEventListener('openAdminLogin', handleOpenAdminLogin as EventListener);
-    };
-  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);

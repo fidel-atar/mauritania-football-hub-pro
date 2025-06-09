@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, ShoppingCart, Shield, UserCheck } from 'lucide-react';
+import { User, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,9 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import CartSheet from '@/components/shop/CartSheet';
@@ -32,16 +29,6 @@ const UserMenu = ({
   onShowAuth, 
   onShowProfile 
 }: UserMenuProps) => {
-  const handleUserTypeSelect = (userType: string) => {
-    if (userType === 'admin-principal' || userType === 'mini-admin') {
-      // For admin types, we need to trigger admin login
-      window.dispatchEvent(new CustomEvent('openAdminLogin', { detail: userType }));
-    } else {
-      // For regular user
-      onShowAuth();
-    }
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -86,35 +73,13 @@ const UserMenu = ({
             Se déconnecter
           </DropdownMenuItem>
         ) : (
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger className="cursor-pointer hover:bg-gray-100">
-              <User className="w-4 h-4 mr-2" />
-              Connexion
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="bg-white border shadow-lg z-50">
-              <DropdownMenuItem 
-                onClick={() => handleUserTypeSelect('utilisateur')}
-                className="cursor-pointer hover:bg-gray-100"
-              >
-                <UserCheck className="w-4 h-4 mr-2" />
-                Utilisateur
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => handleUserTypeSelect('admin-principal')}
-                className="cursor-pointer hover:bg-gray-100 text-red-600"
-              >
-                <Shield className="w-4 h-4 mr-2" />
-                Admin Principal
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => handleUserTypeSelect('mini-admin')}
-                className="cursor-pointer hover:bg-gray-100 text-orange-600"
-              >
-                <Shield className="w-4 h-4 mr-2" />
-                Mini Admin
-              </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
+          <DropdownMenuItem 
+            onClick={onShowAuth}
+            className="cursor-pointer hover:bg-gray-100"
+          >
+            <User className="w-4 h-4 mr-2" />
+            Connexion
+          </DropdownMenuItem>
         )}
         
         <DropdownMenuSeparator />
