@@ -9,7 +9,11 @@ import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
+
+  // Add debugging
+  console.log("Header - User:", user);
+  console.log("Header - Is Admin:", isAdmin);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -30,13 +34,21 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-2">
             <CartIcon />
+            {/* Always show admin button for testing - remove this later */}
+            <Link to="/admin">
+              <Button variant="default" className="bg-red-600 hover:bg-red-700 text-white">
+                <Settings className="w-4 h-4 mr-2" />
+                Administration
+              </Button>
+            </Link>
+            {/* Original conditional admin button */}
             {isAdmin && (
               <Link to="/admin">
-                <Button variant="default" className="bg-red-600 hover:bg-red-700 text-white">
+                <Button variant="default" className="bg-red-600 hover:bg-red-700 text-white ml-2">
                   <Settings className="w-4 h-4 mr-2" />
-                  Administration
+                  Admin (Conditional)
                 </Button>
               </Link>
             )}
@@ -45,6 +57,13 @@ const Header = () => {
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center gap-2">
             <CartIcon />
+            {/* Always show admin button for testing - remove this later */}
+            <Link to="/admin">
+              <Button variant="default" size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+                <Settings className="w-4 h-4" />
+              </Button>
+            </Link>
+            {/* Original conditional admin button */}
             {isAdmin && (
               <Link to="/admin">
                 <Button variant="default" size="sm" className="bg-red-600 hover:bg-red-700 text-white">
@@ -100,14 +119,23 @@ const Header = () => {
               >
                 Boutique
               </Link>
+              {/* Always show admin link for testing */}
+              <Link 
+                to="/admin" 
+                className="text-red-600 font-semibold hover:text-red-700 transition-colors border-t pt-4"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Settings className="w-4 h-4 inline mr-2" />
+                Administration (Always)
+              </Link>
               {isAdmin && (
                 <Link 
                   to="/admin" 
-                  className="text-red-600 font-semibold hover:text-red-700 transition-colors border-t pt-4"
+                  className="text-red-600 font-semibold hover:text-red-700 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <Settings className="w-4 h-4 inline mr-2" />
-                  Administration
+                  Administration (Conditional)
                 </Link>
               )}
             </nav>
