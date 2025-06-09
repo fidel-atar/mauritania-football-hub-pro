@@ -75,23 +75,28 @@ const MatchCard = ({ match }: { match: MatchProps }) => {
 
           <div className="w-1/5 text-center">
             {(isFinished || isLive) ? (
-              <div className="flex flex-col">
-                <div className="text-xl font-bold">
-                  {match.homeScore} - {match.awayScore}
-                </div>
+              <div className="flex flex-col items-center">
+                {/* Timer display for live matches - positioned above score */}
                 {isLive && timerData && (
-                  <div className="text-xs text-red-500">
-                    <div className="font-semibold">
-                      {formatTime(timerData.current_minutes, timerData.current_seconds)}'
+                  <div className="text-sm text-red-500 mb-1">
+                    <div className="font-bold">
+                      {formatTime(timerData.current_minutes, timerData.current_seconds)}
                     </div>
                     {getExtraTime() > 0 && (
-                      <div className="text-amber-600">
+                      <div className="text-xs text-amber-600">
                         +{getExtraTime()}
                       </div>
                     )}
                   </div>
                 )}
-                {isLive && !timerData && <div className="text-xs text-red-500 animate-pulse">Live</div>}
+                {isLive && !timerData && (
+                  <div className="text-sm text-red-500 mb-1 font-bold">Mi-temps</div>
+                )}
+                
+                {/* Score */}
+                <div className="text-xl font-bold">
+                  {match.homeScore} - {match.awayScore}
+                </div>
               </div>
             ) : (
               <div className="text-sm font-medium">
