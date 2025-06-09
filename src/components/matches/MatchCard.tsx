@@ -7,7 +7,7 @@ import TeamLink from "./TeamLink";
 import { useMatchTimer } from "@/hooks/useMatchTimer";
 
 export interface MatchProps {
-  id: number;
+  id: string; // Changed from number to string to preserve UUID format
   homeTeam: {
     id: number;
     name: string;
@@ -29,7 +29,7 @@ const MatchCard = ({ match }: { match: MatchProps }) => {
   const isFinished = match.status === "finished";
   const isLive = match.status === "live";
   
-  const { timerData } = useMatchTimer(match.id.toString());
+  const { timerData } = useMatchTimer(match.id); // Now passing string directly
 
   const formatTime = (minutes: number, seconds: number) => {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;

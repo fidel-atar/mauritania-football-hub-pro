@@ -46,7 +46,7 @@ const HomePage = () => {
         }
 
         return {
-          id: parseInt(match.id),
+          id: match.id, // Keep as string (UUID format)
           homeTeam: {
             id: parseInt(match.home_team?.id || '0'),
             name: match.home_team?.name || 'TBD',
