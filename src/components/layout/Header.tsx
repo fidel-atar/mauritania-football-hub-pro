@@ -13,11 +13,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import SecureAdminLogin from "@/components/admin/SecureAdminLogin";
+import UserAuth from "@/components/auth/UserAuth";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const { isAdmin, user } = useAuth();
+  const [showUserAuth, setShowUserAuth] = useState(false);
+  const { isAdmin, user, signOut } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -29,7 +31,14 @@ const Header = () => {
     if (userType === 'admin-principal' || userType === 'mini-admin') {
       // Show the admin login modal
       setShowAdminLogin(true);
+    } else if (userType === 'utilisateur') {
+      // Show the user auth modal
+      setShowUserAuth(true);
     }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
   };
 
   return (
@@ -52,37 +61,57 @@ const Header = () => {
               <CartIcon />
               
               {/* Compt Button */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <User className="w-4 h-4 mr-2" />
-                    Compt
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
-                  <DropdownMenuItem 
-                    onClick={() => handleUserTypeSelect('utilisateur')}
-                    className="cursor-pointer hover:bg-gray-100"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Utilisateur
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleUserTypeSelect('admin-principal')}
-                    className="cursor-pointer hover:bg-gray-100"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Admin Principal
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleUserTypeSelect('mini-admin')}
-                    className="cursor-pointer hover:bg-gray-100"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Mini-Admin
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <User className="w-4 h-4 mr-2" />
+                      {user.email}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
+                    <DropdownMenuItem 
+                      onClick={handleSignOut}
+                      className="cursor-pointer hover:bg-gray-100"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Se déconnecter
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <User className="w-4 h-4 mr-2" />
+                      Compt
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
+                    <DropdownMenuItem 
+                      onClick={() => handleUserTypeSelect('utilisateur')}
+                      className="cursor-pointer hover:bg-gray-100"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Utilisateur
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleUserTypeSelect('admin-principal')}
+                      className="cursor-pointer hover:bg-gray-100"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Admin Principal
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleUserTypeSelect('mini-admin')}
+                      className="cursor-pointer hover:bg-gray-100"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Mini-Admin
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -90,36 +119,55 @@ const Header = () => {
               <CartIcon />
               
               {/* Mobile Compt Button */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <User className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
-                  <DropdownMenuItem 
-                    onClick={() => handleUserTypeSelect('utilisateur')}
-                    className="cursor-pointer hover:bg-gray-100"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Utilisateur
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleUserTypeSelect('admin-principal')}
-                    className="cursor-pointer hover:bg-gray-100"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Admin Principal
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleUserTypeSelect('mini-admin')}
-                    className="cursor-pointer hover:bg-gray-100"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Mini-Admin
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <User className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
+                    <DropdownMenuItem 
+                      onClick={handleSignOut}
+                      className="cursor-pointer hover:bg-gray-100"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Se déconnecter
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <User className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
+                    <DropdownMenuItem 
+                      onClick={() => handleUserTypeSelect('utilisateur')}
+                      className="cursor-pointer hover:bg-gray-100"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Utilisateur
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleUserTypeSelect('admin-principal')}
+                      className="cursor-pointer hover:bg-gray-100"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Admin Principal
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleUserTypeSelect('mini-admin')}
+                      className="cursor-pointer hover:bg-gray-100"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Mini-Admin
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
               
               <button 
                 onClick={toggleMenu}
@@ -189,6 +237,25 @@ const Header = () => {
             </div>
             <SecureAdminLogin onLoginSuccess={() => {
               setShowAdminLogin(false);
+            }} />
+          </div>
+        </div>
+      )}
+
+      {/* User Auth Modal */}
+      {showUserAuth && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-1 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <button
+                onClick={() => setShowUserAuth(false)}
+                className="text-gray-500 hover:text-gray-700 text-xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            <UserAuth onAuthSuccess={() => {
+              setShowUserAuth(false);
             }} />
           </div>
         </div>
