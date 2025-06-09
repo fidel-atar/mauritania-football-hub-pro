@@ -11,6 +11,7 @@ import { MatchProps } from "@/components/matches/MatchCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { loadSampleData } from "@/utils/sampleDataLoader";
 import { toast } from "sonner";
+import MatchTimer from "@/components/matches/MatchTimer";
 
 const HomePage = () => {
   const isMobile = useIsMobile();
@@ -72,8 +73,42 @@ const HomePage = () => {
     refetch();
   };
 
+  // Filter live matches for timer display
+  const liveMatches = matches.filter(match => match.status === 'live');
+
   return (
     <div className="px-3 md:px-4 py-3 md:py-6 pb-20 max-w-7xl mx-auto">
+      {/* Live Match Timers Section */}
+      {liveMatches.length > 0 && (
+        <div className="mb-4 md:mb-6">
+          <h2 className="text-lg md:text-xl font-bold mb-3 text-fmf-dark border-l-4 border-red-500 pl-3">
+            Matchs en Direct
+          </h2>
+          <div className="space-y-3">
+            {liveMatches.map((match) => (
+              <Card key={match.id} className="border-red-200 bg-red-50">
+                <CardContent className="p-3 md:p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold animate-pulse">
+                        LIVE
+                      </span>
+                      <span className="text-sm font-medium">
+                        {match.homeTeam.name} vs {match.awayTeam.name}
+                      </span>
+                    </div>
+                    <div className="text-lg font-bold">
+                      {match.homeScore || 0} - {match.awayScore || 0}
+                    </div>
+                  </div>
+                  <MatchTimer matchId={match.id.toString()} isAdmin={false} />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Bannière promotionnelle - Mobile optimized */}
       <Card className="mb-4 md:mb-6 bg-gradient-to-r from-fmf-green to-fmf-yellow text-white overflow-hidden">
         <CardContent className="p-4 md:p-6">
