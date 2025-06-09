@@ -1,10 +1,11 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/hooks/useCart";
+import { Button } from "@/components/ui/button";
 import UserMenu from "./UserMenu";
 import MobileNavigation from "./MobileNavigation";
 import ModalManager from "./ModalManager";
@@ -73,6 +74,20 @@ const Header = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-2">
+              {/* Admin Button - Show when user is admin */}
+              {user && isAdmin && (
+                <Link to="/admin-dashboard">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="bg-fmf-green text-white hover:bg-fmf-green/90 border-fmf-green"
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
+              
               <UserMenu
                 user={user}
                 totalItems={totalItems}
@@ -85,6 +100,19 @@ const Header = () => {
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-2">
+              {/* Admin Button for Mobile - Show when user is admin */}
+              {user && isAdmin && (
+                <Link to="/admin-dashboard">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="bg-fmf-green text-white hover:bg-fmf-green/90 border-fmf-green"
+                  >
+                    <Shield className="w-4 h-4" />
+                  </Button>
+                </Link>
+              )}
+              
               <UserMenu
                 user={user}
                 totalItems={totalItems}

@@ -80,6 +80,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Log security events (without sensitive data)
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('AuthContext: User authentication successful');
+          // Check admin status immediately after sign in
+          setTimeout(() => {
+            if (session?.user) {
+              checkAdminStatus();
+            }
+          }, 100);
         } else if (event === 'SIGNED_OUT') {
           console.log('AuthContext: User signed out');
           // Clear admin status on sign out
