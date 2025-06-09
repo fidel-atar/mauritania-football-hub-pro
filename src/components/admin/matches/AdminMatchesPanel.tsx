@@ -1,11 +1,11 @@
 
 import React from "react";
 import { Card } from "@/components/ui/card";
-import { Match } from "@/types/adminTypes";
 import { useMatchData } from "./hooks/useMatchData";
 import { useMatchOperations } from "./hooks/useMatchOperations";
 import AdminMatchesHeader from "./AdminMatchesHeader";
 import AdminMatchesContent from "./AdminMatchesContent";
+import AdminTimerManagement from "./AdminTimerManagement";
 
 const AdminMatchesPanel = () => {
   const { matchesList, teams, loading, fetchMatches } = useMatchData();
@@ -71,6 +71,8 @@ const AdminMatchesPanel = () => {
           onDeleteMatch={handleDeleteMatch}
         />
       </Card>
+
+      <AdminTimerManagement matches={matchesList} />
     </div>
   );
 };
