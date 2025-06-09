@@ -77,7 +77,7 @@ const MatchCard = ({ match }: { match: MatchProps }) => {
             {(isFinished || isLive) ? (
               <div className="flex flex-col items-center">
                 {/* Timer display for live matches - positioned above score */}
-                {isLive && timerData && (
+                {isLive && timerData && timerData.is_running && (
                   <div className="text-sm text-red-500 mb-1">
                     <div className="font-bold">
                       {formatTime(timerData.current_minutes, timerData.current_seconds)}
@@ -89,7 +89,7 @@ const MatchCard = ({ match }: { match: MatchProps }) => {
                     )}
                   </div>
                 )}
-                {isLive && !timerData && (
+                {isLive && (!timerData || !timerData.is_running) && (
                   <div className="text-sm text-red-500 mb-1 font-bold">Mi-temps</div>
                 )}
                 
