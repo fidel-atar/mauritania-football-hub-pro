@@ -80,10 +80,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Log security events (without sensitive data)
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('AuthContext: User authentication successful');
-          // Check admin status immediately after sign in
+          // Check admin status immediately after sign in with a longer delay
           setTimeout(() => {
+            console.log('AuthContext: Triggering admin status check after sign in');
             if (session?.user) {
-              checkAdminStatus();
+              // Set the user first, then check admin status
+              setUser(session.user);
+              // Force a re-check with the new user
+              setTimeout(async () => {
+                try {
+                  const { data, error } = await supabase
+                    .from('admin_roles')
+                    .select('role')
+                    .eq('user_id', session.user.id)
+                    .maybeSingle();
+
+                  console.log('AuthContext: Immediate admin check after login:', { data, error });
+
+                  if (data) {
+                    console.log('AuthContext: Setting admin status to true with role:', data.role);
+                    setIsAdmin(true);
+                    setAdminRole(data.role);
+                  } else {
+                    console.log('AuthContext: Setting admin status to false');
+                    setIsAdmin(false);
+                    setAdminRole(null);
+                  }
+                } catch (err) {
+                  console.error('AuthContext: Error in immediate admin check:', err);
+                  setIsAdmin(false);
+                  setAdminRole(null);
+                }
+              }, 500);
             }
           }, 100);
         } else if (event === 'SIGNED_OUT') {

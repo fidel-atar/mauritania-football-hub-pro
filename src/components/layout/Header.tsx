@@ -19,6 +19,11 @@ const Header = () => {
   const { getTotalItems, isLoading } = useCart();
   const totalItems = getTotalItems();
 
+  // Debug logging for admin status
+  useEffect(() => {
+    console.log('Header: Admin status changed:', { user: user?.email, isAdmin });
+  }, [user, isAdmin]);
+
   // Listen for admin login events from UserMenu
   useEffect(() => {
     const handleOpenAdminLogin = (event: CustomEvent) => {
