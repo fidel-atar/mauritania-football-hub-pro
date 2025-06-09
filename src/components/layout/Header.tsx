@@ -36,18 +36,6 @@ const Header = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const handleUserTypeSelect = (userType: string) => {
-    console.log(`Header: Selected user type: ${userType}`);
-    
-    if (userType === 'admin-principal' || userType === 'mini-admin') {
-      console.log('Header: Opening admin login modal');
-      setShowAdminLogin(true);
-    } else if (userType === 'utilisateur') {
-      console.log('Header: Opening user auth modal');
-      setShowUserAuth(true);
-    }
-  };
-
   const handleSignOut = async () => {
     console.log('Header: Signing out user');
     await signOut();
@@ -90,7 +78,7 @@ const Header = () => {
                 totalItems={totalItems}
                 isLoading={isLoading}
                 onSignOut={handleSignOut}
-                onShowAuth={() => handleUserTypeSelect('utilisateur')}
+                onShowAuth={() => setShowUserAuth(true)}
                 onShowProfile={handleShowProfile}
               />
             </div>
@@ -102,7 +90,7 @@ const Header = () => {
                 totalItems={totalItems}
                 isLoading={isLoading}
                 onSignOut={handleSignOut}
-                onShowAuth={() => handleUserTypeSelect('utilisateur')}
+                onShowAuth={() => setShowUserAuth(true)}
                 onShowProfile={handleShowProfile}
               />
               
@@ -118,7 +106,7 @@ const Header = () => {
           <MobileNavigation 
             isMenuOpen={isMenuOpen} 
             onMenuClose={() => setIsMenuOpen(false)}
-            onAdminLogin={() => handleUserTypeSelect('admin-principal')}
+            onAdminLogin={() => setShowAdminLogin(true)}
           />
         </div>
       </header>
