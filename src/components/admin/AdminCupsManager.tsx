@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -173,24 +174,38 @@ const AdminCupsManager = () => {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer la coupe "${name}"?`)) {
+    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer la coupe "${name}"? Cela supprimera également tous les matchs associés.`)) {
       return;
     }
 
     try {
-      console.log('Deleting cup:', id);
-      const { error } = await supabase
+      console.log('Deleting cup and associated matches:', id);
+      
+      // First, delete all associated cup matches
+      const { error: matchesError } = await supabase
+        .from('cup_matches')
+        .delete()
+        .eq('cup_id', id);
+
+      if (matchesError) {
+        console.error('Error deleting cup matches:', matchesError);
+        toast.error('Erreur lors de la suppression des matchs de la coupe');
+        return;
+      }
+
+      // Then delete the cup
+      const { error: cupError } = await supabase
         .from('cups')
         .delete()
         .eq('id', id);
 
-      if (error) {
-        console.error('Error deleting cup:', error);
+      if (cupError) {
+        console.error('Error deleting cup:', cupError);
         toast.error('Erreur lors de la suppression de la coupe');
         return;
       }
       
-      toast.success('Coupe supprimée avec succès');
+      toast.success('Coupe et matchs associés supprimés avec succès');
       fetchCups();
     } catch (error) {
       console.error('Error deleting cup:', error);
