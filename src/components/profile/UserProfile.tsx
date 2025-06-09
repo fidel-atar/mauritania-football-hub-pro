@@ -47,7 +47,7 @@ const UserProfile = () => {
         .from('profiles')
         .select('*')
         .eq('id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching profile:', error);
@@ -61,15 +61,21 @@ const UserProfile = () => {
         return;
       }
 
-      console.log('Profile data fetched:', data);
-      setProfile(data);
-      setFormData({
-        full_name: data.full_name || '',
-        bio: data.bio || '',
-        phone: data.phone || '',
-        date_of_birth: data.date_of_birth || '',
-        location: data.location || '',
-      });
+      if (data) {
+        console.log('Profile data fetched:', data);
+        setProfile(data);
+        setFormData({
+          full_name: data.full_name || '',
+          bio: data.bio || '',
+          phone: data.phone || '',
+          date_of_birth: data.date_of_birth || '',
+          location: data.location || '',
+        });
+      } else {
+        // No profile found, create one
+        console.log('No profile found, creating new profile');
+        await createInitialProfile();
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast.error('Erreur lors du chargement du profil');
@@ -90,6 +96,8 @@ const UserProfile = () => {
         date_of_birth: null,
         location: null,
       };
+
+      console.log('Creating profile with data:', newProfileData);
 
       const { data, error } = await supabase
         .from('profiles')
@@ -133,11 +141,14 @@ const UserProfile = () => {
     setSaving(true);
     try {
       console.log('Saving profile data:', formData);
+      console.log('User ID:', user.id);
       
       const updateData = {
         ...formData,
         updated_at: new Date().toISOString(),
       };
+
+      console.log('Update data being sent:', updateData);
 
       const { data, error } = await supabase
         .from('profiles')
@@ -148,6 +159,12 @@ const UserProfile = () => {
 
       if (error) {
         console.error('Error updating profile:', error);
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         toast.error(`Erreur lors de la mise à jour: ${error.message}`);
         return;
       }
@@ -156,8 +173,8 @@ const UserProfile = () => {
       toast.success('Profil mis à jour avec succès');
       setProfile(data);
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Erreur lors de la mise à jour du profil');
+      console.error('Unexpected error updating profile:', error);
+      toast.error('Erreur inattendue lors de la mise à jour du profil');
     } finally {
       setSaving(false);
     }

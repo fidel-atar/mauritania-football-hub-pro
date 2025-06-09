@@ -818,6 +818,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_current_user_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_user_role: {
         Args: { user_id?: string }
         Returns: Database["public"]["Enums"]["role_type"]
