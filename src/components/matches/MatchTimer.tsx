@@ -34,6 +34,7 @@ const MatchTimer = ({ matchId, isAdmin }: MatchTimerProps) => {
     );
   }
 
+  // Only show initialize button for admins
   if (!timerData && isAdmin) {
     return (
       <Card>
@@ -49,6 +50,7 @@ const MatchTimer = ({ matchId, isAdmin }: MatchTimerProps) => {
     );
   }
 
+  // Don't show anything if no timer data and not admin
   if (!timerData) {
     return null;
   }
@@ -103,7 +105,7 @@ const MatchTimer = ({ matchId, isAdmin }: MatchTimerProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Timer Display */}
+        {/* Timer Display - visible for everyone */}
         <div className="text-center">
           <div className="text-4xl font-bold text-fmf-green mb-2">
             {formatTime(timerData.current_minutes, timerData.current_seconds)}
@@ -118,7 +120,7 @@ const MatchTimer = ({ matchId, isAdmin }: MatchTimerProps) => {
           </div>
         </div>
 
-        {/* Admin Controls */}
+        {/* Admin Controls - only visible for admin users */}
         {isAdmin && (
           <div className="space-y-3">
             {/* Timer Controls */}

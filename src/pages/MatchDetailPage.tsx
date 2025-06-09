@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -179,8 +180,8 @@ const MatchDetailPage = () => {
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <MatchHeader matchData={matchData} />
         
-        {/* Add timer section for live or scheduled matches */}
-        {(matchData.status === 'live' || matchData.status === 'scheduled') && (
+        {/* Only show timer section for admins and only for live or scheduled matches */}
+        {isAdmin && (matchData.status === 'live' || matchData.status === 'scheduled') && (
           <div className="p-4 border-b">
             <MatchTimer matchId={matchData.id} isAdmin={isAdmin} />
           </div>

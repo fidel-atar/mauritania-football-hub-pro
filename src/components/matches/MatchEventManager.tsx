@@ -105,6 +105,11 @@ const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmi
   };
 
   const handleDeleteEvent = async (eventId: string) => {
+    if (!isAdmin) {
+      toast.error('Vous n\'avez pas les permissions pour supprimer des événements');
+      return;
+    }
+
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet événement?')) {
       return;
     }
@@ -143,6 +148,7 @@ const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmi
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Événements du match</h3>
+        {/* Only show EventForm for admin users */}
         {isAdmin && (
           <EventForm 
             matchId={matchId}
