@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
@@ -58,21 +59,34 @@ const TournamentBracket = ({ matches }: TournamentBracketProps) => {
 
   if (matches.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-gray-600">Aucun match programmé pour cette compétition.</p>
+      <div className="text-center py-12">
+        <div className="mb-6">
+          <Trophy className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-600 mb-2">Tableau de compétition non disponible</h3>
+          <p className="text-gray-500 mb-4">Le tournoi n'a pas encore été configuré.</p>
+        </div>
+        
+        <div className="bg-blue-50 p-4 rounded-lg inline-block">
+          <p className="text-blue-800 text-sm">
+            L'administrateur peut configurer le tournoi avec les 16 équipes via le{" "}
+            <Link to="/admin-dashboard" className="font-semibold underline">
+              panneau d'administration
+            </Link>
+          </p>
+        </div>
       </div>
     );
   }
 
   const MatchCard = ({ match, isFinal = false }: { match: CupMatch; isFinal?: boolean }) => {
     const matchContent = (
-      <Card className={`p-4 transition-shadow border-2 ${isFinal ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-300 w-80' : 'bg-white border-fmf-yellow/30 w-64'} hover:shadow-md ${match.home_team && match.away_team ? 'cursor-pointer hover:shadow-lg' : ''}`}>
+      <Card className={`p-4 transition-all duration-200 border-2 ${isFinal ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-300 w-80 shadow-lg' : 'bg-white border-fmf-yellow/30 w-64'} hover:shadow-md ${match.home_team && match.away_team ? 'cursor-pointer hover:shadow-lg hover:scale-105' : ''}`}>
         {match.home_team && match.away_team ? (
           <div className="space-y-3">
             {isFinal && (
               <div className="text-center mb-4">
                 <Trophy className="w-8 h-8 mx-auto text-yellow-600 mb-2" />
-                <div className="text-sm font-bold text-yellow-700">FINALE</div>
+                <div className="text-sm font-bold text-yellow-700 uppercase">FINALE</div>
                 {match.match_date && (
                   <div className="text-xs text-gray-600 mt-1">
                     {new Date(match.match_date).toLocaleDateString('fr-FR')} • 19:00
@@ -82,9 +96,9 @@ const TournamentBracket = ({ matches }: TournamentBracketProps) => {
             )}
             
             {/* Home Team */}
-            <div className="flex justify-between items-center p-3 rounded bg-gray-50">
+            <div className="flex justify-between items-center p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
               <div className="flex items-center flex-1">
-                <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden mr-3">
+                <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden mr-3 bg-white">
                   <img
                     src={match.home_team.logo || "/placeholder.svg"}
                     alt={match.home_team.name}
@@ -95,21 +109,24 @@ const TournamentBracket = ({ matches }: TournamentBracketProps) => {
                     }}
                   />
                 </div>
-                <span className={`${match.winner_team_id === match.home_team.id ? "font-bold text-fmf-green" : ""} text-sm font-medium truncate`}>
+                <span className={`${match.winner_team_id === match.home_team.id ? "font-bold text-fmf-green" : "font-medium"} text-sm truncate`}>
                   {match.home_team.name}
                 </span>
               </div>
-              <span className={`font-mono font-bold text-xl px-3 py-2 rounded min-w-[3rem] text-center ${isFinal ? 'bg-yellow-200 text-yellow-800' : 'bg-fmf-yellow text-fmf-dark'}`}>
+              <span className={`font-mono font-bold text-xl px-3 py-2 rounded min-w-[3rem] text-center ${isFinal ? 'bg-yellow-200 text-yellow-800' : 'bg-fmf-yellow text-fmf-dark'} shadow-sm`}>
                 {match.is_played ? match.home_score : "-"}
               </span>
             </div>
             
-            <div className="text-center text-xs text-gray-400 font-medium">VS</div>
+            <div className="text-center">
+              <div className="text-xs text-gray-400 font-medium uppercase tracking-wider">VS</div>
+              <div className="w-8 h-0.5 bg-gradient-to-r from-fmf-green to-fmf-yellow mx-auto mt-1"></div>
+            </div>
             
             {/* Away Team */}
-            <div className="flex justify-between items-center p-3 rounded bg-gray-50">
+            <div className="flex justify-between items-center p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
               <div className="flex items-center flex-1">
-                <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden mr-3">
+                <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden mr-3 bg-white">
                   <img
                     src={match.away_team.logo || "/placeholder.svg"}
                     alt={match.away_team.name}
@@ -120,31 +137,32 @@ const TournamentBracket = ({ matches }: TournamentBracketProps) => {
                     }}
                   />
                 </div>
-                <span className={`${match.winner_team_id === match.away_team.id ? "font-bold text-fmf-green" : ""} text-sm font-medium truncate`}>
+                <span className={`${match.winner_team_id === match.away_team.id ? "font-bold text-fmf-green" : "font-medium"} text-sm truncate`}>
                   {match.away_team.name}
                 </span>
               </div>
-              <span className={`font-mono font-bold text-xl px-3 py-2 rounded min-w-[3rem] text-center ${isFinal ? 'bg-yellow-200 text-yellow-800' : 'bg-fmf-yellow text-fmf-dark'}`}>
+              <span className={`font-mono font-bold text-xl px-3 py-2 rounded min-w-[3rem] text-center ${isFinal ? 'bg-yellow-200 text-yellow-800' : 'bg-fmf-yellow text-fmf-dark'} shadow-sm`}>
                 {match.is_played ? match.away_score : "-"}
               </span>
             </div>
             
             {!isFinal && match.match_date && (
-              <div className="text-xs text-gray-500 mt-2 text-center">
+              <div className="text-xs text-gray-500 mt-2 text-center bg-gray-100 py-1 px-2 rounded">
                 {new Date(match.match_date).toLocaleDateString('fr-FR')}
               </div>
             )}
             
             {match.is_played && (
               <div className="text-center">
-                <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
+                <span className="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
                   ✓ Terminé
                 </span>
               </div>
             )}
           </div>
         ) : (
-          <div className="py-8 text-center text-gray-500 text-sm bg-gray-100 rounded">
+          <div className="py-8 text-center text-gray-500 text-sm bg-gray-100 rounded-lg border-2 border-dashed border-gray-300">
+            <div className="mb-2">⏳</div>
             En attente des équipes qualifiées
           </div>
         )}
@@ -154,7 +172,7 @@ const TournamentBracket = ({ matches }: TournamentBracketProps) => {
     // Only wrap in Link if both teams are present
     if (match.home_team && match.away_team) {
       return (
-        <Link to={`/matches/${match.id}`}>
+        <Link to={`/matches/${match.id}`} className="block">
           {matchContent}
         </Link>
       );
@@ -170,14 +188,14 @@ const TournamentBracket = ({ matches }: TournamentBracketProps) => {
     const verticalHeight = round === 1 ? 6 : round === 2 ? 14 : 30;
     
     return (
-      <div className="absolute left-full flex items-center">
+      <div className="absolute left-full flex items-center z-10">
         {/* Horizontal line */}
-        <div className="w-8 h-0.5 bg-fmf-green"></div>
+        <div className="w-8 h-0.5 bg-gradient-to-r from-fmf-green to-fmf-yellow"></div>
         
         {/* Vertical connector for pairing matches */}
         {position % 2 === 0 && (
           <div 
-            className="absolute left-8 w-0.5 bg-fmf-green" 
+            className="absolute left-8 w-0.5 bg-gradient-to-b from-fmf-green to-fmf-yellow" 
             style={{
               height: `${verticalHeight}rem`,
               top: `${verticalHeight / 2}rem`
@@ -188,7 +206,7 @@ const TournamentBracket = ({ matches }: TournamentBracketProps) => {
         {/* Final horizontal line to next match */}
         {position % 2 === 1 && (
           <div 
-            className="absolute left-8 w-8 h-0.5 bg-fmf-green" 
+            className="absolute left-8 w-8 h-0.5 bg-gradient-to-r from-fmf-green to-fmf-yellow" 
             style={{
               top: `-${verticalHeight / 2}rem`
             }}
@@ -199,7 +217,7 @@ const TournamentBracket = ({ matches }: TournamentBracketProps) => {
   };
 
   return (
-    <div className="overflow-x-auto pb-4 bg-gradient-to-br from-gray-50 to-white p-6 rounded-lg">
+    <div className="overflow-x-auto pb-6 bg-gradient-to-br from-gray-50 to-white p-6 rounded-lg border border-gray-200">
       <div className="flex justify-center items-start space-x-16 min-w-max">
         {Array.from({ length: maxRound }, (_, i) => i + 1).map((round) => {
           const roundMatches = roundedMatches[round] || [];
@@ -207,7 +225,7 @@ const TournamentBracket = ({ matches }: TournamentBracketProps) => {
           
           return (
             <div key={round} className="flex flex-col items-center">
-              <h3 className={`text-center font-bold mb-6 text-white py-3 px-6 rounded-lg shadow-md text-lg min-w-[200px] ${isFinalRound ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' : 'bg-fmf-green'}`}>
+              <h3 className={`text-center font-bold mb-6 text-white py-3 px-6 rounded-lg shadow-md text-lg min-w-[200px] ${isFinalRound ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' : 'bg-gradient-to-r from-fmf-green to-fmf-yellow'}`}>
                 {getRoundName(round)}
               </h3>
               
@@ -229,9 +247,9 @@ const TournamentBracket = ({ matches }: TournamentBracketProps) => {
       </div>
       
       {/* Tournament Progress */}
-      <div className="mt-8 p-4 bg-white rounded-lg border border-gray-200">
-        <h4 className="font-semibold mb-3 text-center">Progression de la compétition</h4>
-        <div className="flex justify-center space-x-6 text-sm">
+      <div className="mt-8 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+        <h4 className="font-semibold mb-4 text-center text-lg">Progression de la compétition</h4>
+        <div className="flex justify-center space-x-8 text-sm">
           {Array.from({ length: maxRound }, (_, i) => i + 1).map((round) => {
             const roundMatches = roundedMatches[round] || [];
             const completedMatches = roundMatches.filter(m => m.is_played).length;
@@ -240,11 +258,11 @@ const TournamentBracket = ({ matches }: TournamentBracketProps) => {
             
             return (
               <div key={round} className="text-center">
-                <div className="font-medium">{getRoundName(round)}</div>
-                <div className="text-gray-600">{completedMatches}/{totalMatches}</div>
-                <div className="w-16 h-2 bg-gray-200 rounded-full mt-1 mx-auto">
+                <div className="font-medium mb-1">{getRoundName(round)}</div>
+                <div className="text-gray-600 mb-2">{completedMatches}/{totalMatches}</div>
+                <div className="w-20 h-3 bg-gray-200 rounded-full mx-auto">
                   <div 
-                    className="h-full bg-fmf-green rounded-full transition-all duration-300"
+                    className="h-full bg-gradient-to-r from-fmf-green to-fmf-yellow rounded-full transition-all duration-500"
                     style={{ width: `${percentage}%` }}
                   />
                 </div>

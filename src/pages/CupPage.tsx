@@ -87,14 +87,17 @@ const CupPage = () => {
           </CardHeader>
           <CardContent>
             {matchesLoading ? (
-              <div className="text-center py-8">Chargement du tableau...</div>
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fmf-green mx-auto mb-2"></div>
+                <p className="text-sm text-gray-600">Chargement du tableau...</p>
+              </div>
             ) : cupMatches.length > 0 ? (
               <TournamentBracket matches={cupMatches} />
             ) : (
               <div className="text-center py-8">
                 <p className="text-gray-600">Le tableau de la compétition sera disponible bientôt.</p>
                 <p className="text-sm text-gray-500 mt-2">
-                  L'administrateur doit configurer les équipes participantes.
+                  L'administrateur doit configurer les équipes participantes via le panneau d'administration.
                 </p>
               </div>
             )}
@@ -102,42 +105,12 @@ const CupPage = () => {
         </Card>
       )}
       
-      {cups.length === 0 ? (
+      {!activeCup && cups.length === 0 && (
         <div className="text-center py-12">
           <h2 className="text-xl font-semibold text-gray-600 mb-4">Aucune compétition disponible</h2>
           <p className="text-gray-500">
             Les compétitions seront ajoutées par l'administrateur bientôt.
           </p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {cups.map((cup) => (
-            <Card key={cup.id}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
-                  {cup.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">{cup.description}</p>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <p><strong>Statut:</strong> {cup.status}</p>
-                    <p><strong>Date de début:</strong> {new Date(cup.start_date).toLocaleDateString()}</p>
-                    {cup.end_date && (
-                      <p><strong>Date de fin:</strong> {new Date(cup.end_date).toLocaleDateString()}</p>
-                    )}
-                  </div>
-                  {cup.prize_money && (
-                    <div>
-                      <p><strong>Dotation:</strong> {cup.prize_money.toLocaleString()} MRU</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
         </div>
       )}
       
