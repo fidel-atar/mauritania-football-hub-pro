@@ -24,6 +24,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkAdminStatus = async () => {
     if (!user) {
+      console.log('No user, setting admin status to false');
       setIsAdmin(false);
       setAdminRole(null);
       return;
@@ -64,6 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', session?.user?.email);
       setUser(session?.user ?? null);
       setLoading(false);
     });
@@ -80,6 +82,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.log('User authentication successful');
         } else if (event === 'SIGNED_OUT') {
           console.log('User signed out');
+          // Clear admin status on sign out
+          setIsAdmin(false);
+          setAdminRole(null);
         }
       }
     );
@@ -89,17 +94,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (user) {
+      console.log('User changed, checking admin status');
       checkAdminStatus();
     } else {
+      console.log('No user, clearing admin status');
       setIsAdmin(false);
       setAdminRole(null);
     }
   }, [user]);
 
   const signIn = async (email: string, password: string) => {
+    console.log('Attempting sign in for:', email);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       console.warn('Authentication failed:', error.message);
+    } else {
+      console.log('Authentication successful');
     }
     return { error };
   };
@@ -122,6 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    console.log('Signing out user');
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error('Error during sign out');

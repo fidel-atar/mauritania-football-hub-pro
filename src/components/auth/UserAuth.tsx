@@ -59,16 +59,16 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
       } else {
         toast.success('Connexion réussie');
         
-        // For admin login, wait for admin status check then redirect
+        // For admin login, check admin status and redirect to admin dashboard
         if (isAdminLogin) {
-          // Wait for the auth context to update with user info
+          console.log('Admin login detected, checking status and redirecting...');
+          // Wait a bit for the auth context to update, then check admin status
           setTimeout(async () => {
             await checkAdminStatus();
-            // Small delay to ensure admin status is checked
-            setTimeout(() => {
-              navigate('/admin-dashboard');
-            }, 500);
-          }, 1000);
+            // Navigate to admin dashboard
+            navigate('/admin-dashboard');
+            console.log('Redirected to admin dashboard');
+          }, 1500);
         } else {
           // For regular users, redirect to home
           navigate('/');

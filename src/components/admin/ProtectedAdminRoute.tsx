@@ -18,19 +18,19 @@ const ProtectedAdminRoute = ({ children }: ProtectedAdminRouteProps) => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fmf-green mx-auto mb-4"></div>
-          <p>Vérification des permissions...</p>
+          <p>Vérification des permissions administrateur...</p>
         </div>
       </div>
     );
   }
 
-  // If no user is logged in, show login form
+  // If no user is logged in, show admin login form
   if (!user) {
     console.log('No user found, showing admin login');
     return <SecureAdminLogin />;
   }
 
-  // If user is logged in but not admin, redirect to home
+  // If user is logged in but not admin, redirect to home with message
   if (!isAdmin) {
     console.log('User is not admin, redirecting to home');
     return <Navigate to="/" replace />;
