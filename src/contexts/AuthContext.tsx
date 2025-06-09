@@ -24,14 +24,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkAdminStatus = async () => {
     if (!user) {
-      console.log('No user, setting admin status to false');
+      console.log('AuthContext: No user, setting admin status to false');
       setIsAdmin(false);
       setAdminRole(null);
       return;
     }
 
     try {
-      console.log('Checking admin status for user:', user.id);
+      console.log('AuthContext: Checking admin status for user:', user.id, user.email);
       
       // Use a direct query to check admin status
       const { data, error } = await supabase
@@ -40,23 +40,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('user_id', user.id)
         .maybeSingle();
 
-      console.log('Admin check result:', { data, error });
+      console.log('AuthContext: Admin check result:', { data, error, userEmail: user.email });
 
       if (error) {
-        console.warn('Admin status check failed:', error);
+        console.warn('AuthContext: Admin status check failed:', error);
         setIsAdmin(false);
         setAdminRole(null);
       } else if (data) {
-        console.log('User is admin with role:', data.role);
+        console.log('AuthContext: User is admin with role:', data.role);
         setIsAdmin(true);
         setAdminRole(data.role);
       } else {
-        console.log('User is not admin');
+        console.log('AuthContext: User is not admin');
         setIsAdmin(false);
         setAdminRole(null);
       }
     } catch (error) {
-      console.error('Unexpected error during admin check:', error);
+      console.error('AuthContext: Unexpected error during admin check:', error);
       setIsAdmin(false);
       setAdminRole(null);
     }
@@ -65,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session:', session?.user?.email);
+      console.log('AuthContext: Initial session:', session?.user?.email);
       setUser(session?.user ?? null);
       setLoading(false);
     });
@@ -73,15 +73,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log('AuthContext: Auth state changed:', event, session?.user?.email);
         setUser(session?.user ?? null);
         setLoading(false);
         
         // Log security events (without sensitive data)
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('User authentication successful');
+          console.log('AuthContext: User authentication successful');
         } else if (event === 'SIGNED_OUT') {
-          console.log('User signed out');
+          console.log('AuthContext: User signed out');
           // Clear admin status on sign out
           setIsAdmin(false);
           setAdminRole(null);
@@ -94,22 +94,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (user) {
-      console.log('User changed, checking admin status');
+      console.log('AuthContext: User changed, checking admin status for:', user.email);
       checkAdminStatus();
     } else {
-      console.log('No user, clearing admin status');
+      console.log('AuthContext: No user, clearing admin status');
       setIsAdmin(false);
       setAdminRole(null);
     }
   }, [user]);
 
   const signIn = async (email: string, password: string) => {
-    console.log('Attempting sign in for:', email);
+    console.log('AuthContext: Attempting sign in for:', email);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      console.warn('Authentication failed:', error.message);
+      console.warn('AuthContext: Authentication failed:', error.message);
     } else {
-      console.log('Authentication successful');
+      console.log('AuthContext: Authentication successful for:', email);
     }
     return { error };
   };
@@ -126,16 +126,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     
     if (error) {
-      console.warn('Registration failed');
+      console.warn('AuthContext: Registration failed');
     }
     return { error };
   };
 
   const signOut = async () => {
-    console.log('Signing out user');
+    console.log('AuthContext: Signing out user');
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error('Error during sign out');
+      console.error('AuthContext: Error during sign out');
     }
   };
 

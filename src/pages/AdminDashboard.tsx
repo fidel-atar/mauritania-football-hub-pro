@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, LogOut, Trophy, BarChart3, Users } from "lucide-react";
+import { ArrowLeft, LogOut, Trophy, BarChart3, Users, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import ProtectedAdminRoute from "@/components/admin/ProtectedAdminRoute";
@@ -21,13 +21,18 @@ import { toast } from "sonner";
 
 const AdminDashboardContent = () => {
   const [activeTab, setActiveTab] = useState("teams");
-  const { user, adminRole, signOut } = useAuth();
+  const { user, adminRole, signOut, isAdmin } = useAuth();
+
+  console.log('AdminDashboard: Current user:', user?.email, 'isAdmin:', isAdmin, 'adminRole:', adminRole);
 
   const handleLogout = async () => {
     try {
+      console.log('AdminDashboard: Logging out admin user');
       await signOut();
+      toast.success('Déconnexion réussie');
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('AdminDashboard: Logout error:', error);
+      toast.error('Erreur lors de la déconnexion');
     }
   };
 
@@ -50,6 +55,28 @@ const AdminDashboardContent = () => {
     }
   };
 
+  const getRoleDisplayName = (role: string) => {
+    switch (role) {
+      case 'super_admin':
+        return 'Admin Principal';
+      case 'admin':
+        return 'Mini Admin';
+      default:
+        return role || 'Admin';
+    }
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'super_admin':
+        return 'text-red-600';
+      case 'admin':
+        return 'text-orange-600';
+      default:
+        return 'text-fmf-green';
+    }
+  };
+
   return (
     <div className="container mx-auto p-4 min-h-screen bg-gray-50">
       <div className="flex items-center justify-between mb-6">
@@ -62,9 +89,14 @@ const AdminDashboardContent = () => {
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-fmf-green">Panneau d'Administration</h1>
-            <p className="text-gray-600">
-              Connecté en tant que {adminRole || 'admin'} • {user?.email}
-            </p>
+            <div className="flex items-center gap-2 text-gray-600">
+              <Shield className="w-4 h-4" />
+              <span>
+                Connecté en tant que <span className={`font-semibold ${getRoleColor(adminRole || '')}`}>
+                  {getRoleDisplayName(adminRole || '')}
+                </span> • {user?.email}
+              </span>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -78,6 +110,34 @@ const AdminDashboardContent = () => {
           </Button>
         </div>
       </div>
+
+      {/* Admin Status Card */}
+      <Card className="mb-6 border-fmf-green">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-fmf-green">
+            <Shield className="w-5 h-5" />
+            Statut Administrateur
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm text-gray-600">Email</p>
+              <p className="font-semibold">{user?.email}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Rôle</p>
+              <p className={`font-semibold ${getRoleColor(adminRole || '')}`}>
+                {getRoleDisplayName(adminRole || '')}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">ID Utilisateur</p>
+              <p className="font-mono text-xs text-gray-500">{user?.id}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Quick Actions Section */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

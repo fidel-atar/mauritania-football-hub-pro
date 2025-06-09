@@ -21,7 +21,7 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, checkAdminStatus } = useAuth();
   const navigate = useNavigate();
 
   const isAdminLogin = userType === 'admin';
@@ -30,7 +30,7 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
     e.preventDefault();
     setError('');
     
-    console.log(`UserAuth: Starting ${isSignUp ? 'signup' : 'login'} for ${userType} user`);
+    console.log(`UserAuth: Starting ${isSignUp ? 'signup' : 'login'} for ${userType} user with email:`, email);
     
     const validationError = validateAuthInput(email, password);
     if (validationError) {
@@ -46,7 +46,7 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
         : await signIn(email, password);
       
       if (error) {
-        console.error('Auth error:', error);
+        console.error('UserAuth: Auth error:', error);
         if (error.message.includes('Invalid login credentials')) {
           setError('Email ou mot de passe incorrect');
         } else if (error.message.includes('User already registered')) {
@@ -62,10 +62,15 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
       } else {
         toast.success('Connexion réussie');
         
-        // For admin login, redirect to admin dashboard immediately
+        // For admin login, wait for auth context to update then check admin status
         if (isAdminLogin) {
-          console.log('UserAuth: Admin login successful, redirecting to admin dashboard');
-          navigate('/admin-dashboard');
+          console.log('UserAuth: Admin login detected, waiting for auth context update...');
+          // Wait for the auth context to update, then check admin status and redirect
+          setTimeout(async () => {
+            console.log('UserAuth: Checking admin status and redirecting to admin dashboard...');
+            await checkAdminStatus();
+            navigate('/admin-dashboard');
+          }, 1000); // Increased delay to ensure auth context is updated
         } else {
           // For regular users, redirect to home
           console.log('UserAuth: Regular user login, redirecting to home');
@@ -80,7 +85,7 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
       }
       
     } catch (error) {
-      console.error('Unexpected auth error:', error);
+      console.error('UserAuth: Unexpected auth error:', error);
       setError('Une erreur inattendue s\'est produite');
     } finally {
       setLoading(false);
