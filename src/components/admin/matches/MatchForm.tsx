@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,14 +50,14 @@ const MatchForm: React.FC<MatchFormProps> = ({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.homeTeam) newErrors.homeTeam = "يجب اختيار الفريق المضيف";
-    if (!formData.awayTeam) newErrors.awayTeam = "يجب اختيار الفريق الضيف";
+    if (!formData.homeTeam || formData.homeTeam === "none") newErrors.homeTeam = "يجب اختيار الفريق المضيف";
+    if (!formData.awayTeam || formData.awayTeam === "none") newErrors.awayTeam = "يجب اختيار الفريق الضيف";
     if (formData.homeTeam === formData.awayTeam) {
       newErrors.awayTeam = "لا يمكن أن يلعب الفريق ضد نفسه";
     }
     if (!formData.date) newErrors.date = "يجب تحديد تاريخ المباراة";
     if (!formData.time) newErrors.time = "يجب تحديد وقت المباراة";
-    if (!formData.stadium) newErrors.stadium = "يجب اختيار الملعب";
+    if (!formData.stadium || formData.stadium === "none") newErrors.stadium = "يجب اختيار الملعب";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -91,11 +90,12 @@ const MatchForm: React.FC<MatchFormProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="homeTeam">الفريق المضيف *</Label>
-              <Select value={formData.homeTeam} onValueChange={(value) => handleChange("homeTeam", value)}>
+              <Select value={formData.homeTeam || "none"} onValueChange={(value) => handleChange("homeTeam", value === "none" ? "" : value)}>
                 <SelectTrigger className={errors.homeTeam ? "border-red-500" : ""}>
                   <SelectValue placeholder="اختر الفريق المضيف" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">اختر الفريق المضيف</SelectItem>
                   {teams.map((team) => (
                     <SelectItem key={team.id} value={team.id}>
                       {team.name}
@@ -108,11 +108,12 @@ const MatchForm: React.FC<MatchFormProps> = ({
 
             <div>
               <Label htmlFor="awayTeam">الفريق الضيف *</Label>
-              <Select value={formData.awayTeam} onValueChange={(value) => handleChange("awayTeam", value)}>
+              <Select value={formData.awayTeam || "none"} onValueChange={(value) => handleChange("awayTeam", value === "none" ? "" : value)}>
                 <SelectTrigger className={errors.awayTeam ? "border-red-500" : ""}>
                   <SelectValue placeholder="اختر الفريق الضيف" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">اختر الفريق الضيف</SelectItem>
                   {teams.map((team) => (
                     <SelectItem key={team.id} value={team.id}>
                       {team.name}
@@ -152,11 +153,12 @@ const MatchForm: React.FC<MatchFormProps> = ({
 
           <div>
             <Label htmlFor="stadium">الملعب *</Label>
-            <Select value={formData.stadium} onValueChange={(value) => handleChange("stadium", value)}>
+            <Select value={formData.stadium || "none"} onValueChange={(value) => handleChange("stadium", value === "none" ? "" : value)}>
               <SelectTrigger className={errors.stadium ? "border-red-500" : ""}>
                 <SelectValue placeholder="اختر الملعب" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">اختر الملعب</SelectItem>
                 {stadiums.map((stadium) => (
                   <SelectItem key={stadium} value={stadium}>
                     {stadium}

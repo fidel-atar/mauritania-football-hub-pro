@@ -31,7 +31,7 @@ const EventForm = ({ matchId, players, onEventAdded }: EventFormProps) => {
   });
 
   const handleAddEvent = async () => {
-    if (!newEvent.player_id || !newEvent.minute) {
+    if (!newEvent.player_id || !newEvent.minute || newEvent.player_id === 'none') {
       toast.error('Veuillez remplir tous les champs obligatoires');
       return;
     }
@@ -90,13 +90,14 @@ const EventForm = ({ matchId, players, onEventAdded }: EventFormProps) => {
           
           <div>
             <label className="block text-sm font-medium mb-2">Joueur</label>
-            <Select value={newEvent.player_id} onValueChange={(value) => 
-              setNewEvent({ ...newEvent, player_id: value })
+            <Select value={newEvent.player_id || "none"} onValueChange={(value) => 
+              setNewEvent({ ...newEvent, player_id: value === "none" ? "" : value })
             }>
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner un joueur" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">Sélectionner un joueur</SelectItem>
                 {players.map((player) => (
                   <SelectItem key={player.id} value={player.id}>
                     #{player.number} {player.name}

@@ -34,14 +34,14 @@ const TeamSelectionGrid = ({
       <div className="relative">
         <Label className="text-xs text-gray-600 mb-1 block">{label}</Label>
         <Select 
-          value={teamId || ""} 
-          onValueChange={(value) => onPositionChange(position, value)}
+          value={teamId || "empty"} 
+          onValueChange={(value) => onPositionChange(position, value === "empty" ? "" : value)}
         >
           <SelectTrigger className="h-16 w-40 bg-white border-2 border-fmf-yellow/30 hover:border-fmf-yellow/50">
             <SelectValue placeholder="Équipe" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">-- Vide --</SelectItem>
+            <SelectItem value="empty">-- Vide --</SelectItem>
             {teams.map((team) => (
               <SelectItem 
                 key={team.id} 
