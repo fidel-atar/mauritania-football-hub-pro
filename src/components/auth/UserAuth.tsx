@@ -5,14 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { User, Mail, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Eye, EyeOff, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
 interface UserAuthProps {
   onAuthSuccess?: () => void;
-  userType?: 'admin' | 'user'; // Add prop to know if this is admin login
+  userType?: 'admin' | 'user';
 }
 
 const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
@@ -24,6 +24,29 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const { signIn, signUp, checkAdminStatus } = useAuth();
   const navigate = useNavigate();
+
+  // Configure titles and descriptions based on user type
+  const isAdminLogin = userType === 'admin';
+  const IconComponent = isAdminLogin ? Shield : User;
+  const iconBgColor = isAdminLogin ? 'bg-red-600' : 'bg-blue-600';
+  
+  const getTitle = () => {
+    if (isAdminLogin) {
+      return isSignUp ? 'Créer un compte admin' : 'Connexion admin';
+    }
+    return isSignUp ? 'Créer un compte' : 'Connexion utilisateur';
+  };
+  
+  const getDescription = () => {
+    if (isAdminLogin) {
+      return isSignUp 
+        ? 'Créez votre compte administrateur pour accéder au panneau d\'administration'
+        : 'Connectez-vous avec votre compte administrateur';
+    }
+    return isSignUp 
+      ? 'Créez votre compte pour accéder à toutes les fonctionnalités'
+      : 'Connectez-vous avec votre compte utilisateur';
+  };
 
   const validateInput = (email: string, password: string) => {
     if (!email || !password) {
@@ -76,7 +99,7 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
         toast.success('Connexion réussie');
         
         // If this is an admin login, check admin status and redirect to admin dashboard
-        if (userType === 'admin') {
+        if (isAdminLogin) {
           setTimeout(async () => {
             await checkAdminStatus();
             navigate('/admin-dashboard');
@@ -104,17 +127,14 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mb-4">
-            <User className="w-6 h-6 text-white" />
+          <div className={`mx-auto w-12 h-12 ${iconBgColor} rounded-full flex items-center justify-center mb-4`}>
+            <IconComponent className="w-6 h-6 text-white" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            {isSignUp ? 'Créer un compte' : 'Connexion utilisateur'}
+            {getTitle()}
           </CardTitle>
           <p className="text-gray-600">
-            {isSignUp 
-              ? 'Créez votre compte pour accéder à toutes les fonctionnalités'
-              : 'Connectez-vous avec votre compte utilisateur'
-            }
+            {getDescription()}
           </p>
         </CardHeader>
         <CardContent>
@@ -171,7 +191,7 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
             
             <Button 
               type="submit" 
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className={`w-full ${isAdminLogin ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`}
               disabled={loading}
             >
               {loading 
@@ -198,7 +218,12 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
           </div>
           
           <div className="mt-6 text-center text-sm text-gray-600">
-            <p>Accédez à toutes les fonctionnalités de l'application</p>
+            <p>
+              {isAdminLogin 
+                ? 'Accédez au panneau d\'administration'
+                : 'Accédez à toutes les fonctionnalités de l\'application'
+              }
+            </p>
             {isSignUp && (
               <p className="text-xs mt-2 text-gray-500">
                 En créant un compte, vous acceptez nos conditions d'utilisation
