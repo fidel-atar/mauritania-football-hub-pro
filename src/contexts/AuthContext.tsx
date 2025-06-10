@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminStatus } from '@/hooks/useAdminStatus';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -41,6 +42,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Log security events (without sensitive data)
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('AuthContext: User authentication successful');
+          
+          // Check if this is the admin principal and redirect
+          if (session.user.email === 'admin@fmf.mr') {
+            console.log('AuthContext: Admin principal detected, will redirect to admin dashboard');
+            // Use setTimeout to allow the auth context to update first
+            setTimeout(() => {
+              window.location.href = '/admin-dashboard';
+            }, 500);
+          }
         } else if (event === 'SIGNED_OUT') {
           console.log('AuthContext: User signed out');
         }
@@ -82,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log('AuthContext: Signing out user');
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error('AuthContext: Error during sign out');
+      console.error('AuthContext: Error during sign out:', error);
     }
   };
 
