@@ -80,9 +80,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     console.log('AuthContext: Signing out user');
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('AuthContext: Error during sign out');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('AuthContext: Error during sign out:', error);
+      } else {
+        console.log('AuthContext: Sign out successful');
+        // Force clear the user state immediately
+        setUser(null);
+      }
+    } catch (error) {
+      console.error('AuthContext: Unexpected error during sign out:', error);
+      // Force clear the user state even if there's an error
+      setUser(null);
     }
   };
 
