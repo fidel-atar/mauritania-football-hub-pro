@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, ShoppingCart, Shield, UserCheck } from 'lucide-react';
+import { User, ShoppingCart, Shield, UserCheck, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,12 +8,10 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import CartSheet from '@/components/shop/CartSheet';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UserMenuProps {
   user: any;
@@ -32,18 +30,13 @@ const UserMenu = ({
   onShowAuth, 
   onShowProfile 
 }: UserMenuProps) => {
-  const handleUserTypeSelect = (userType: string) => {
-    console.log(`UserMenu: Handling user type selection: ${userType}`);
-    
-    if (userType === 'admin-principal' || userType === 'mini-admin') {
-      // For admin types, we need to trigger admin login
-      console.log('UserMenu: Dispatching openAdminLogin event');
-      window.dispatchEvent(new CustomEvent('openAdminLogin', { detail: userType }));
-    } else {
-      // For regular user
-      console.log('UserMenu: Calling onShowAuth for regular user');
-      onShowAuth();
-    }
+  const { isAdmin, adminRole } = useAuth();
+
+  const getRoleLabel = () => {
+    if (adminRole === 'super_admin') return 'المدير الكبير';
+    if (adminRole === 'manager') return 'مدير';
+    if (isAdmin) return 'إداري';
+    return 'مستخدم';
   };
 
   return (
@@ -61,7 +54,17 @@ const UserMenu = ({
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-48 bg-white border shadow-lg z-50">
+      <DropdownMenuContent className="w-56 bg-white border shadow-lg z-50">
+        {user && (
+          <>
+            <div className="px-3 py-2 border-b">
+              <p className="text-sm font-medium">{user.email}</p>
+              <p className="text-xs text-gray-500">{getRoleLabel()}</p>
+            </div>
+            <DropdownMenuSeparator />
+          </>
+        )}
+
         {/* Cart Section */}
         <CartSheet>
           <DropdownMenuItem className="cursor-pointer hover:bg-gray-100">
@@ -80,57 +83,48 @@ const UserMenu = ({
         
         <DropdownMenuSeparator />
         
-        {/* Connexion Section */}
+        {/* User Actions */}
         {user ? (
+          <>
+            <DropdownMenuItem 
+              onClick={onShowProfile}
+              className="cursor-pointer hover:bg-gray-100"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Compte
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem 
+              onClick={onSignOut}
+              className="cursor-pointer hover:bg-gray-100 text-red-600"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Se déconnecter
+            </DropdownMenuItem>
+          </>
+        ) : (
           <DropdownMenuItem 
-            onClick={onSignOut}
+            onClick={onShowAuth}
             className="cursor-pointer hover:bg-gray-100"
           >
-            <User className="w-4 h-4 mr-2" />
-            Se déconnecter
+            <UserCheck className="w-4 h-4 mr-2" />
+            Connexion
           </DropdownMenuItem>
-        ) : (
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger className="cursor-pointer hover:bg-gray-100">
-              <User className="w-4 h-4 mr-2" />
-              Connexion
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="bg-white border shadow-lg z-50">
-              <DropdownMenuItem 
-                onClick={() => handleUserTypeSelect('utilisateur')}
-                className="cursor-pointer hover:bg-gray-100"
-              >
-                <UserCheck className="w-4 h-4 mr-2" />
-                Utilisateur
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => handleUserTypeSelect('admin-principal')}
-                className="cursor-pointer hover:bg-gray-100 text-red-600"
-              >
-                <Shield className="w-4 h-4 mr-2" />
-                Admin Principal
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => handleUserTypeSelect('mini-admin')}
-                className="cursor-pointer hover:bg-gray-100 text-orange-600"
-              >
-                <Shield className="w-4 h-4 mr-2" />
-                Mini Admin
-              </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
         )}
         
-        <DropdownMenuSeparator />
-        
-        {/* Compte Section */}
-        <DropdownMenuItem 
-          onClick={onShowProfile}
-          className="cursor-pointer hover:bg-gray-100"
-        >
-          <User className="w-4 h-4 mr-2" />
-          Compte
-        </DropdownMenuItem>
+        {/* Admin Section */}
+        {user && isAdmin && adminRole === 'super_admin' && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              onClick={() => window.location.href = '/admin-dashboard'}
+              className="cursor-pointer hover:bg-gray-100 text-fmf-green"
+            >
+              <Shield className="w-4 h-4 mr-2" />
+              لوحة التحكم الإدارية
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
