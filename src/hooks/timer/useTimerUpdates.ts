@@ -95,6 +95,7 @@ export const useTimerUpdates = (
       newMinutes += 1;
       const newSecondsReset = 0;
       
+      // Check if we should auto-pause at the end of regulation time
       const shouldAutoTransition = 
         (timerData.current_period === 'first_half' && newMinutes >= 45 + timerData.extra_time_first_half) ||
         (timerData.current_period === 'second_half' && newMinutes >= 90 + timerData.extra_time_second_half) ||
@@ -147,12 +148,24 @@ export const useTimerUpdates = (
     }
   }, [timerData, pauseTimer, setTimerData]);
 
+  // Main timer effect - this runs every second when timer is running
   useEffect(() => {
-    if (timerData?.is_running) {
-      const interval = setInterval(updateTimerDisplay, 1000);
-      return () => clearInterval(interval);
+    let interval: NodeJS.Timeout;
+    
+    if (timerData?.is_running && !timerData?.is_paused) {
+      console.log('Starting timer interval');
+      interval = setInterval(() => {
+        updateTimerDisplay();
+      }, 1000);
     }
-  }, [timerData?.is_running, updateTimerDisplay]);
+
+    return () => {
+      if (interval) {
+        console.log('Clearing timer interval');
+        clearInterval(interval);
+      }
+    };
+  }, [timerData?.is_running, timerData?.is_paused, updateTimerDisplay]);
 
   return {
     updateExtraTime,

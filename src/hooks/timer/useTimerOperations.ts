@@ -47,13 +47,16 @@ export const useTimerOperations = (
   const startTimer = async () => {
     if (!timerData) return;
 
+    console.log('Starting timer for match:', matchId);
+    
     try {
+      const currentTime = new Date().toISOString();
       const { error } = await supabase
         .from('match_timers')
         .update({
           is_running: true,
           is_paused: false,
-          started_at: new Date().toISOString()
+          started_at: currentTime
         })
         .eq('id', timerData.id);
 
@@ -63,10 +66,11 @@ export const useTimerOperations = (
         ...prev,
         is_running: true,
         is_paused: false,
-        started_at: new Date().toISOString()
+        started_at: currentTime
       } : null);
 
       toast.success('Timer started');
+      console.log('Timer started successfully');
     } catch (error) {
       console.error('Error starting timer:', error);
       toast.error('Failed to start timer');
@@ -76,13 +80,16 @@ export const useTimerOperations = (
   const pauseTimer = async () => {
     if (!timerData) return;
 
+    console.log('Pausing timer for match:', matchId);
+    
     try {
+      const currentTime = new Date().toISOString();
       const { error } = await supabase
         .from('match_timers')
         .update({
           is_running: false,
           is_paused: true,
-          paused_at: new Date().toISOString()
+          paused_at: currentTime
         })
         .eq('id', timerData.id);
 
@@ -92,10 +99,11 @@ export const useTimerOperations = (
         ...prev,
         is_running: false,
         is_paused: true,
-        paused_at: new Date().toISOString()
+        paused_at: currentTime
       } : null);
 
       toast.success('Timer paused');
+      console.log('Timer paused successfully');
     } catch (error) {
       console.error('Error pausing timer:', error);
       toast.error('Failed to pause timer');
