@@ -41,6 +41,7 @@ export const useAdminStatus = (user: User | null) => {
 
       if (error) {
         console.warn('useAdminStatus: Error checking admin roles:', error);
+        // For regular users, this is expected - they won't be in admin_roles table
         setIsAdmin(false);
         setAdminRole(null);
       } else if (data && data.role) {
@@ -54,6 +55,7 @@ export const useAdminStatus = (user: User | null) => {
       }
     } catch (error) {
       console.error('useAdminStatus: Unexpected error during admin check:', error);
+      // Default to regular user on any error
       setIsAdmin(false);
       setAdminRole(null);
     } finally {
