@@ -81,7 +81,7 @@ const Header = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-2">
-              {/* Admin Button - Show only when user is admin principal */}
+              {/* Admin Button - Show only when user is admin */}
               {user && isAdmin && (
                 <AdminButton />
               )}
@@ -98,7 +98,7 @@ const Header = () => {
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-1">
-              {/* Admin Button for Mobile - Show only when user is admin principal */}
+              {/* Admin Button for Mobile - Show only when user is admin */}
               {user && isAdmin && (
                 <AdminButton isMobile />
               )}

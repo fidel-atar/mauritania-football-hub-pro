@@ -38,21 +38,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Log security events (without sensitive data)
-        if (event === 'SIGNED_IN' && session?.user) {
-          console.log('AuthContext: User authentication successful');
-          
-          // Check if this is the admin principal and redirect immediately
-          if (session.user.email === 'admin@fmf.mr') {
-            console.log('AuthContext: Admin principal detected, redirecting to admin dashboard');
-            // Use a more immediate redirect for admin principal
-            setTimeout(() => {
-              console.log('AuthContext: Executing redirect to admin dashboard');
-              window.location.href = '/admin-dashboard';
-            }, 100);
-          }
-        } else if (event === 'SIGNED_OUT') {
-          console.log('AuthContext: User signed out');
+        // Handle admin principal redirect after successful authentication
+        if (event === 'SIGNED_IN' && session?.user?.email === 'admin@fmf.mr') {
+          console.log('AuthContext: Admin principal signed in, redirecting to dashboard');
+          // Small delay to ensure auth state is fully set
+          setTimeout(() => {
+            window.location.href = '/admin-dashboard';
+          }, 500);
         }
       }
     );
@@ -63,16 +55,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     console.log('AuthContext: Attempting sign in for:', email);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    
     if (error) {
       console.warn('AuthContext: Authentication failed:', error.message);
     } else {
       console.log('AuthContext: Authentication successful for:', email);
-      
-      // For admin principal, trigger immediate redirect after successful login
-      if (email === 'admin@fmf.mr') {
-        console.log('AuthContext: Admin principal login, will redirect shortly');
-      }
     }
+    
     return { error };
   };
 
@@ -98,6 +87,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error('AuthContext: Error during sign out:', error);
+    } else {
+      // Redirect to home page after successful logout
+      window.location.href = '/';
     }
   };
 

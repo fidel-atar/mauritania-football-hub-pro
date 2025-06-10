@@ -21,7 +21,7 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
-  const { signIn, signUp, checkAdminStatus } = useAuth();
+  const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
   const isAdminLogin = userType === 'admin';
@@ -62,26 +62,14 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
       } else {
         toast.success('Connexion réussie');
         
-        // Check if this is admin principal - let AuthContext handle the redirection
+        // Admin principal will be redirected by AuthContext
         if (email === 'admin@fmf.mr') {
-          console.log('UserAuth: Admin principal login detected, AuthContext will handle redirection');
-          // AuthContext will automatically redirect, but we can add a fallback
-          setTimeout(() => {
-            console.log('UserAuth: Fallback redirect for admin principal');
-            navigate('/admin-dashboard');
-          }, 2000);
-        } else if (isAdminLogin) {
-          // For other admin logins, wait for auth context to update then check admin status
-          console.log('UserAuth: Admin login detected, waiting for auth context update...');
-          setTimeout(async () => {
-            console.log('UserAuth: Checking admin status and redirecting to admin dashboard...');
-            await checkAdminStatus();
-            navigate('/admin-dashboard');
-          }, 1000);
+          console.log('UserAuth: Admin principal login - AuthContext will handle redirect');
         } else {
-          // For regular users, redirect to home
-          console.log('UserAuth: Regular user login, redirecting to home');
-          navigate('/');
+          // For regular users or other admins, navigate to appropriate page
+          const redirectPath = isAdminLogin ? '/admin-dashboard' : '/';
+          console.log('UserAuth: Redirecting to:', redirectPath);
+          navigate(redirectPath);
         }
       }
       

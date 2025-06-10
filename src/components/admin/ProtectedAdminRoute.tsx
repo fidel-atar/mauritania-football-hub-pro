@@ -9,9 +9,9 @@ interface ProtectedAdminRouteProps {
 }
 
 const ProtectedAdminRoute = ({ children }: ProtectedAdminRouteProps) => {
-  const { user, isAdmin, loading, adminRole } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
 
-  console.log('ProtectedAdminRoute - user:', user?.email, 'isAdmin:', isAdmin, 'adminRole:', adminRole, 'loading:', loading);
+  console.log('ProtectedAdminRoute - user:', user?.email, 'isAdmin:', isAdmin, 'loading:', loading);
 
   if (loading) {
     return (
@@ -37,7 +37,7 @@ const ProtectedAdminRoute = ({ children }: ProtectedAdminRouteProps) => {
   }
 
   // User is authenticated and is admin, show admin content
-  console.log('ProtectedAdminRoute: User is admin, showing admin content. Role:', adminRole);
+  console.log('ProtectedAdminRoute: User is admin, showing admin content');
   return <>{children}</>;
 };
 
