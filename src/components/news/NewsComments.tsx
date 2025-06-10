@@ -25,6 +25,7 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   const fetchComments = async () => {
     try {
@@ -47,9 +48,29 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
     }
   };
 
+  const fetchUserProfile = async () => {
+    if (user) {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('full_name, avatar_url')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        setUserProfile(data);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    }
+  };
+
   useEffect(() => {
     fetchComments();
   }, [newsId]);
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, [user]);
 
   const handleAddComment = async (content: string, parentId?: string) => {
     if (!user) {
@@ -60,21 +81,14 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
     try {
       console.log('Adding comment for user:', user.email);
       
-      // Get user profile for display name
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name, avatar_url')
-        .eq('id', user.id)
-        .maybeSingle();
-
       const { error } = await supabase
         .from('news_comments')
         .insert({
           news_id: newsId,
           content,
           user_id: user.id,
-          user_name: profile?.full_name || user.email,
-          user_avatar: profile?.avatar_url,
+          user_name: userProfile?.full_name || user.email,
+          user_avatar: userProfile?.avatar_url,
           parent_comment_id: parentId || null
         });
 
@@ -101,20 +115,6 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
   if (loading) {
     return <div className="text-center py-4">Chargement des commentaires...</div>;
   }
-
-  // Get user profile data for the comment form
-  const [userProfile, setUserProfile] = useState<any>(null);
-  
-  useEffect(() => {
-    if (user) {
-      supabase
-        .from('profiles')
-        .select('full_name, avatar_url')
-        .eq('id', user.id)
-        .maybeSingle()
-        .then(({ data }) => setUserProfile(data));
-    }
-  }, [user]);
 
   return (
     <div className="space-y-6">
