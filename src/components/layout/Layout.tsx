@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Outlet, useLocation, useParams } from "react-router-dom";
 import Header from "./Header";
 import BottomNavigation from "./BottomNavigation";
@@ -9,43 +9,49 @@ const Layout = () => {
   const location = useLocation();
   const params = useParams();
 
-  useEffect(() => {
-    // Set page title based on route
-    let title = "FMF - Fédération Mauritanienne de Football";
+  const pageTitle = useMemo(() => {
+    const path = location.pathname;
     
-    if ((location.pathname.includes('/equipe/') || location.pathname.includes('/teams/')) && params.id) {
-      title = `Équipe - Super D1`;
+    if ((path.includes('/equipe/') || path.includes('/teams/')) && params.id) {
+      return `Équipe - Super D1`;
     }
-    else if (location.pathname === '/' || location.pathname === '/accueil' || location.pathname === '/home') {
-      title = "Super D1 - Fédération Mauritanienne de Football";
+    if (path === '/' || path === '/accueil' || path === '/home') {
+      return "Super D1 - Fédération Mauritanienne de Football";
     }
-    else if (location.pathname === '/classement' || location.pathname === '/standings') {
-      title = "Classement Super D1 - FMF";
+    if (path === '/classement' || path === '/standings') {
+      return "Classement Super D1 - FMF";
     }
-    else if (location.pathname === '/coupe' || location.pathname === '/cup') {
-      title = "Coupe du Président - FMF";
+    if (path === '/coupe' || path === '/cup') {
+      return "Coupe du Président - FMF";
     }
-    else if (location.pathname === '/boutique' || location.pathname === '/shop') {
-      title = "Boutique Officielle - FMF";
+    if (path === '/boutique' || path === '/shop') {
+      return "Boutique Officielle - FMF";
     }
-    else if (location.pathname === '/actualites' || location.pathname === '/news') {
-      title = "Actualités - FMF";
+    if (path === '/actualites' || path === '/news') {
+      return "Actualités - FMF";
     }
-    else if (location.pathname === '/statistiques' || location.pathname === '/statistics') {
-      title = "Statistiques - FMF";
+    if (path === '/statistiques' || path === '/statistics') {
+      return "Statistiques - FMF";
     }
-    else if (location.pathname === '/calendrier' || location.pathname === '/calendar') {
-      title = "Calendrier - FMF";
+    if (path === '/calendrier' || path === '/calendar') {
+      return "Calendrier - FMF";
     }
-    else if (location.pathname.includes('/match/') && params.id) {
-      title = `Match #${params.id} - Super D1`;
+    if (path.includes('/match/') && params.id) {
+      return `Match #${params.id} - Super D1`;
     }
     
-    document.title = title;
-  }, [location, params]);
+    return "FMF - Fédération Mauritanienne de Football";
+  }, [location.pathname, params.id]);
 
-  // Determine if we're on a match or team detail page for styling adjustments
-  const isDetailPage = location.pathname.includes('/match/') || location.pathname.includes('/equipe/') || location.pathname.includes('/teams/');
+  useEffect(() => {
+    document.title = pageTitle;
+  }, [pageTitle]);
+
+  const isDetailPage = useMemo(() => 
+    location.pathname.includes('/match/') || 
+    location.pathname.includes('/equipe/') || 
+    location.pathname.includes('/teams/')
+  , [location.pathname]);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 overflow-x-hidden">
@@ -60,7 +66,7 @@ const Layout = () => {
         position="top-center" 
         toastOptions={{
           className: "text-sm",
-          duration: 3000,
+          duration: 2000,
         }}
       />
     </div>

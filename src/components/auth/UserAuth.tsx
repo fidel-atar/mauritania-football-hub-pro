@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -26,11 +26,9 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
 
   const isAdminLogin = userType === 'admin';
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    console.log(`UserAuth: Starting ${isSignUp ? 'signup' : 'login'} for ${userType} user with email:`, email);
     
     const validationError = validateAuthInput(email, password);
     if (validationError) {
@@ -42,12 +40,9 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
     
     try {
       if (isSignUp) {
-        // Handle sign up with email verification
         const { error } = await signUp(email, password);
         
         if (error) {
-          console.error('UserAuth: Signup error:', error);
-          
           if (error.message.includes('User already registered')) {
             setError('Un compte existe déjà avec cet email. Essayez de vous connecter.');
           } else if (error.message.includes('Email address invalid')) {
@@ -58,19 +53,15 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
           return;
         }
         
-        // Show success message for email verification
         toast.success('Compte créé avec succès ! Vérifiez votre email pour confirmer votre compte avant de vous connecter.');
-        setIsSignUp(false); // Switch to login mode
-        setPassword(''); // Clear password for security
+        setIsSignUp(false);
+        setPassword('');
         setError('');
         return;
       } else {
-        // Handle sign in
         const { error } = await signIn(email, password);
         
         if (error) {
-          console.error('UserAuth: Login error:', error);
-          
           if (error.message.includes('Invalid login credentials')) {
             setError('Email ou mot de passe incorrect');
           } else if (error.message.includes('Email not confirmed')) {
@@ -83,41 +74,36 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
           return;
         }
         
-        // Successful login
         toast.success('Connexion réussie');
         
-        // Call the success callback if provided
         if (onAuthSuccess) {
-          console.log('UserAuth: Calling onAuthSuccess callback');
           onAuthSuccess();
         }
         
-        // Navigation will be handled by AuthContext for admin users
-        // For regular users, navigate to home
         if (!isAdminLogin) {
           navigate('/');
         }
       }
       
     } catch (error) {
-      console.error('UserAuth: Unexpected auth error:', error);
+      console.error('Unexpected auth error:', error);
       setError('Une erreur inattendue s\'est produite. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [email, password, isSignUp, signIn, signUp, onAuthSuccess, isAdminLogin, navigate]);
 
-  const handleToggleSignUp = () => {
+  const handleToggleSignUp = useCallback(() => {
     setIsSignUp(!isSignUp);
     setError('');
     setPassword('');
-  };
+  }, [isSignUp]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-3 md:px-4">
+      <Card className="w-full max-w-sm md:max-w-md">
         <AuthHeader isAdminLogin={isAdminLogin} isSignUp={isSignUp} />
-        <CardContent>
+        <CardContent className="p-4 md:p-6">
           <AuthForm
             email={email}
             setEmail={setEmail}

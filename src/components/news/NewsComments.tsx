@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -27,7 +27,7 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('news_comments')
@@ -46,41 +46,39 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [newsId]);
 
-  const fetchUserProfile = async () => {
-    if (user) {
-      try {
-        const { data } = await supabase
-          .from('profiles')
-          .select('full_name, avatar_url')
-          .eq('id', user.id)
-          .maybeSingle();
-        
-        setUserProfile(data);
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-      }
+  const fetchUserProfile = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name, avatar_url')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchComments();
-  }, [newsId]);
+  }, [fetchComments]);
 
   useEffect(() => {
     fetchUserProfile();
-  }, [user]);
+  }, [fetchUserProfile]);
 
-  const handleAddComment = async (content: string, parentId?: string) => {
+  const handleAddComment = useCallback(async (content: string, parentId?: string) => {
     if (!user) {
       toast.error('Vous devez être connecté pour commenter');
       return;
     }
 
     try {
-      console.log('Adding comment for user:', user.email);
-      
       const { error } = await supabase
         .from('news_comments')
         .insert({
@@ -105,20 +103,29 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
       console.error('Error adding comment:', error);
       toast.error('Erreur lors de l\'ajout du commentaire');
     }
-  };
+  }, [user, newsId, userProfile, fetchComments]);
 
-  // Organize comments into threads
-  const parentComments = comments.filter(comment => !comment.parent_comment_id);
-  const getReplies = (parentId: string) => 
-    comments.filter(comment => comment.parent_comment_id === parentId);
+  const { parentComments, getReplies } = useMemo(() => {
+    const parentComments = comments.filter(comment => !comment.parent_comment_id);
+    const getReplies = (parentId: string) => 
+      comments.filter(comment => comment.parent_comment_id === parentId);
+    
+    return { parentComments, getReplies };
+  }, [comments]);
 
   if (loading) {
-    return <div className="text-center py-4">Chargement des commentaires...</div>;
+    return (
+      <div className="flex justify-center py-6">
+        <div className="loading-spinner w-6 h-6"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-lg font-semibold">Commentaires ({comments.length})</h3>
+    <div className="space-y-4 md:space-y-6">
+      <h3 className="text-lg md:text-xl font-semibold">
+        Commentaires ({comments.length})
+      </h3>
       
       {user && (
         <CommentForm 
@@ -131,14 +138,14 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
       )}
       
       {!user && (
-        <div className="p-4 bg-gray-50 rounded-lg text-center">
-          <p className="text-gray-600">
+        <div className="p-3 md:p-4 bg-gray-50 rounded-lg text-center">
+          <p className="text-sm md:text-base text-gray-600">
             Connectez-vous pour ajouter un commentaire
           </p>
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-3 md:space-y-4">
         {parentComments.map((comment) => (
           <div key={comment.id} className="space-y-3">
             <CommentItem
@@ -149,7 +156,7 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
             />
             
             {replyingTo === comment.id && (
-              <div className="ml-8">
+              <div className="ml-6 md:ml-8">
                 <CommentForm
                   onSubmit={(content) => handleAddComment(content, comment.id)}
                   onCancel={() => setReplyingTo(null)}
@@ -162,8 +169,7 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
               </div>
             )}
             
-            {/* Replies */}
-            <div className="ml-8 space-y-3">
+            <div className="ml-6 md:ml-8 space-y-3">
               {getReplies(comment.id).map((reply) => (
                 <CommentItem
                   key={reply.id}
@@ -179,8 +185,10 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
       </div>
 
       {comments.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          Aucun commentaire pour le moment. Soyez le premier à commenter !
+        <div className="text-center py-6 md:py-8 text-gray-500">
+          <p className="text-sm md:text-base">
+            Aucun commentaire pour le moment. Soyez le premier à commenter !
+          </p>
         </div>
       )}
     </div>
