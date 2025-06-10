@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,53 +41,61 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
     setLoading(true);
     
     try {
-      const { error } = isSignUp 
-        ? await signUp(email, password)
-        : await signIn(email, password);
-      
-      if (error) {
-        console.error('UserAuth: Auth error:', error);
+      if (isSignUp) {
+        // Handle sign up with email verification
+        const { error } = await signUp(email, password);
         
-        // Handle different types of authentication errors
-        if (error.message.includes('Invalid login credentials')) {
-          setError('Email ou mot de passe incorrect');
-        } else if (error.message.includes('User already registered')) {
-          setError('Un compte existe déjà avec cet email');
-        } else if (error.message.includes('Email not confirmed')) {
-          setError('Veuillez confirmer votre email avant de vous connecter');
-        } else if (error.message.includes('Too many requests')) {
-          setError('Trop de tentatives. Veuillez réessayer dans quelques minutes');
-        } else {
-          setError('Erreur de connexion. Veuillez réessayer.');
+        if (error) {
+          console.error('UserAuth: Signup error:', error);
+          
+          if (error.message.includes('User already registered')) {
+            setError('Un compte existe déjà avec cet email. Essayez de vous connecter.');
+          } else if (error.message.includes('Email address invalid')) {
+            setError('Adresse email invalide');
+          } else {
+            setError('Erreur lors de la création du compte. Veuillez réessayer.');
+          }
+          return;
         }
         
-        // Keep the user on the auth page when there's an error
-        return;
-      }
-      
-      if (isSignUp) {
-        toast.success('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
-        setIsSignUp(false); // Switch to login mode after successful signup
+        // Show success message for email verification
+        toast.success('Compte créé avec succès ! Vérifiez votre email pour confirmer votre compte avant de vous connecter.');
+        setIsSignUp(false); // Switch to login mode
         setPassword(''); // Clear password for security
         setError('');
+        return;
       } else {
-        toast.success('Connexion réussie');
+        // Handle sign in
+        const { error } = await signIn(email, password);
         
-        // Only redirect for admin users or call success callback
-        if (isAdminLogin && email === 'admin@fmf.mr') {
-          console.log('UserAuth: Admin principal login - AuthContext will handle redirect');
-        } else if (isAdminLogin) {
-          // For regular admin users
-          navigate('/admin-dashboard');
-        } else {
-          // For regular users, navigate to home
-          navigate('/');
+        if (error) {
+          console.error('UserAuth: Login error:', error);
+          
+          if (error.message.includes('Invalid login credentials')) {
+            setError('Email ou mot de passe incorrect');
+          } else if (error.message.includes('Email not confirmed')) {
+            setError('Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.');
+          } else if (error.message.includes('Too many requests')) {
+            setError('Trop de tentatives. Veuillez réessayer dans quelques minutes');
+          } else {
+            setError('Erreur de connexion. Veuillez réessayer.');
+          }
+          return;
         }
+        
+        // Successful login
+        toast.success('Connexion réussie');
         
         // Call the success callback if provided
         if (onAuthSuccess) {
           console.log('UserAuth: Calling onAuthSuccess callback');
           onAuthSuccess();
+        }
+        
+        // Navigation will be handled by AuthContext for admin users
+        // For regular users, navigate to home
+        if (!isAdminLogin) {
+          navigate('/');
         }
       }
       

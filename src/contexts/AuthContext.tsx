@@ -38,13 +38,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Handle admin principal redirect after successful authentication
-        if (event === 'SIGNED_IN' && session?.user?.email === 'admin@fmf.mr') {
-          console.log('AuthContext: Admin principal signed in, redirecting to dashboard');
-          // Small delay to ensure auth state is fully set
-          setTimeout(() => {
-            window.location.href = '/admin-dashboard';
-          }, 500);
+        // Handle admin redirect after successful authentication
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('AuthContext: User signed in:', session.user.email);
+          
+          // Check if user is admin before redirecting
+          if (session.user.email === 'admin@fmf.mr') {
+            console.log('AuthContext: Admin principal signed in, will redirect to dashboard');
+            setTimeout(() => {
+              window.location.href = '/admin-dashboard';
+            }, 1000);
+          }
         }
       }
     );
@@ -67,19 +71,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signUp = async (email: string, password: string) => {
+    console.log('AuthContext: Attempting sign up for:', email);
+    
+    // Set up email confirmation redirect
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({ 
       email, 
       password,
       options: {
-        emailRedirectTo: redirectUrl
+        emailRedirectTo: redirectUrl,
+        // Enable email confirmation
+        data: {
+          email_confirm: true
+        }
       }
     });
     
     if (error) {
-      console.warn('AuthContext: Registration failed');
+      console.warn('AuthContext: Registration failed:', error.message);
+    } else {
+      console.log('AuthContext: Registration successful for:', email, '- Email verification sent');
     }
+    
     return { error };
   };
 
