@@ -1,17 +1,17 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Trophy, BarChart2, Newspaper, ShoppingBag, Calendar, TrendingUp, Play } from "lucide-react";
+import { Home, Trophy, BarChart2, Newspaper, ShoppingBag } from "lucide-react";
 
 const BottomNavigation = () => {
   const location = useLocation();
   
   const navItems = [
-    { name: "Accueil", path: "/", icon: <Home size={20} /> },
-    { name: "Actualités", path: "/actualites", icon: <Newspaper size={20} /> },
-    { name: "Stats", path: "/statistiques", icon: <TrendingUp size={20} /> },
-    { name: "Coupe", path: "/coupe", icon: <Trophy size={20} /> },
-    { name: "Shop", path: "/boutique", icon: <ShoppingBag size={20} /> }
+    { name: "Accueil", path: "/", icon: <Home size={18} /> },
+    { name: "Actualités", path: "/actualites", icon: <Newspaper size={18} /> },
+    { name: "Stats", path: "/statistiques", icon: <BarChart2 size={18} /> },
+    { name: "Coupe", path: "/coupe", icon: <Trophy size={18} /> },
+    { name: "Shop", path: "/boutique", icon: <ShoppingBag size={18} /> }
   ];
 
   return (
@@ -22,7 +22,7 @@ const BottomNavigation = () => {
           <Link
             key={item.path}
             to={item.path}
-            className={`flex flex-col items-center justify-center w-full h-full transition-all duration-200 relative ${
+            className={`flex flex-col items-center justify-center w-full h-full transition-all duration-200 relative touch-target ${
               isActive 
                 ? "text-fmf-green font-medium scale-105" 
                 : "text-gray-500 hover:text-fmf-yellow active:scale-95"

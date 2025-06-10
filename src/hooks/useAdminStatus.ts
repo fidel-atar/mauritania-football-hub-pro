@@ -20,6 +20,15 @@ export const useAdminStatus = (user: User | null) => {
     try {
       console.log('useAdminStatus: Checking admin status for user:', user.id, user.email);
       
+      // Check if user is admin principal (special case)
+      if (user.email === 'admin@fmf.mr') {
+        console.log('useAdminStatus: Admin principal detected, setting admin to true');
+        setIsAdmin(true);
+        setAdminRole('super_admin');
+        setLoading(false);
+        return;
+      }
+      
       const { data, error } = await supabase
         .from('admin_roles')
         .select('role')
@@ -58,8 +67,9 @@ export const useAdminStatus = (user: User | null) => {
       console.log('useAdminStatus: No user, clearing admin status');
       setIsAdmin(false);
       setAdminRole(null);
+      setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, user?.email]);
 
   return {
     isAdmin,

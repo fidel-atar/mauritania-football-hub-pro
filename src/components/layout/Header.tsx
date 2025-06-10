@@ -61,22 +61,27 @@ const Header = () => {
 
   return (
     <>
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+        <div className="container mx-auto px-3 md:px-4">
+          <div className="flex items-center justify-between h-14 md:h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
+            <Link to="/" className="flex items-center space-x-1 md:space-x-2 flex-shrink-0">
               <img 
                 src="/lovable-uploads/68710224-6f46-49c9-b634-136af2bbdd99.png" 
                 alt="Super D1-Mauritanie Logo" 
-                className="h-12 w-12 object-contain"
+                className="h-8 w-8 md:h-12 md:w-12 object-contain"
               />
-              <span className="font-bold text-xl text-fmf-green">Super D1-Mauritanie</span>
+              <span className="font-bold text-sm md:text-xl text-fmf-green hidden sm:block">
+                Super D1-Mauritanie
+              </span>
+              <span className="font-bold text-xs text-fmf-green sm:hidden">
+                FMF
+              </span>
             </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-2">
-              {/* Admin Button - Show only when user is admin */}
+              {/* Admin Button - Show only when user is admin principal */}
               {user && isAdmin && (
                 <AdminButton />
               )}
@@ -92,8 +97,8 @@ const Header = () => {
             </div>
 
             {/* Mobile menu button */}
-            <div className="md:hidden flex items-center gap-2">
-              {/* Admin Button for Mobile - Show only when user is admin */}
+            <div className="md:hidden flex items-center gap-1">
+              {/* Admin Button for Mobile - Show only when user is admin principal */}
               {user && isAdmin && (
                 <AdminButton isMobile />
               )}
@@ -109,9 +114,10 @@ const Header = () => {
               
               <button 
                 onClick={toggleMenu}
-                className="text-gray-700 hover:text-fmf-green transition-colors"
+                className="text-gray-700 hover:text-fmf-green transition-colors p-2 touch-target"
+                aria-label="Toggle menu"
               >
-                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>
           </div>

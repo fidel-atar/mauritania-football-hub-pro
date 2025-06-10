@@ -58,7 +58,10 @@ const CupPage = () => {
     return (
       <div className="page-container pb-20">
         <h1 className="section-title">Coupe du Président</h1>
-        <div className="text-center py-8">Chargement des compétitions...</div>
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fmf-green mx-auto mb-2"></div>
+          <p className="text-sm text-gray-600">Chargement des compétitions...</p>
+        </div>
       </div>
     );
   }
@@ -67,36 +70,43 @@ const CupPage = () => {
     <div className="page-container pb-20">
       <h1 className="section-title">Coupe du Président</h1>
       
-      <Card className="mb-6 bg-gradient-to-r from-fmf-yellow to-fmf-green text-fmf-dark">
-        <CardHeader className="flex flex-row items-center pb-2">
-          <Trophy className="mr-2" />
-          <CardTitle>Édition 2024</CardTitle>
+      <Card className="mb-4 md:mb-6 bg-gradient-to-r from-fmf-yellow to-fmf-green text-fmf-dark">
+        <CardHeader className="flex flex-row items-center pb-2 p-4 md:p-6">
+          <Trophy className="mr-2 w-5 h-5 md:w-6 md:h-6" />
+          <CardTitle className="text-lg md:text-xl">Édition 2024</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p>Suivez l'évolution de la prestigieuse Coupe du Président, la plus grande compétition à élimination directe de Mauritanie.</p>
+        <CardContent className="p-4 md:p-6 pt-0">
+          <p className="text-sm md:text-base">
+            Suivez l'évolution de la prestigieuse Coupe du Président, 
+            la plus grande compétition à élimination directe de Mauritanie.
+          </p>
         </CardContent>
       </Card>
 
       {activeCup && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5" />
+        <Card className="mb-4 md:mb-6">
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <Trophy className="h-4 w-4 md:h-5 md:w-5" />
               {activeCup.name} - Tableau de la compétition
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6 pt-0">
             {matchesLoading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fmf-green mx-auto mb-2"></div>
                 <p className="text-sm text-gray-600">Chargement du tableau...</p>
               </div>
             ) : cupMatches.length > 0 ? (
-              <TournamentBracket matches={cupMatches} />
+              <div className="overflow-x-auto">
+                <TournamentBracket matches={cupMatches} />
+              </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-600">Le tableau de la compétition sera disponible bientôt.</p>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-gray-600 text-sm md:text-base">
+                  Le tableau de la compétition sera disponible bientôt.
+                </p>
+                <p className="text-xs md:text-sm text-gray-500 mt-2">
                   L'administrateur doit configurer les équipes participantes via le panneau d'administration.
                 </p>
               </div>
@@ -107,38 +117,40 @@ const CupPage = () => {
       
       {!activeCup && cups.length === 0 && (
         <div className="text-center py-12">
-          <h2 className="text-xl font-semibold text-gray-600 mb-4">Aucune compétition disponible</h2>
-          <p className="text-gray-500">
+          <h2 className="text-lg md:text-xl font-semibold text-gray-600 mb-4">
+            Aucune compétition disponible
+          </h2>
+          <p className="text-gray-500 text-sm md:text-base">
             Les compétitions seront ajoutées par l'administrateur bientôt.
           </p>
         </div>
       )}
 
       {/* Static information sections - read-only for users */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-4 md:gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Palmarès</CardTitle>
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="text-base md:text-lg">Palmarès</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6 pt-0">
             <ul className="space-y-2">
-              <li className="flex justify-between">
+              <li className="flex justify-between text-sm md:text-base">
                 <span>2022</span>
                 <span className="font-medium">FC Nouakchott</span>
               </li>
-              <li className="flex justify-between">
+              <li className="flex justify-between text-sm md:text-base">
                 <span>2021</span>
                 <span className="font-medium">Nouadhibou FC</span>
               </li>
-              <li className="flex justify-between">
+              <li className="flex justify-between text-sm md:text-base">
                 <span>2020</span>
                 <span className="font-medium">AS Garde</span>
               </li>
-              <li className="flex justify-between">
+              <li className="flex justify-between text-sm md:text-base">
                 <span>2019</span>
                 <span className="font-medium">Tevragh-Zeina FC</span>
               </li>
-              <li className="flex justify-between">
+              <li className="flex justify-between text-sm md:text-base">
                 <span>2018</span>
                 <span className="font-medium">FC Nouakchott</span>
               </li>
@@ -147,24 +159,24 @@ const CupPage = () => {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Informations</CardTitle>
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="text-base md:text-lg">Informations</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6 pt-0">
             <ul className="space-y-2">
-              <li className="flex justify-between">
+              <li className="flex justify-between text-sm md:text-base">
                 <span>Format</span>
                 <span className="font-medium">Élimination directe</span>
               </li>
-              <li className="flex justify-between">
+              <li className="flex justify-between text-sm md:text-base">
                 <span>Nombre d'équipes</span>
                 <span className="font-medium">16</span>
               </li>
-              <li className="flex justify-between">
+              <li className="flex justify-between text-sm md:text-base">
                 <span>Tenant du titre</span>
                 <span className="font-medium">FC Nouakchott</span>
               </li>
-              <li className="flex justify-between">
+              <li className="flex justify-between text-sm md:text-base">
                 <span>Lieu de la finale</span>
                 <span className="font-medium">Stade Olympique, Nouakchott</span>
               </li>

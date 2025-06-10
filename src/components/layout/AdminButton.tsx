@@ -13,15 +13,15 @@ const AdminButton = ({ isMobile = false }: AdminButtonProps) => {
     <Link to="/admin-dashboard">
       <Button 
         variant="outline" 
-        size="sm"
-        className="bg-fmf-green text-white hover:bg-fmf-green/90 border-fmf-green"
+        size={isMobile ? "sm" : "sm"}
+        className="bg-fmf-green text-white hover:bg-fmf-green/90 border-fmf-green touch-target"
       >
         {isMobile ? (
           <Shield className="w-4 h-4" />
         ) : (
           <>
-            <Shield className="w-4 h-4 mr-2" />
-            Admin
+            <Shield className="w-4 h-4 mr-1 md:mr-2" />
+            <span className="text-xs md:text-sm">Admin</span>
           </>
         )}
       </Button>

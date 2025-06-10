@@ -44,7 +44,7 @@ const Layout = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 overflow-x-hidden">
       <Header />
-      <main className={`flex-1 pb-20 ${isDetailPage ? '' : 'pt-2 md:pt-4'} min-h-0`}>
+      <main className={`flex-1 pb-16 md:pb-20 ${isDetailPage ? '' : 'pt-1 md:pt-4'} min-h-0`}>
         <div className="w-full max-w-full overflow-x-hidden">
           <Outlet />
         </div>
