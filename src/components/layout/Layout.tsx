@@ -13,23 +13,29 @@ const Layout = () => {
     // Set page title based on route
     let title = "FMF - Fédération Mauritanienne de Football";
     
-    if (location.pathname.includes('/equipe/') && params.id) {
+    if ((location.pathname.includes('/equipe/') || location.pathname.includes('/teams/')) && params.id) {
       title = `Équipe - Super D1`;
     }
-    else if (location.pathname === '/') {
+    else if (location.pathname === '/' || location.pathname === '/accueil' || location.pathname === '/home') {
       title = "Super D1 - Fédération Mauritanienne de Football";
     }
-    else if (location.pathname === '/classement') {
+    else if (location.pathname === '/classement' || location.pathname === '/standings') {
       title = "Classement Super D1 - FMF";
     }
-    else if (location.pathname === '/coupe') {
+    else if (location.pathname === '/coupe' || location.pathname === '/cup') {
       title = "Coupe du Président - FMF";
     }
-    else if (location.pathname === '/boutique') {
+    else if (location.pathname === '/boutique' || location.pathname === '/shop') {
       title = "Boutique Officielle - FMF";
     }
-    else if (location.pathname === '/actualites') {
+    else if (location.pathname === '/actualites' || location.pathname === '/news') {
       title = "Actualités - FMF";
+    }
+    else if (location.pathname === '/statistiques' || location.pathname === '/statistics') {
+      title = "Statistiques - FMF";
+    }
+    else if (location.pathname === '/calendrier' || location.pathname === '/calendar') {
+      title = "Calendrier - FMF";
     }
     else if (location.pathname.includes('/match/') && params.id) {
       title = `Match #${params.id} - Super D1`;
@@ -39,7 +45,7 @@ const Layout = () => {
   }, [location, params]);
 
   // Determine if we're on a match or team detail page for styling adjustments
-  const isDetailPage = location.pathname.includes('/match/') || location.pathname.includes('/equipe/');
+  const isDetailPage = location.pathname.includes('/match/') || location.pathname.includes('/equipe/') || location.pathname.includes('/teams/');
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 overflow-x-hidden">

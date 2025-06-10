@@ -24,7 +24,14 @@ import NotFound from "@/pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "./App.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (
@@ -35,21 +42,54 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<Index />} />
               <Route path="home" element={<HomePage />} />
+              <Route path="accueil" element={<HomePage />} />
+              
+              {/* Teams routes - French paths */}
+              <Route path="equipes" element={<TeamsPage />} />
               <Route path="teams" element={<TeamsPage />} />
+              <Route path="equipes/:id" element={<TeamPage />} />
               <Route path="teams/:id" element={<TeamPage />} />
+              
+              {/* Standings routes - French paths */}
+              <Route path="classement" element={<StandingsPage />} />
               <Route path="standings" element={<StandingsPage />} />
+              
+              {/* Calendar routes - French paths */}
+              <Route path="calendrier" element={<CalendarPage />} />
               <Route path="calendar" element={<CalendarPage />} />
+              
+              {/* Live scores routes - French paths */}
+              <Route path="scores-en-direct" element={<LiveScoresPage />} />
               <Route path="live-scores" element={<LiveScoresPage />} />
+              
+              {/* Match detail routes */}
               <Route path="match/:id" element={<MatchDetailPage />} />
+              
+              {/* News routes - French paths */}
+              <Route path="actualites" element={<NewsPage />} />
               <Route path="news" element={<NewsPage />} />
+              <Route path="actualites/:id" element={<NewsDetailPage />} />
               <Route path="news/:id" element={<NewsDetailPage />} />
+              
+              {/* Statistics routes - French paths */}
+              <Route path="statistiques" element={<StatisticsPage />} />
               <Route path="statistics" element={<StatisticsPage />} />
+              
+              {/* Shop routes - French paths */}
+              <Route path="boutique" element={<ShopPage />} />
               <Route path="shop" element={<ShopPage />} />
               <Route path="checkout" element={<CheckoutPage />} />
               <Route path="order-success" element={<OrderSuccessPage />} />
+              
+              {/* Cup routes - French paths */}
+              <Route path="coupe" element={<CupPage />} />
               <Route path="cup" element={<CupPage />} />
+              
+              {/* Admin routes */}
               <Route path="admin" element={<AdminPage />} />
               <Route path="admin-dashboard" element={<AdminDashboard />} />
+              
+              {/* 404 route */}
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
