@@ -5,19 +5,20 @@ import { Button } from "@/components/ui/button";
 interface CategoryFilterProps {
   categories: string[];
   activeCategory: string | undefined;
-  onSelectCategory: (category: string | undefined) => void;
+  onCategoryChange: (category: string | undefined) => void;
 }
 
-const CategoryFilter = ({
-  categories,
-  activeCategory,
-  onSelectCategory,
-}: CategoryFilterProps) => {
+const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: CategoryFilterProps) => {
+  if (categories.length === 0) {
+    return null;
+  }
+
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
+    <div className="flex flex-wrap gap-2">
       <Button
         variant={activeCategory === undefined ? "default" : "outline"}
-        onClick={() => onSelectCategory(undefined)}
+        size="sm"
+        onClick={() => onCategoryChange(undefined)}
         className={activeCategory === undefined ? "bg-fmf-green hover:bg-fmf-green/90" : ""}
       >
         Tous
@@ -26,7 +27,8 @@ const CategoryFilter = ({
         <Button
           key={category}
           variant={activeCategory === category ? "default" : "outline"}
-          onClick={() => onSelectCategory(category)}
+          size="sm"
+          onClick={() => onCategoryChange(category)}
           className={activeCategory === category ? "bg-fmf-green hover:bg-fmf-green/90" : ""}
         >
           {category}
