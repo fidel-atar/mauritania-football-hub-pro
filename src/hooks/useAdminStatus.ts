@@ -20,7 +20,7 @@ export const useAdminStatus = (user: User | null) => {
     try {
       console.log('useAdminStatus: Checking admin status for user:', user.id, user.email);
       
-      // First check if user is admin principal (special hardcoded case)
+      // STRICT ADMIN CHECK: Only admin@fmf.mr gets automatic admin access
       if (user.email === 'admin@fmf.mr') {
         console.log('useAdminStatus: Admin principal detected, setting admin to true');
         setIsAdmin(true);
@@ -29,7 +29,7 @@ export const useAdminStatus = (user: User | null) => {
         return;
       }
       
-      // For all other users, check the admin_roles table
+      // For ALL other users (including test users), check the admin_roles table
       console.log('useAdminStatus: Checking admin_roles table for user:', user.email);
       const { data, error } = await supabase
         .from('admin_roles')
@@ -41,7 +41,7 @@ export const useAdminStatus = (user: User | null) => {
 
       if (error) {
         console.warn('useAdminStatus: Error checking admin roles:', error);
-        // For regular users, this is expected - they won't be in admin_roles table
+        // This is expected for regular users - they won't be in admin_roles table
         setIsAdmin(false);
         setAdminRole(null);
       } else if (data && data.role) {
@@ -49,13 +49,13 @@ export const useAdminStatus = (user: User | null) => {
         setIsAdmin(true);
         setAdminRole(data.role);
       } else {
-        console.log('useAdminStatus: User not found in admin_roles table - regular user');
+        console.log('useAdminStatus: User not found in admin_roles table - this is a REGULAR USER');
         setIsAdmin(false);
         setAdminRole(null);
       }
     } catch (error) {
       console.error('useAdminStatus: Unexpected error during admin check:', error);
-      // Default to regular user on any error
+      // Default to regular user on any error - this is the safe choice
       setIsAdmin(false);
       setAdminRole(null);
     } finally {

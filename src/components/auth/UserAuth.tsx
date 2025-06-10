@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
@@ -47,41 +46,53 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
       
       if (error) {
         console.error('UserAuth: Auth error:', error);
+        
+        // Handle different types of authentication errors
         if (error.message.includes('Invalid login credentials')) {
           setError('Email ou mot de passe incorrect');
         } else if (error.message.includes('User already registered')) {
           setError('Un compte existe déjà avec cet email');
+        } else if (error.message.includes('Email not confirmed')) {
+          setError('Veuillez confirmer votre email avant de vous connecter');
+        } else if (error.message.includes('Too many requests')) {
+          setError('Trop de tentatives. Veuillez réessayer dans quelques minutes');
         } else {
           setError('Erreur de connexion. Veuillez réessayer.');
         }
+        
+        // Keep the user on the auth page when there's an error
         return;
       }
       
       if (isSignUp) {
-        toast.success('Compte créé avec succès ! Vérifiez votre email pour confirmer votre compte.');
+        toast.success('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
+        setIsSignUp(false); // Switch to login mode after successful signup
+        setPassword(''); // Clear password for security
+        setError('');
       } else {
         toast.success('Connexion réussie');
         
-        // Admin principal will be redirected by AuthContext
-        if (email === 'admin@fmf.mr') {
+        // Only redirect for admin users or call success callback
+        if (isAdminLogin && email === 'admin@fmf.mr') {
           console.log('UserAuth: Admin principal login - AuthContext will handle redirect');
+        } else if (isAdminLogin) {
+          // For regular admin users
+          navigate('/admin-dashboard');
         } else {
-          // For regular users or other admins, navigate to appropriate page
-          const redirectPath = isAdminLogin ? '/admin-dashboard' : '/';
-          console.log('UserAuth: Redirecting to:', redirectPath);
-          navigate(redirectPath);
+          // For regular users, navigate to home
+          navigate('/');
         }
-      }
-      
-      // Call the success callback if provided
-      if (onAuthSuccess) {
-        console.log('UserAuth: Calling onAuthSuccess callback');
-        onAuthSuccess();
+        
+        // Call the success callback if provided
+        if (onAuthSuccess) {
+          console.log('UserAuth: Calling onAuthSuccess callback');
+          onAuthSuccess();
+        }
       }
       
     } catch (error) {
       console.error('UserAuth: Unexpected auth error:', error);
-      setError('Une erreur inattendue s\'est produite');
+      setError('Une erreur inattendue s\'est produite. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -90,6 +101,7 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
   const handleToggleSignUp = () => {
     setIsSignUp(!isSignUp);
     setError('');
+    setPassword('');
   };
 
   return (

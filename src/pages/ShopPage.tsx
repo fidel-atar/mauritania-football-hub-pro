@@ -9,12 +9,14 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const ShopPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | undefined>(undefined);
   const { addToCart } = useCart();
+  const { user } = useAuth();
 
   // Fetch products from Supabase
   const { data: products = [], isLoading } = useQuery({
@@ -45,14 +47,14 @@ const ShopPage = () => {
   });
 
   const handleAddToCart = async (productId: string, productName: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
     if (!user) {
       toast.error('Vous devez être connecté pour ajouter au panier');
       return;
     }
 
+    console.log('ShopPage: Adding product to cart for user:', user.email);
     await addToCart(productId);
+    toast.success(`${productName} ajouté au panier`);
   };
 
   if (isLoading) {
@@ -67,6 +69,17 @@ const ShopPage = () => {
   return (
     <div className="page-container pb-20">
       <h1 className="section-title">Boutique Officielle</h1>
+      
+      {!user && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-blue-800 text-center">
+            <Link to="/auth" className="font-semibold underline">
+              Connectez-vous
+            </Link>
+            {" "}pour ajouter des produits à votre panier
+          </p>
+        </div>
+      )}
       
       <div className="mb-6">
         <div className="relative">
@@ -113,14 +126,6 @@ const ShopPage = () => {
           <p className="text-gray-500 mb-6">
             Les produits seront ajoutés par l'administrateur bientôt.
           </p>
-          <div className="bg-blue-50 p-4 rounded-lg inline-block">
-            <p className="text-blue-800 text-sm">
-              L'administrateur peut ajouter des produits via le{" "}
-              <Link to="/admin-dashboard" className="font-semibold underline">
-                panneau d'administration
-              </Link>
-            </p>
-          </div>
         </div>
       ) : filteredProducts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -145,9 +150,10 @@ const ShopPage = () => {
                 <Button 
                   className="w-full bg-fmf-green hover:bg-fmf-green/90"
                   onClick={() => handleAddToCart(product.id, product.name)}
+                  disabled={!user}
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
-                  Ajouter au panier
+                  {user ? 'Ajouter au panier' : 'Connectez-vous'}
                 </Button>
               </CardContent>
             </Card>

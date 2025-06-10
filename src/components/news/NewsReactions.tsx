@@ -1,117 +1,98 @@
 
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Heart, Laugh, ThumbsUp, Frown, Angry } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-
-interface Reaction {
-  id: string;
-  reaction_type: string;
-  user_id: string;
-}
-
-interface ReactionCount {
-  reaction_type: string;
-  count: number;
-}
+import React, { useState, useEffect } from 'react';
+import { Heart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface NewsReactionsProps {
   newsId: string;
 }
 
-const reactionIcons = {
-  like: ThumbsUp,
-  love: Heart,
-  laugh: Laugh,
-  sad: Frown,
-  angry: Angry,
-};
-
-const reactionLabels = {
-  like: "J'aime",
-  love: "Adore",
-  laugh: "Rigole",
-  sad: "Triste",
-  angry: "En colère",
-};
-
 const NewsReactions = ({ newsId }: NewsReactionsProps) => {
-  const [reactions, setReactions] = useState<ReactionCount[]>([]);
-  const [userReactions, setUserReactions] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const [reactions, setReactions] = useState<{[key: string]: number}>({});
+  const [userReaction, setUserReaction] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const reactionTypes = [
+    { type: 'like', icon: '👍', label: 'J\'aime' },
+    { type: 'love', icon: '❤️', label: 'Adore' },
+    { type: 'celebrate', icon: '🎉', label: 'Célèbre' },
+    { type: 'support', icon: '💪', label: 'Soutien' }
+  ];
 
   const fetchReactions = async () => {
     try {
-      // Get reaction counts
-      const { data: reactionData, error: reactionError } = await supabase
+      const { data, error } = await supabase
         .from('news_reactions')
-        .select('reaction_type')
+        .select('reaction_type, user_id')
         .eq('news_id', newsId);
 
-      if (reactionError) {
-        console.error('Error fetching reactions:', reactionError);
+      if (error) {
+        console.error('Error fetching reactions:', error);
         return;
       }
 
       // Count reactions by type
-      const counts = reactionData.reduce((acc: { [key: string]: number }, reaction) => {
-        acc[reaction.reaction_type] = (acc[reaction.reaction_type] || 0) + 1;
-        return acc;
-      }, {});
-
-      setReactions(Object.entries(counts).map(([type, count]) => ({ reaction_type: type, count })));
-
-      // Get current user's reactions
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: userReactionData, error: userReactionError } = await supabase
-          .from('news_reactions')
-          .select('reaction_type')
-          .eq('news_id', newsId)
-          .eq('user_id', user.id);
-
-        if (!userReactionError && userReactionData) {
-          setUserReactions(userReactionData.map(r => r.reaction_type));
+      const reactionCounts: {[key: string]: number} = {};
+      data?.forEach(reaction => {
+        reactionCounts[reaction.reaction_type] = (reactionCounts[reaction.reaction_type] || 0) + 1;
+        
+        // Check if current user has reacted
+        if (user && reaction.user_id === user.id) {
+          setUserReaction(reaction.reaction_type);
         }
-      }
+      });
+
+      setReactions(reactionCounts);
     } catch (error) {
       console.error('Error fetching reactions:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchReactions();
-  }, [newsId]);
+  }, [newsId, user]);
 
   const handleReaction = async (reactionType: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
     if (!user) {
       toast.error('Vous devez être connecté pour réagir');
       return;
     }
 
+    setLoading(true);
     try {
-      const hasReacted = userReactions.includes(reactionType);
+      console.log('Adding reaction for user:', user.email);
 
-      if (hasReacted) {
-        // Remove reaction
+      // If user already has this reaction, remove it
+      if (userReaction === reactionType) {
         const { error } = await supabase
           .from('news_reactions')
           .delete()
           .eq('news_id', newsId)
-          .eq('user_id', user.id)
-          .eq('reaction_type', reactionType);
+          .eq('user_id', user.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error removing reaction:', error);
+          toast.error('Erreur lors de la suppression de la réaction');
+          return;
+        }
 
-        setUserReactions(prev => prev.filter(r => r !== reactionType));
+        setUserReaction(null);
         toast.success('Réaction supprimée');
       } else {
-        // Add reaction
+        // Remove existing reaction if any
+        if (userReaction) {
+          await supabase
+            .from('news_reactions')
+            .delete()
+            .eq('news_id', newsId)
+            .eq('user_id', user.id);
+        }
+
+        // Add new reaction
         const { error } = await supabase
           .from('news_reactions')
           .insert({
@@ -120,43 +101,51 @@ const NewsReactions = ({ newsId }: NewsReactionsProps) => {
             reaction_type: reactionType
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error adding reaction:', error);
+          toast.error('Erreur lors de l\'ajout de la réaction');
+          return;
+        }
 
-        setUserReactions(prev => [...prev, reactionType]);
+        setUserReaction(reactionType);
         toast.success('Réaction ajoutée');
       }
 
       fetchReactions();
     } catch (error) {
       console.error('Error handling reaction:', error);
-      toast.error('Erreur lors de la réaction');
+      toast.error('Erreur lors de la gestion de la réaction');
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading) {
-    return <div className="text-sm text-gray-500">Chargement des réactions...</div>;
-  }
-
   return (
-    <div className="flex flex-wrap gap-2 py-4">
-      {Object.entries(reactionIcons).map(([type, Icon]) => {
-        const count = reactions.find(r => r.reaction_type === type)?.count || 0;
-        const hasReacted = userReactions.includes(type);
-        
-        return (
+    <div className="space-y-4">
+      <h4 className="font-medium">Réactions</h4>
+      
+      <div className="flex flex-wrap gap-2">
+        {reactionTypes.map(({ type, icon, label }) => (
           <Button
             key={type}
-            variant={hasReacted ? "default" : "outline"}
+            variant={userReaction === type ? "default" : "outline"}
             size="sm"
             onClick={() => handleReaction(type)}
-            className={`flex items-center gap-1 ${hasReacted ? 'bg-blue-500 text-white' : ''}`}
+            disabled={loading || !user}
+            className="flex items-center gap-2"
           >
-            <Icon className="w-4 h-4" />
-            <span className="text-xs">{reactionLabels[type as keyof typeof reactionLabels]}</span>
-            {count > 0 && <span className="text-xs">({count})</span>}
+            <span>{icon}</span>
+            <span>{reactions[type] || 0}</span>
+            <span className="hidden sm:inline">{label}</span>
           </Button>
-        );
-      })}
+        ))}
+      </div>
+
+      {!user && (
+        <p className="text-sm text-gray-500">
+          Connectez-vous pour réagir à cette actualité
+        </p>
+      )}
     </div>
   );
 };
