@@ -8,11 +8,21 @@ interface MatchEventManagerProps {
   matchId: string;
   homeTeamId: string;
   awayTeamId: string;
+  homeTeamName?: string;
+  awayTeamName?: string;
   isFinished: boolean;
   isAdmin?: boolean;
 }
 
-const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmin = false }: MatchEventManagerProps) => {
+const MatchEventManager = ({ 
+  matchId, 
+  homeTeamId, 
+  awayTeamId, 
+  homeTeamName,
+  awayTeamName,
+  isFinished, 
+  isAdmin = false 
+}: MatchEventManagerProps) => {
   const {
     events,
     players,
@@ -23,6 +33,7 @@ const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmi
   } = useMatchEvents(matchId, homeTeamId, awayTeamId);
 
   console.log('MatchEventManager - isAdmin:', isAdmin);
+  console.log('MatchEventManager - Teams:', { homeTeamId, awayTeamId, homeTeamName, awayTeamName });
 
   if (loading) {
     return <div className="text-center py-4">Chargement des événements...</div>;
@@ -48,6 +59,10 @@ const MatchEventManager = ({ matchId, homeTeamId, awayTeamId, isFinished, isAdmi
             matchId={matchId}
             players={players}
             onEventAdded={fetchEvents}
+            homeTeamId={homeTeamId}
+            awayTeamId={awayTeamId}
+            homeTeamName={homeTeamName}
+            awayTeamName={awayTeamName}
           />
         )}
         {/* Show message for non-admin users */}

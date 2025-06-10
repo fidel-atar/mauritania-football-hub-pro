@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, BarChart2, Info, Clock, Zap } from "lucide-react";
@@ -71,6 +70,8 @@ const MatchTabs = ({ matchData, isAdmin }: MatchTabsProps) => {
               matchId={matchData.id}
               homeTeamId={matchData.home_team.id}
               awayTeamId={matchData.away_team.id}
+              homeTeamName={matchData.home_team.name}
+              awayTeamName={matchData.away_team.name}
               isFinished={isFinished}
               isAdmin={isAdmin}
             />
