@@ -13,18 +13,27 @@ interface Comment {
   created_at: string;
   user_name: string | null;
   user_avatar: string | null;
-  replies?: Comment[];
 }
 
 interface CommentItemProps {
   comment: Comment;
   currentUserId?: string;
-  onReply: (commentId: string) => void;
-  onDelete: (commentId: string) => void;
+  onReply?: (commentId: string) => void;
+  onDelete?: (commentId: string) => void;
+  canReply?: boolean;
+  isReply?: boolean;
   children?: React.ReactNode;
 }
 
-const CommentItem = ({ comment, currentUserId, onReply, onDelete, children }: CommentItemProps) => {
+const CommentItem = ({ 
+  comment, 
+  currentUserId, 
+  onReply, 
+  onDelete, 
+  canReply = false,
+  isReply = false,
+  children 
+}: CommentItemProps) => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
       year: 'numeric',
@@ -58,7 +67,7 @@ const CommentItem = ({ comment, currentUserId, onReply, onDelete, children }: Co
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-2">
           {renderUserInfo(comment)}
-          {currentUserId === comment.user_id && (
+          {currentUserId === comment.user_id && onDelete && (
             <Button
               variant="ghost"
               size="sm"
@@ -71,41 +80,20 @@ const CommentItem = ({ comment, currentUserId, onReply, onDelete, children }: Co
         
         <p className="text-gray-800 mb-3 ml-10">{comment.content}</p>
         
-        <div className="flex items-center gap-2 ml-10">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onReply(comment.id)}
-          >
-            <Reply className="w-4 h-4 mr-1" />
-            Répondre
-          </Button>
-        </div>
-
-        {children}
-
-        {/* Replies */}
-        {comment.replies && comment.replies.length > 0 && (
-          <div className="mt-3 ml-10 pl-4 border-l-2 border-gray-200 space-y-3">
-            {comment.replies.map((reply) => (
-              <div key={reply.id} className="bg-gray-50 p-3 rounded">
-                <div className="flex justify-between items-start mb-2">
-                  {renderUserInfo(reply)}
-                  {currentUserId === reply.user_id && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDelete(reply.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
-                <p className="text-gray-800 ml-10">{reply.content}</p>
-              </div>
-            ))}
+        {canReply && onReply && (
+          <div className="flex items-center gap-2 ml-10">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onReply(comment.id)}
+            >
+              <Reply className="w-4 h-4 mr-1" />
+              Répondre
+            </Button>
           </div>
         )}
+
+        {children}
       </CardContent>
     </Card>
   );

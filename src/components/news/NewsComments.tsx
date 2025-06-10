@@ -102,6 +102,20 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
     return <div className="text-center py-4">Chargement des commentaires...</div>;
   }
 
+  // Get user profile data for the comment form
+  const [userProfile, setUserProfile] = useState<any>(null);
+  
+  useEffect(() => {
+    if (user) {
+      supabase
+        .from('profiles')
+        .select('full_name, avatar_url')
+        .eq('id', user.id)
+        .maybeSingle()
+        .then(({ data }) => setUserProfile(data));
+    }
+  }, [user]);
+
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">Commentaires ({comments.length})</h3>
@@ -110,6 +124,9 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
         <CommentForm 
           onSubmit={(content) => handleAddComment(content)} 
           placeholder="Ajouter un commentaire..."
+          userAvatar={userProfile?.avatar_url}
+          userName={userProfile?.full_name}
+          userEmail={user.email}
         />
       )}
       
@@ -126,6 +143,7 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
           <div key={comment.id} className="space-y-3">
             <CommentItem
               comment={comment}
+              currentUserId={user?.id}
               onReply={() => setReplyingTo(comment.id)}
               canReply={!!user}
             />
@@ -136,6 +154,10 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
                   onSubmit={(content) => handleAddComment(content, comment.id)}
                   onCancel={() => setReplyingTo(null)}
                   placeholder="Répondre au commentaire..."
+                  userAvatar={userProfile?.avatar_url}
+                  userName={userProfile?.full_name}
+                  userEmail={user?.email}
+                  showCancel
                 />
               </div>
             )}
@@ -146,6 +168,7 @@ const NewsComments = ({ newsId }: NewsCommentsProps) => {
                 <CommentItem
                   key={reply.id}
                   comment={reply}
+                  currentUserId={user?.id}
                   isReply
                   canReply={false}
                 />

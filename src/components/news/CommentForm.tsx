@@ -1,37 +1,44 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface CommentFormProps {
-  value: string;
-  onChange: (value: string) => void;
-  onSubmit: () => void;
+  onSubmit: (content: string) => void;
   placeholder: string;
-  buttonText: string;
-  disabled?: boolean;
+  onCancel?: () => void;
   userAvatar?: string;
   userName?: string;
   userEmail?: string;
-  onCancel?: () => void;
   showCancel?: boolean;
 }
 
 const CommentForm = ({
-  value,
-  onChange,
   onSubmit,
   placeholder,
-  buttonText,
-  disabled = false,
+  onCancel,
   userAvatar,
   userName,
   userEmail,
-  onCancel,
   showCancel = false
 }: CommentFormProps) => {
+  const [content, setContent] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!content.trim()) return;
+    
+    setIsSubmitting(true);
+    try {
+      await onSubmit(content);
+      setContent('');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const Content = (
     <div className="flex gap-3">
       <Avatar className={showCancel ? "w-6 h-6" : "w-8 h-8"}>
@@ -43,13 +50,16 @@ const CommentForm = ({
       <div className="flex-1">
         <Textarea
           placeholder={placeholder}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
           rows={showCancel ? 2 : 3}
         />
         <div className={`flex ${showCancel ? 'gap-2' : 'justify-end'} mt-2`}>
-          <Button onClick={onSubmit} disabled={disabled}>
-            {buttonText}
+          <Button 
+            onClick={handleSubmit} 
+            disabled={isSubmitting || !content.trim()}
+          >
+            {isSubmitting ? 'Envoi...' : 'Commenter'}
           </Button>
           {showCancel && (
             <Button
