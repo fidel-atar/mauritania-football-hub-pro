@@ -30,14 +30,16 @@ const ProtectedAdminRoute = ({ children }: ProtectedAdminRouteProps) => {
     return <SecureAdminLogin />;
   }
 
-  // If user is logged in but not admin, redirect to home with message
-  if (!isAdmin) {
-    console.log('ProtectedAdminRoute: User is not admin, redirecting to home. User:', user.email, 'isAdmin:', isAdmin);
+  // Security check: Only allow admin@fmf.mr or users with admin roles
+  const isAuthorizedAdmin = user.email === 'admin@fmf.mr' || isAdmin;
+  
+  if (!isAuthorizedAdmin) {
+    console.log('ProtectedAdminRoute: User is not authorized admin, redirecting to home. User:', user.email, 'isAdmin:', isAdmin);
     return <Navigate to="/" replace />;
   }
 
-  // User is authenticated and is admin, show admin content
-  console.log('ProtectedAdminRoute: User is admin, showing admin content');
+  // User is authenticated and is authorized admin, show admin content
+  console.log('ProtectedAdminRoute: User is authorized admin, showing admin content');
   return <>{children}</>;
 };
 

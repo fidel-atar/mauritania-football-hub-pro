@@ -20,7 +20,7 @@ export const useAdminStatus = (user: User | null) => {
     try {
       console.log('useAdminStatus: Checking admin status for user:', user.id, user.email);
       
-      // Check if user is admin principal (special case)
+      // First check if user is admin principal (special hardcoded case)
       if (user.email === 'admin@fmf.mr') {
         console.log('useAdminStatus: Admin principal detected, setting admin to true');
         setIsAdmin(true);
@@ -29,24 +29,26 @@ export const useAdminStatus = (user: User | null) => {
         return;
       }
       
+      // For all other users, check the admin_roles table
+      console.log('useAdminStatus: Checking admin_roles table for user:', user.email);
       const { data, error } = await supabase
         .from('admin_roles')
         .select('role')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      console.log('useAdminStatus: Admin check result:', { data, error, userEmail: user.email });
+      console.log('useAdminStatus: Admin roles query result:', { data, error, userEmail: user.email });
 
       if (error) {
-        console.warn('useAdminStatus: Admin status check failed:', error);
+        console.warn('useAdminStatus: Error checking admin roles:', error);
         setIsAdmin(false);
         setAdminRole(null);
-      } else if (data) {
-        console.log('useAdminStatus: User is admin with role:', data.role);
+      } else if (data && data.role) {
+        console.log('useAdminStatus: User found in admin_roles with role:', data.role);
         setIsAdmin(true);
         setAdminRole(data.role);
       } else {
-        console.log('useAdminStatus: User is not admin');
+        console.log('useAdminStatus: User not found in admin_roles table - regular user');
         setIsAdmin(false);
         setAdminRole(null);
       }

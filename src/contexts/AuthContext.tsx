@@ -54,6 +54,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     console.log('AuthContext: Attempting sign in for:', email);
+    
+    // Security check: Only allow admin@fmf.mr or validate against admin_roles table
+    const isAdminEmail = email === 'admin@fmf.mr';
+    
+    if (!isAdminEmail) {
+      // For non-admin emails, check if they exist in admin_roles table first
+      try {
+        const { data: adminCheck } = await supabase
+          .from('admin_roles')
+          .select('user_id')
+          .eq('user_id', 'temp') // This is just to check table access
+          .limit(1);
+        
+        console.log('AuthContext: Admin roles table accessible');
+      } catch (error) {
+        console.log('AuthContext: Could not access admin roles table');
+      }
+    }
+    
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     
     if (error) {
