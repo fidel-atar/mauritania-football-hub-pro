@@ -1,78 +1,128 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import GoogleAuthButton from './GoogleAuthButton';
-import AppleAuthButton from './AppleAuthButton';
-import RoleBasedAuth from './RoleBasedAuth';
+import { Card, CardContent } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { validateAuthInput } from '@/utils/authValidation';
+import AuthHeader from './AuthHeader';
+import AuthForm from './AuthForm';
+import AuthFooter from './AuthFooter';
 
 interface UserAuthProps {
-  userType?: 'user' | 'admin';
   onAuthSuccess?: () => void;
+  userType?: 'admin' | 'user';
 }
 
-const UserAuth = ({ userType = 'user', onAuthSuccess }: UserAuthProps) => {
-  const [showRoleAuth, setShowRoleAuth] = useState(false);
+const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const { signIn, signUp, checkAdminStatus } = useAuth();
+  const navigate = useNavigate();
 
-  if (showRoleAuth) {
-    return <RoleBasedAuth />;
-  }
+  const isAdminLogin = userType === 'admin';
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    console.log(`UserAuth: Starting ${isSignUp ? 'signup' : 'login'} for ${userType} user with email:`, email);
+    
+    const validationError = validateAuthInput(email, password);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      const { error } = isSignUp 
+        ? await signUp(email, password)
+        : await signIn(email, password);
+      
+      if (error) {
+        console.error('UserAuth: Auth error:', error);
+        if (error.message.includes('Invalid login credentials')) {
+          setError('Email ou mot de passe incorrect');
+        } else if (error.message.includes('User already registered')) {
+          setError('Un compte existe déjà avec cet email');
+        } else {
+          setError('Erreur de connexion. Veuillez réessayer.');
+        }
+        return;
+      }
+      
+      if (isSignUp) {
+        toast.success('Compte créé avec succès ! Vérifiez votre email pour confirmer votre compte.');
+      } else {
+        toast.success('Connexion réussie');
+        
+        // For admin login, wait for auth context to update then check admin status
+        if (isAdminLogin) {
+          console.log('UserAuth: Admin login detected, waiting for auth context update...');
+          // Wait for the auth context to update, then check admin status and redirect
+          setTimeout(async () => {
+            console.log('UserAuth: Checking admin status and redirecting to admin dashboard...');
+            await checkAdminStatus();
+            navigate('/admin-dashboard');
+          }, 1000); // Increased delay to ensure auth context is updated
+        } else {
+          // For regular users, redirect to home
+          console.log('UserAuth: Regular user login, redirecting to home');
+          navigate('/');
+        }
+      }
+      
+      // Call the success callback if provided
+      if (onAuthSuccess) {
+        console.log('UserAuth: Calling onAuthSuccess callback');
+        onAuthSuccess();
+      }
+      
+    } catch (error) {
+      console.error('UserAuth: Unexpected auth error:', error);
+      setError('Une erreur inattendue s\'est produite');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleSignUp = () => {
+    setIsSignUp(!isSignUp);
+    setError('');
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-center text-2xl font-bold text-fmf-green">
-              FMF - Mauritanie
-            </CardTitle>
-            <p className="text-center text-gray-600">
-              {userType === 'admin' ? 'دخول المديرين' : 'مرحباً بك'}
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Tabs defaultValue="social" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="social">وسائل التواصل</TabsTrigger>
-                <TabsTrigger value="role">طلب صلاحيات</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="social" className="space-y-4">
-                <div className="space-y-3">
-                  <GoogleAuthButton userType="user" />
-                  <AppleAuthButton userType="user" />
-                </div>
-                
-                <div className="text-center text-sm text-gray-500">
-                  أو
-                </div>
-                
-                <Button
-                  variant="outline"
-                  onClick={() => setShowRoleAuth(true)}
-                  className="w-full"
-                >
-                  دخول كإداري
-                </Button>
-              </TabsContent>
-              
-              <TabsContent value="role" className="space-y-4">
-                <Button
-                  onClick={() => setShowRoleAuth(true)}
-                  className="w-full bg-fmf-green hover:bg-fmf-green/90"
-                >
-                  طلب صلاحيات إدارية
-                </Button>
-                
-                <p className="text-xs text-gray-500 text-center">
-                  يمكنك طلب صلاحيات إدارية إذا كنت مؤهلاً لذلك
-                </p>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <Card className="w-full max-w-md">
+        <AuthHeader isAdminLogin={isAdminLogin} isSignUp={isSignUp} />
+        <CardContent>
+          <AuthForm
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            showPassword={showPassword}
+            setShowPassword={setShowPassword}
+            loading={loading}
+            error={error}
+            isSignUp={isSignUp}
+            isAdminLogin={isAdminLogin}
+            onSubmit={handleSubmit}
+          />
+          <AuthFooter
+            isSignUp={isSignUp}
+            isAdminLogin={isAdminLogin}
+            loading={loading}
+            onToggleSignUp={handleToggleSignUp}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

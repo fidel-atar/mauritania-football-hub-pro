@@ -9,39 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      admin_requests: {
-        Row: {
-          created_at: string | null
-          id: string
-          reason: string | null
-          requested_role: Database["public"]["Enums"]["admin_role"]
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          reason?: string | null
-          requested_role: Database["public"]["Enums"]["admin_role"]
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          reason?: string | null
-          requested_role?: Database["public"]["Enums"]["admin_role"]
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       admin_role_requests: {
         Row: {
           id: string
@@ -872,7 +839,7 @@ export type Database = {
       }
     }
     Enums: {
-      admin_role: "super_admin" | "admin" | "moderator" | "manager"
+      admin_role: "super_admin" | "admin" | "moderator"
       match_status: "scheduled" | "live" | "finished"
       request_status: "pending" | "approved" | "rejected"
       role_type:
@@ -996,7 +963,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      admin_role: ["super_admin", "admin", "moderator", "manager"],
+      admin_role: ["super_admin", "admin", "moderator"],
       match_status: ["scheduled", "live", "finished"],
       request_status: ["pending", "approved", "rejected"],
       role_type: [
