@@ -62,14 +62,14 @@ const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
       } else {
         toast.success('Connexion réussie');
         
-        // Check if this is admin principal
+        // Check if this is admin principal - let AuthContext handle the redirection
         if (email === 'admin@fmf.mr') {
-          console.log('UserAuth: Admin principal login detected, redirecting to admin dashboard...');
-          // The AuthContext will handle the redirection automatically
-          // But we can also navigate here as a fallback
+          console.log('UserAuth: Admin principal login detected, AuthContext will handle redirection');
+          // AuthContext will automatically redirect, but we can add a fallback
           setTimeout(() => {
+            console.log('UserAuth: Fallback redirect for admin principal');
             navigate('/admin-dashboard');
-          }, 1000);
+          }, 2000);
         } else if (isAdminLogin) {
           // For other admin logins, wait for auth context to update then check admin status
           console.log('UserAuth: Admin login detected, waiting for auth context update...');
