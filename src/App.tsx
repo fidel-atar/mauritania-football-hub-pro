@@ -21,6 +21,7 @@ import CupPage from "@/pages/CupPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminPage from "@/pages/AdminPage";
 import NotFound from "@/pages/NotFound";
+import DocumentationPage from "@/pages/DocumentationPage";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "./App.css";
 
