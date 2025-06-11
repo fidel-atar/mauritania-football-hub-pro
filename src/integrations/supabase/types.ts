@@ -99,9 +99,40 @@ export type Database = {
         }
         Relationships: []
       }
+      archived_cart_items: {
+        Row: {
+          archived_at: string
+          id: string
+          order_id: string | null
+          original_cart_item_id: string | null
+          product_id: string
+          quantity: number
+          user_id: string
+        }
+        Insert: {
+          archived_at?: string
+          id?: string
+          order_id?: string | null
+          original_cart_item_id?: string | null
+          product_id: string
+          quantity?: number
+          user_id: string
+        }
+        Update: {
+          archived_at?: string
+          id?: string
+          order_id?: string | null
+          original_cart_item_id?: string | null
+          product_id?: string
+          quantity?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string
+          expires_at: string | null
           id: string
           product_id: string
           quantity: number
@@ -110,6 +141,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          expires_at?: string | null
           id?: string
           product_id: string
           quantity?: number
@@ -118,6 +150,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          expires_at?: string | null
           id?: string
           product_id?: string
           quantity?: number
@@ -851,6 +884,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      archive_cart_items_for_order: {
+        Args: { order_user_id: string; target_order_id: string }
+        Returns: undefined
+      }
+      clean_expired_cart_items: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string

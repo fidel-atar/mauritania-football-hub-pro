@@ -2,7 +2,7 @@
 import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Plus, Minus, Trash2 } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/hooks/useCart';
 import { Link } from 'react-router-dom';
@@ -13,6 +13,31 @@ interface CartSheetProps {
 
 const CartSheet = ({ children }: CartSheetProps) => {
   const { cartItems, updateQuantity, removeFromCart, getTotalAmount, isLoading } = useCart();
+
+  const getExpirationTime = (item: any) => {
+    const expiresAt = new Date(item.expires_at);
+    const now = new Date();
+    const timeLeft = expiresAt.getTime() - now.getTime();
+    
+    if (timeLeft <= 0) return 'Expiré';
+    
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return `${hours}h ${minutes}m`;
+  };
+
+  const getExpirationColor = (item: any) => {
+    const expiresAt = new Date(item.expires_at);
+    const now = new Date();
+    const timeLeft = expiresAt.getTime() - now.getTime();
+    const hoursLeft = timeLeft / (1000 * 60 * 60);
+    
+    if (hoursLeft <= 0) return 'text-red-600';
+    if (hoursLeft <= 1) return 'text-red-500';
+    if (hoursLeft <= 2) return 'text-orange-500';
+    return 'text-gray-500';
+  };
 
   if (isLoading) {
     return children;
@@ -42,6 +67,12 @@ const CartSheet = ({ children }: CartSheetProps) => {
             </div>
           ) : (
             <>
+              <div className="bg-orange-50 p-3 rounded-lg border border-orange-200 mb-4">
+                <p className="text-xs text-orange-800">
+                  ⏰ Les articles expirent 4h après ajout au panier
+                </p>
+              </div>
+
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg">
@@ -55,6 +86,10 @@ const CartSheet = ({ children }: CartSheetProps) => {
                       <p className="text-fmf-green font-semibold">
                         {item.product.price.toLocaleString()} MRU
                       </p>
+                      <div className={`flex items-center gap-1 text-xs ${getExpirationColor(item)}`}>
+                        <Clock className="w-3 h-3" />
+                        <span>{getExpirationTime(item)}</span>
+                      </div>
                       <div className="flex items-center gap-2 mt-2">
                         <Button
                           size="sm"

@@ -7,6 +7,7 @@ export interface CartItem {
   id: string;
   product_id: string;
   quantity: number;
+  expires_at: string;
   product: {
     id: string;
     name: string;
@@ -20,6 +21,17 @@ export const useCart = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const cleanExpiredItems = async () => {
+    try {
+      const { error } = await supabase.rpc('clean_expired_cart_items');
+      if (error) {
+        console.error('Error cleaning expired items:', error);
+      }
+    } catch (error) {
+      console.error('Error cleaning expired items:', error);
+    }
+  };
+
   const fetchCartItems = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -30,13 +42,17 @@ export const useCart = () => {
         return;
       }
 
+      // Clean expired items first
+      await cleanExpiredItems();
+
       const { data, error } = await supabase
         .from('cart_items')
         .select(`
           *,
           product:products(*)
         `)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .gt('expires_at', new Date().toISOString());
 
       if (error) {
         console.error('Error fetching cart items:', error);
@@ -62,23 +78,48 @@ export const useCart = () => {
         return;
       }
 
-      const { data, error } = await supabase
+      // Check if item already exists in cart
+      const { data: existingItems } = await supabase
         .from('cart_items')
-        .upsert({
-          user_id: user.id,
-          product_id: productId,
-          quantity
-        }, {
-          onConflict: 'user_id,product_id'
-        });
+        .select('id, quantity')
+        .eq('user_id', user.id)
+        .eq('product_id', productId)
+        .gt('expires_at', new Date().toISOString());
 
-      if (error) {
-        console.error('Error adding to cart:', error);
-        toast.error('Erreur lors de l\'ajout au panier');
-        return;
+      if (existingItems && existingItems.length > 0) {
+        // Update existing item quantity and reset expiration
+        const { error } = await supabase
+          .from('cart_items')
+          .update({ 
+            quantity: existingItems[0].quantity + quantity,
+            expires_at: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString() // 4 hours from now
+          })
+          .eq('id', existingItems[0].id);
+
+        if (error) {
+          console.error('Error updating cart item:', error);
+          toast.error('Erreur lors de la mise à jour du panier');
+          return;
+        }
+      } else {
+        // Add new item
+        const { error } = await supabase
+          .from('cart_items')
+          .insert({
+            user_id: user.id,
+            product_id: productId,
+            quantity,
+            expires_at: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString() // 4 hours from now
+          });
+
+        if (error) {
+          console.error('Error adding to cart:', error);
+          toast.error('Erreur lors de l\'ajout au panier');
+          return;
+        }
       }
 
-      toast.success('Produit ajouté au panier');
+      toast.success('Produit ajouté au panier (expire dans 4 heures)');
       fetchCartItems();
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -99,7 +140,10 @@ export const useCart = () => {
 
       const { error } = await supabase
         .from('cart_items')
-        .update({ quantity })
+        .update({ 
+          quantity,
+          expires_at: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString() // Reset expiration
+        })
         .eq('user_id', user.id)
         .eq('product_id', productId);
 
@@ -164,6 +208,28 @@ export const useCart = () => {
     }
   };
 
+  const archiveCartForOrder = async (orderId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return;
+
+      const { error } = await supabase.rpc('archive_cart_items_for_order', {
+        order_user_id: user.id,
+        target_order_id: orderId
+      });
+
+      if (error) {
+        console.error('Error archiving cart items:', error);
+        return;
+      }
+
+      setCartItems([]);
+    } catch (error) {
+      console.error('Error archiving cart items:', error);
+    }
+  };
+
   const getTotalAmount = () => {
     return cartItems.reduce((total, item) => {
       return total + (item.product.price * item.quantity);
@@ -173,6 +239,17 @@ export const useCart = () => {
   const getTotalItems = () => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
+
+  // Auto-cleanup expired items every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      cleanExpiredItems().then(() => {
+        fetchCartItems();
+      });
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     fetchCartItems();
@@ -185,6 +262,7 @@ export const useCart = () => {
     updateQuantity,
     removeFromCart,
     clearCart,
+    archiveCartForOrder,
     getTotalAmount,
     getTotalItems,
     refetch: fetchCartItems

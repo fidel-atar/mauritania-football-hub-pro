@@ -8,10 +8,10 @@ import { useCart } from '@/hooks/useCart';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CreditCard } from 'lucide-react';
+import { ArrowLeft, CreditCard, Clock } from 'lucide-react';
 
 const CheckoutPage = () => {
-  const { cartItems, getTotalAmount, clearCart } = useCart();
+  const { cartItems, getTotalAmount, archiveCartForOrder } = useCart();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -41,6 +41,19 @@ const CheckoutPage = () => {
     };
   };
 
+  const getExpirationTime = (item: any) => {
+    const expiresAt = new Date(item.expires_at);
+    const now = new Date();
+    const timeLeft = expiresAt.getTime() - now.getTime();
+    
+    if (timeLeft <= 0) return 'Expiré';
+    
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return `${hours}h ${minutes}m restantes`;
+  };
+
   const handlePayment = async () => {
     if (!formData.phoneNumber || !formData.shippingAddress) {
       toast.error('Veuillez remplir tous les champs requis');
@@ -49,6 +62,14 @@ const CheckoutPage = () => {
 
     if (cartItems.length === 0) {
       toast.error('Votre panier est vide');
+      return;
+    }
+
+    // Check if any items have expired
+    const now = new Date();
+    const expiredItems = cartItems.filter(item => new Date(item.expires_at) <= now);
+    if (expiredItems.length > 0) {
+      toast.error('Certains articles de votre panier ont expiré. Veuillez actualiser votre panier.');
       return;
     }
 
@@ -123,8 +144,8 @@ const CheckoutPage = () => {
           console.error('Error updating order:', updateError);
         }
 
-        // Clear cart
-        await clearCart();
+        // Archive cart items instead of clearing
+        await archiveCartForOrder(order.id);
 
         toast.success('Paiement effectué avec succès!');
         navigate('/order-success', { 
@@ -181,21 +202,27 @@ const CheckoutPage = () => {
           <CardContent>
             <div className="space-y-4">
               {cartItems.map((item) => (
-                <div key={item.id} className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={item.product.image || "/placeholder.svg"}
-                      alt={item.product.name}
-                      className="w-12 h-12 object-cover rounded"
-                    />
-                    <div>
-                      <p className="font-medium">{item.product.name}</p>
-                      <p className="text-sm text-gray-500">Quantité: {item.quantity}</p>
+                <div key={item.id} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={item.product.image || "/placeholder.svg"}
+                        alt={item.product.name}
+                        className="w-12 h-12 object-cover rounded"
+                      />
+                      <div>
+                        <p className="font-medium">{item.product.name}</p>
+                        <p className="text-sm text-gray-500">Quantité: {item.quantity}</p>
+                      </div>
                     </div>
+                    <p className="font-semibold">
+                      {(item.product.price * item.quantity).toLocaleString()} MRU
+                    </p>
                   </div>
-                  <p className="font-semibold">
-                    {(item.product.price * item.quantity).toLocaleString()} MRU
-                  </p>
+                  <div className="flex items-center gap-1 text-xs text-orange-600">
+                    <Clock className="w-3 h-3" />
+                    <span>{getExpirationTime(item)}</span>
+                  </div>
                 </div>
               ))}
               
@@ -221,6 +248,12 @@ const CheckoutPage = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
+                <p className="text-sm text-orange-800 font-medium">
+                  ⏰ Attention: Les articles de votre panier expirent dans 4 heures maximum
+                </p>
+              </div>
+
               <div>
                 <Label htmlFor="phoneNumber">Numéro de téléphone Bankily *</Label>
                 <Input
