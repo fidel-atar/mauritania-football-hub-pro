@@ -38,17 +38,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Handle admin redirect after successful authentication
+        // SECURITY FIX: Remove automatic admin redirect logic
+        // Let the ProtectedAdminRoute handle admin verification
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('AuthContext: User signed in:', session.user.email);
-          
-          // Check if user is admin before redirecting
-          if (session.user.email === 'admin@fmf.mr') {
-            console.log('AuthContext: Admin principal signed in, will redirect to dashboard');
-            setTimeout(() => {
-              window.location.href = '/admin-dashboard';
-            }, 1000);
-          }
+          // No automatic redirects - let proper admin verification happen
         }
       }
     );

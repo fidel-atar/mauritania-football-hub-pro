@@ -1,17 +1,19 @@
 
-export const validateAuthInput = (email: string, password: string) => {
+import { validateEmail, validatePassword } from './inputValidation';
+
+export const validateAuthInput = (email: string, password: string): string | null => {
   if (!email || !password) {
-    return 'Tous les champs sont requis';
+    return 'Veuillez remplir tous les champs';
   }
-  
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return 'Format d\'email invalide';
+
+  if (!validateEmail(email)) {
+    return 'Veuillez entrer une adresse email valide';
   }
-  
-  if (password.length < 6) {
-    return 'Le mot de passe doit contenir au moins 6 caractères';
+
+  const passwordError = validatePassword(password);
+  if (passwordError) {
+    return passwordError;
   }
-  
+
   return null;
 };

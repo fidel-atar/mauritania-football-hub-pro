@@ -18,18 +18,10 @@ export const useAdminStatus = (user: User | null) => {
 
     setLoading(true);
     try {
-      console.log('useAdminStatus: Checking admin status for user:', user.id, user.email);
+      console.log('useAdminStatus: Checking admin status for user:', user.id);
       
-      // FIRST CHECK: Admin principal gets immediate access
-      if (user.email === 'admin@fmf.mr') {
-        console.log('useAdminStatus: Admin principal detected, setting admin to true');
-        setIsAdmin(true);
-        setAdminRole('super_admin');
-        setLoading(false);
-        return;
-      }
-      
-      // SECOND CHECK: Check the admin_roles table for other admin users
+      // SECURITY FIX: Remove hardcoded admin email bypass
+      // Only check the admin_roles table for admin verification
       console.log('useAdminStatus: Checking admin_roles table for user:', user.email);
       const { data, error } = await supabase
         .from('admin_roles')

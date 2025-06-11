@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { User, Mail, Eye, EyeOff } from 'lucide-react';
+import { sanitizeTextInput } from '@/utils/inputValidation';
 
 interface AuthFormProps {
   email: string;
@@ -33,6 +34,18 @@ const AuthForm = ({
   isAdminLogin,
   onSubmit
 }: AuthFormProps) => {
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // SECURITY FIX: Sanitize email input
+    const sanitizedEmail = sanitizeTextInput(e.target.value.trim(), 254);
+    setEmail(sanitizedEmail);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // SECURITY FIX: Limit password length to prevent DoS
+    const sanitizedPassword = e.target.value.substring(0, 128);
+    setPassword(sanitizedPassword);
+  };
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       {error && (
@@ -49,28 +62,35 @@ const AuthForm = ({
             id="email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value.trim())}
+            onChange={handleEmailChange}
             placeholder="votre@email.com"
             className="pl-10"
             required
             disabled={loading}
+            maxLength={254}
           />
         </div>
       </div>
       
       <div className="space-y-2">
         <Label htmlFor="password">Mot de passe</Label>
+        {isSignUp && (
+          <p className="text-xs text-gray-500">
+            8+ caractères, 1 majuscule, 1 minuscule, 1 chiffre
+          </p>
+        )}
         <div className="relative">
           <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
             id="password"
             type={showPassword ? 'text' : 'password'}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={handlePasswordChange}
             placeholder="••••••••"
             className="pl-10 pr-10"
             required
             disabled={loading}
+            maxLength={128}
           />
           <Button
             type="button"

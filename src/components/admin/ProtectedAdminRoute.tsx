@@ -30,7 +30,8 @@ const ProtectedAdminRoute = ({ children }: ProtectedAdminRouteProps) => {
     return <SecureAdminLogin />;
   }
 
-  // Strict admin check: Only admin@fmf.mr OR users explicitly in admin_roles table
+  // SECURITY FIX: Strict admin check using only database verification
+  // No hardcoded email bypass - only users in admin_roles table
   if (!isAdmin) {
     console.log('ProtectedAdminRoute: User is not admin, redirecting to home. User:', user.email, 'isAdmin:', isAdmin);
     return <Navigate to="/" replace />;
