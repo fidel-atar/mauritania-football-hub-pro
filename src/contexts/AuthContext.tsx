@@ -24,30 +24,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { isAdmin, adminRole, loading: adminLoading, checkAdminStatus } = useAdminStatus(user);
 
   useEffect(() => {
+    let mounted = true;
+
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('AuthContext: Initial session:', session?.user?.email);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('AuthContext: Error getting initial session:', error);
+        } else {
+          console.log('AuthContext: Initial session:', session?.user?.email);
+          if (mounted) {
+            setUser(session?.user ?? null);
+            setLoading(false);
+          }
+        }
+      } catch (error) {
+        console.error('AuthContext: Unexpected error during session initialization:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+        
         console.log('AuthContext: Auth state changed:', event, session?.user?.email);
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // SECURITY FIX: Remove automatic admin redirect logic
-        // Let the ProtectedAdminRoute handle admin verification
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('AuthContext: User signed in:', session.user.email);
-          // No automatic redirects - let proper admin verification happen
         }
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -75,7 +95,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       password,
       options: {
         emailRedirectTo: redirectUrl,
-        // Enable email confirmation
         data: {
           email_confirm: true
         }
@@ -102,17 +121,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const contextValue: AuthContextType = {
+    user,
+    isAdmin,
+    adminRole,
+    loading: loading || adminLoading,
+    signIn,
+    signUp,
+    signOut,
+    checkAdminStatus
+  };
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAdmin,
-      adminRole,
-      loading: loading || adminLoading,
-      signIn,
-      signUp,
-      signOut,
-      checkAdminStatus
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
@@ -121,6 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
+    console.error('useAuth hook called outside of AuthProvider context');
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

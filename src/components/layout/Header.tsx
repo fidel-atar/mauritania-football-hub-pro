@@ -15,7 +15,21 @@ const Header = () => {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showUserAuth, setShowUserAuth] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
-  const { isAdmin, user, signOut } = useAuth();
+  
+  // Add safety check for auth context
+  let authData;
+  try {
+    authData = useAuth();
+  } catch (error) {
+    console.error('Header: Auth context not available, falling back to defaults');
+    authData = {
+      isAdmin: false,
+      user: null,
+      signOut: async () => {}
+    };
+  }
+
+  const { isAdmin, user, signOut } = authData;
   const { getTotalItems, isLoading } = useCart();
   const totalItems = getTotalItems();
 
