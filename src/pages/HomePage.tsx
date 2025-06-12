@@ -4,19 +4,17 @@ import MatchList from "@/components/matches/MatchList";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Trophy, Calendar, Users, Database } from "lucide-react";
+import { Trophy, Calendar, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchProps } from "@/components/matches/MatchCard";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { loadSampleData } from "@/utils/sampleDataLoader";
-import { toast } from "sonner";
 
 const HomePage = () => {
   const isMobile = useIsMobile();
 
   // Fetch matches from Supabase with improved performance
-  const { data: matches = [], isLoading, refetch } = useQuery({
+  const { data: matches = [], isLoading } = useQuery({
     queryKey: ['home-matches'],
     queryFn: async (): Promise<MatchProps[]> => {
       console.log('Fetching matches from Supabase...');
@@ -85,11 +83,6 @@ const HomePage = () => {
     refetchInterval: 1000 * 30, // 30 seconds instead of constant refetching
   });
 
-  const handleLoadSampleData = async () => {
-    await loadSampleData();
-    refetch();
-  };
-
   return (
     <div className="px-3 md:px-4 py-3 md:py-6 pb-20 max-w-7xl mx-auto">
       {/* Bannière promotionnelle - Mobile optimized */}
@@ -145,22 +138,13 @@ const HomePage = () => {
           <p className="text-sm md:text-base text-gray-500 mb-4 md:mb-6 px-4">
             Les matchs seront ajoutés par l'administrateur bientôt.
           </p>
-          <div className="space-y-4">
-            <Button 
-              onClick={handleLoadSampleData}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Database className="w-4 h-4 mr-2" />
-              Charger des données d'exemple
-            </Button>
-            <div className="bg-blue-50 p-3 md:p-4 rounded-lg inline-block mx-4">
-              <p className="text-blue-800 text-xs md:text-sm">
-                L'administrateur peut ajouter des matchs via le{" "}
-                <Link to="/admin-dashboard" className="font-semibold underline">
-                  panneau d'administration
-                </Link>
-              </p>
-            </div>
+          <div className="bg-blue-50 p-3 md:p-4 rounded-lg inline-block mx-4">
+            <p className="text-blue-800 text-xs md:text-sm">
+              L'administrateur peut ajouter des matchs via le{" "}
+              <Link to="/admin-dashboard" className="font-semibold underline">
+                panneau d'administration
+              </Link>
+            </p>
           </div>
         </div>
       ) : (
