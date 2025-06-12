@@ -7,15 +7,17 @@ import { PlusCircle } from "lucide-react";
 interface AdminMatchesHeaderProps {
   matchCount: number;
   onAddMatch: () => void;
+  isLoading?: boolean;
 }
 
-const AdminMatchesHeader = ({ matchCount, onAddMatch }: AdminMatchesHeaderProps) => {
+const AdminMatchesHeader = ({ matchCount, onAddMatch, isLoading }: AdminMatchesHeaderProps) => {
   return (
     <CardHeader className="flex flex-row items-center justify-between">
       <CardTitle>Gérer les Matchs ({matchCount} matchs)</CardTitle>
       <Button 
         onClick={onAddMatch} 
         className="bg-fmf-green hover:bg-fmf-green/90"
+        disabled={isLoading}
       >
         <PlusCircle className="mr-2 h-4 w-4" />
         Ajouter un match

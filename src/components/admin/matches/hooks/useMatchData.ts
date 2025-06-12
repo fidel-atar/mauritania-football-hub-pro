@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -103,13 +104,13 @@ export const useMatchData = () => {
     refreshData();
   }, [refreshData]);
 
-  // Grouped matches by status for convenient access
+  // Grouped matches by status for convenient access - using correct status values
   const matchesByStatus = useMemo(() => {
     const grouped: Record<MatchStatus, Match[]> = {
       scheduled: [],
-      inProgress: [],
-      completed: [],
-      cancelled: []
+      live: [],
+      finished: [],
+      postponed: []
     };
     
     matchesList.forEach(match => {

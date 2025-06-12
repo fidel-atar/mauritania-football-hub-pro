@@ -9,9 +9,10 @@ import { Match } from "@/types/adminTypes";
 
 interface AdminTimerManagementProps {
   matches: Match[];
+  isLoading?: boolean;
 }
 
-const AdminTimerManagement = ({ matches }: AdminTimerManagementProps) => {
+const AdminTimerManagement = ({ matches, isLoading }: AdminTimerManagementProps) => {
   const liveAndScheduledMatches = matches.filter(
     match => match.status === 'live' || match.status === 'scheduled'
   );
@@ -26,7 +27,7 @@ const AdminTimerManagement = ({ matches }: AdminTimerManagementProps) => {
           {liveAndScheduledMatches.map((match) => (
             <Collapsible key={match.id}>
               <CollapsibleTrigger asChild>
-                <Button variant="outline" className="w-full justify-between">
+                <Button variant="outline" className="w-full justify-between" disabled={isLoading}>
                   <span>
                     {match.homeTeam.name} vs {match.awayTeam.name}
                     {match.status === 'live' && (

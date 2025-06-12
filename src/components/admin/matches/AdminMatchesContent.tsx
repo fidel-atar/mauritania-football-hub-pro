@@ -32,6 +32,7 @@ interface AdminMatchesContentProps {
   onCancelEdit: () => void;
   onEditMatch: (matchId: string) => void;
   onDeleteMatch: (matchId: string) => void;
+  isLoading?: boolean;
 }
 
 const AdminMatchesContent = ({
@@ -45,7 +46,8 @@ const AdminMatchesContent = ({
   onCancelAdd,
   onCancelEdit,
   onEditMatch,
-  onDeleteMatch
+  onDeleteMatch,
+  isLoading
 }: AdminMatchesContentProps) => {
   return (
     <CardContent>
