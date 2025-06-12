@@ -44,18 +44,36 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
 
       console.log(`[DEV] OTP for ${phone}: ${otp}`);
       
-      const { error } = await supabase
+      // First, try to update existing record
+      const { data: updateData, error: updateError } = await supabase
         .from('phone_auth')
-        .upsert({
-          phone_number: phone,
+        .update({
           otp_code: otp,
           otp_expires_at: expiresAt.toISOString(),
-          is_verified: false
-        });
+          is_verified: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('phone_number', phone)
+        .select();
 
-      if (error) {
-        console.error('Error storing OTP:', error);
-        throw error;
+      // If no record was updated, insert a new one
+      if (!updateData || updateData.length === 0) {
+        const { error: insertError } = await supabase
+          .from('phone_auth')
+          .insert({
+            phone_number: phone,
+            otp_code: otp,
+            otp_expires_at: expiresAt.toISOString(),
+            is_verified: false
+          });
+
+        if (insertError) {
+          console.error('Error inserting OTP:', insertError);
+          throw insertError;
+        }
+      } else if (updateError) {
+        console.error('Error updating OTP:', updateError);
+        throw updateError;
       }
 
       toast.success(`Code OTP envoyé au ${phone}`, {
