@@ -644,6 +644,36 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_auth: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_verified: boolean | null
+          otp_code: string | null
+          otp_expires_at: string | null
+          phone_number: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          otp_code?: string | null
+          otp_expires_at?: string | null
+          phone_number: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          otp_code?: string | null
+          otp_expires_at?: string | null
+          phone_number?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       players: {
         Row: {
           age: number
@@ -751,8 +781,10 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          is_phone_verified: boolean | null
           location: string | null
           phone: string | null
+          phone_number: string | null
           role: Database["public"]["Enums"]["role_type"] | null
           updated_at: string | null
         }
@@ -764,8 +796,10 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          is_phone_verified?: boolean | null
           location?: string | null
           phone?: string | null
+          phone_number?: string | null
           role?: Database["public"]["Enums"]["role_type"] | null
           updated_at?: string | null
         }
@@ -777,8 +811,10 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          is_phone_verified?: boolean | null
           location?: string | null
           phone?: string | null
+          phone_number?: string | null
           role?: Database["public"]["Enums"]["role_type"] | null
           updated_at?: string | null
         }
@@ -892,6 +928,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      clean_expired_otp_codes: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -909,6 +949,10 @@ export type Database = {
           admin_type: Database["public"]["Enums"]["role_type"]
           user_id?: string
         }
+        Returns: boolean
+      }
+      verify_otp: {
+        Args: { p_phone_number: string; p_otp_code: string }
         Returns: boolean
       }
     }

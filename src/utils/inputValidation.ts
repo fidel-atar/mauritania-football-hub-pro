@@ -1,7 +1,6 @@
 
 // Security utility for input validation and sanitization
 export const sanitizeHtml = (input: string): string => {
-  // Basic HTML sanitization - replace potentially dangerous characters
   return input
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -32,11 +31,29 @@ export const validatePassword = (password: string): string | null => {
 };
 
 export const validatePhoneNumber = (phone: string): boolean => {
-  // Mauritanian phone number validation (simplified)
-  const phoneRegex = /^(\+222|00222|222)?[234567]\d{7}$/;
-  return phoneRegex.test(phone.replace(/\s/g, ''));
+  // Mauritanian phone number validation (more comprehensive)
+  const cleanPhone = phone.replace(/\s/g, '');
+  
+  // Check for Mauritanian format: +222XXXXXXXX or 222XXXXXXXX
+  const mauritanianRegex = /^(\+222|222)[2-7]\d{7}$/;
+  
+  return mauritanianRegex.test(cleanPhone);
 };
 
 export const sanitizeTextInput = (input: string, maxLength: number = 1000): string => {
   return sanitizeHtml(input.trim()).substring(0, maxLength);
+};
+
+export const formatPhoneNumber = (phone: string): string => {
+  const cleanPhone = phone.replace(/\D/g, '');
+  
+  if (cleanPhone.startsWith('222')) {
+    return `+${cleanPhone}`;
+  } else if (cleanPhone.startsWith('22') && cleanPhone.length >= 8) {
+    return `+2${cleanPhone}`;
+  } else if (cleanPhone.length >= 8) {
+    return `+222${cleanPhone}`;
+  }
+  
+  return phone;
 };

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import UserAuth from '@/components/auth/UserAuth';
+import PhoneAuth from '@/components/auth/PhoneAuth';
 
 interface SecureAdminLoginProps {
   onLoginSuccess?: () => void;
@@ -8,7 +8,7 @@ interface SecureAdminLoginProps {
 
 const SecureAdminLogin = ({ onLoginSuccess }: SecureAdminLoginProps) => {
   return (
-    <UserAuth 
+    <PhoneAuth 
       userType="admin" 
       onAuthSuccess={onLoginSuccess}
     />

@@ -16,7 +16,6 @@ const Header = () => {
   const [showUserAuth, setShowUserAuth] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   
-  // Add safety check for auth context
   let authData;
   try {
     authData = useAuth();
@@ -25,15 +24,15 @@ const Header = () => {
     authData = {
       isAdmin: false,
       user: null,
+      isVerified: false,
       signOut: async () => {}
     };
   }
 
-  const { isAdmin, user, signOut } = authData;
+  const { isAdmin, user, isVerified, signOut } = authData;
   const { getTotalItems, isLoading } = useCart();
   const totalItems = getTotalItems();
 
-  // Listen for admin login events from UserMenu
   React.useEffect(() => {
     const handleOpenAdminLogin = (event: CustomEvent) => {
       console.log(`Header: Admin login requested for: ${event.detail}`);
@@ -71,14 +70,16 @@ const Header = () => {
     setShowUserAuth(false);
   };
 
-  console.log('Header: Current user:', user?.email, 'isAdmin:', isAdmin);
+  // Only show admin button if user is verified AND is admin
+  const showAdminButton = user && isVerified && isAdmin;
+
+  console.log('Header: Current user:', user?.id, 'isVerified:', isVerified, 'isAdmin:', isAdmin);
 
   return (
     <>
       <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="container mx-auto px-3 md:px-4">
           <div className="flex items-center justify-between h-14 md:h-16">
-            {/* Logo */}
             <Link to="/" className="flex items-center space-x-1 md:space-x-2 flex-shrink-0">
               <img 
                 src="/lovable-uploads/68710224-6f46-49c9-b634-136af2bbdd99.png" 
@@ -93,10 +94,8 @@ const Header = () => {
               </span>
             </Link>
 
-            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-2">
-              {/* Admin Button - Show ONLY when user is actually admin */}
-              {user && isAdmin && (
+              {showAdminButton && (
                 <AdminButton />
               )}
               
@@ -110,10 +109,8 @@ const Header = () => {
               />
             </div>
 
-            {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-1">
-              {/* Admin Button for Mobile - Show ONLY when user is actually admin */}
-              {user && isAdmin && (
+              {showAdminButton && (
                 <AdminButton isMobile />
               )}
               
