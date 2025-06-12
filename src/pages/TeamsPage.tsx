@@ -69,7 +69,7 @@ const TeamsPage = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teams.map((team) => (
-            <Link key={team.id} to={`/equipe/${team.id}`}>
+            <Link key={team.id} to={`/equipes/${team.id}`}>
               <Card className="hover:shadow-md transition-shadow cursor-pointer bg-card">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3 mb-3">

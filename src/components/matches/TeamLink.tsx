@@ -17,7 +17,8 @@ const TeamLink = ({ team, className = "" }: TeamLinkProps) => {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    navigate(`/equipe/${team.id}`);
+    // Fixed: Changed from /equipe/ to /equipes/ to match the route definition
+    navigate(`/equipes/${team.id}`);
   };
 
   return (
