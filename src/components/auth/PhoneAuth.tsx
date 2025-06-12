@@ -2,10 +2,10 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Phone, Shield } from 'lucide-react';
-import { usePhoneAuthFlow } from '@/hooks/usePhoneAuthFlow';
-import PhoneNumberStep from './PhoneNumberStep';
-import OTPVerificationStep from './OTPVerificationStep';
+import { Shield } from 'lucide-react';
+import { useAdminEmailAuthFlow } from '@/hooks/useAdminEmailAuthFlow';
+import AdminEmailStep from './AdminEmailStep';
+import AdminCodeStep from './AdminCodeStep';
 import AuthSuccessStep from './AuthSuccessStep';
 
 interface PhoneAuthProps {
@@ -13,24 +13,22 @@ interface PhoneAuthProps {
   userType?: 'admin' | 'user';
 }
 
-const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
+const PhoneAuth = ({ onAuthSuccess, userType = 'admin' }: PhoneAuthProps) => {
   const {
-    phoneNumber,
-    setPhoneNumber,
-    otpCode,
-    setOtpCode,
+    email,
+    setEmail,
+    code,
+    setCode,
     step,
     loading,
     error,
     resendTimer,
     setResendTimer,
-    handlePhoneSubmit,
-    handleOTPSubmit,
-    handleResendOTP,
-    handleBackToPhone
-  } = usePhoneAuthFlow(onAuthSuccess);
-
-  const isAdminLogin = userType === 'admin';
+    handleEmailSubmit,
+    handleCodeSubmit,
+    handleResendCode,
+    handleBackToEmail
+  } = useAdminEmailAuthFlow(onAuthSuccess);
 
   useEffect(() => {
     if (resendTimer > 0) {
@@ -47,19 +45,19 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-3 md:px-4">
       <Card className="w-full max-w-sm md:max-w-md">
         <CardHeader className="text-center">
-          <div className={`mx-auto w-12 h-12 ${isAdminLogin ? 'bg-red-600' : 'bg-blue-600'} rounded-full flex items-center justify-center mb-2`}>
-            {isAdminLogin ? <Shield className="w-6 h-6 text-white" /> : <Phone className="w-6 h-6 text-white" />}
+          <div className="mx-auto w-12 h-12 bg-red-600 rounded-full flex items-center justify-center mb-2">
+            <Shield className="w-6 h-6 text-white" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            {step === 'phone' 
-              ? (isAdminLogin ? 'Connexion Admin' : 'Connexion') 
-              : 'Vérification OTP'
+            {step === 'email' 
+              ? 'Connexion Super Admin' 
+              : 'Vérification du Code'
             }
           </CardTitle>
           <p className="text-gray-600">
-            {step === 'phone' 
-              ? 'Entrez votre numéro de téléphone mauritanien'
-              : `Code envoyé au ${phoneNumber}`
+            {step === 'email' 
+              ? 'Entrez votre email administrateur'
+              : `Code envoyé à ${email}`
             }
           </p>
         </CardHeader>
@@ -71,24 +69,22 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
             </Alert>
           )}
 
-          {step === 'phone' ? (
-            <PhoneNumberStep
-              phoneNumber={phoneNumber}
-              setPhoneNumber={setPhoneNumber}
-              onSubmit={handlePhoneSubmit}
+          {step === 'email' ? (
+            <AdminEmailStep
+              email={email}
+              setEmail={setEmail}
+              onSubmit={handleEmailSubmit}
               loading={loading}
-              isAdminLogin={isAdminLogin}
             />
           ) : (
-            <OTPVerificationStep
-              otpCode={otpCode}
-              setOtpCode={setOtpCode}
-              onSubmit={handleOTPSubmit}
-              onBackToPhone={handleBackToPhone}
-              onResendOTP={handleResendOTP}
+            <AdminCodeStep
+              code={code}
+              setCode={setCode}
+              onSubmit={handleCodeSubmit}
+              onBackToEmail={handleBackToEmail}
+              onResendCode={handleResendCode}
               loading={loading}
               resendTimer={resendTimer}
-              isAdminLogin={isAdminLogin}
             />
           )}
         </CardContent>

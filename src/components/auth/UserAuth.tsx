@@ -7,10 +7,10 @@ interface UserAuthProps {
   userType?: 'admin' | 'user';
 }
 
-const UserAuth = ({ onAuthSuccess, userType = 'user' }: UserAuthProps) => {
+const UserAuth = ({ onAuthSuccess, userType = 'admin' }: UserAuthProps) => {
   return (
     <PhoneAuth 
-      userType={userType} 
+      userType="admin" 
       onAuthSuccess={onAuthSuccess}
     />
   );
