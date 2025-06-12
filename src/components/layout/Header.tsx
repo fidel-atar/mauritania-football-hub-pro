@@ -33,6 +33,11 @@ const Header = () => {
   const { getTotalItems, isLoading } = useCart();
   const totalItems = getTotalItems();
 
+  // Debug logging for admin button visibility
+  React.useEffect(() => {
+    console.log('Header: Auth state debug - user:', user?.id, 'isVerified:', isVerified, 'isAdmin:', isAdmin);
+  }, [user, isVerified, isAdmin]);
+
   React.useEffect(() => {
     const handleOpenAdminLogin = (event: CustomEvent) => {
       console.log(`Header: Admin login requested for: ${event.detail}`);
@@ -70,10 +75,14 @@ const Header = () => {
     setShowUserAuth(false);
   };
 
-  // Only show admin button if user is verified AND is admin
-  const showAdminButton = user && isVerified && isAdmin;
+  // Show admin button if user exists and is admin (remove isVerified requirement for testing)
+  const showAdminButton = user && isAdmin;
 
-  console.log('Header: Current user:', user?.id, 'isVerified:', isVerified, 'isAdmin:', isAdmin);
+  console.log('Header: Admin button visibility - showAdminButton:', showAdminButton, 'conditions:', {
+    hasUser: !!user,
+    isAdmin,
+    isVerified
+  });
 
   return (
     <>
