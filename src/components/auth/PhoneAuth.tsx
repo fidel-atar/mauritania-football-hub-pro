@@ -55,8 +55,10 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
 
       if (error) throw error;
 
-      // In production, you would send SMS here
-      toast.success(`Code OTP envoyé au ${phone}. Code de développement: ${otp}`);
+      // In production, integrate with SMS service (Twilio, AWS SNS, etc.)
+      toast.success(`Code OTP envoyé au ${phone}`, {
+        description: `Code de développement: ${otp}`
+      });
       setResendTimer(60);
       
     } catch (error) {
@@ -101,6 +103,7 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
 
     setLoading(true);
     try {
+      // Verify OTP
       const { data, error } = await supabase.rpc('verify_otp', {
         p_phone_number: phoneNumber,
         p_otp_code: otpCode
@@ -113,22 +116,61 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
         return;
       }
 
-      // Create or update user profile
-      const { data: { user }, error: authError } = await supabase.auth.signInAnonymously();
+      // Sign in with Supabase Auth using phone as email
+      const emailFromPhone = `${phoneNumber.replace(/\+/g, '')}@phone.local`;
       
-      if (authError) throw authError;
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: emailFromPhone,
+        password: phoneNumber // Use phone as password for simplicity
+      });
 
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user?.id,
-          phone_number: phoneNumber,
-          is_phone_verified: true,
-          email: `${phoneNumber.replace('+', '')}@phone.local`,
-          full_name: phoneNumber
+      if (authError && authError.message.includes('Invalid login credentials')) {
+        // User doesn't exist, create account
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: emailFromPhone,
+          password: phoneNumber,
+          options: {
+            data: {
+              phone_number: phoneNumber,
+              full_name: phoneNumber
+            }
+          }
         });
 
-      if (profileError) throw profileError;
+        if (signUpError) throw signUpError;
+
+        // Update profile
+        if (signUpData.user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: signUpData.user.id,
+              phone_number: phoneNumber,
+              is_phone_verified: true,
+              email: emailFromPhone,
+              full_name: phoneNumber
+            });
+
+          if (profileError) {
+            console.error('Profile update error:', profileError);
+          }
+        }
+      } else if (authError) {
+        throw authError;
+      } else if (authData.user) {
+        // Update existing profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            phone_number: phoneNumber,
+            is_phone_verified: true
+          })
+          .eq('id', authData.user.id);
+
+        if (profileError) {
+          console.error('Profile update error:', profileError);
+        }
+      }
 
       toast.success('Connexion réussie');
       
