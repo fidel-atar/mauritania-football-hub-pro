@@ -49,20 +49,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Handle query errors globally
-queryClient.setDefaultOptions({
-  queries: {
-    onError: (error: any) => {
-      console.error('Query error:', error);
-    },
-  },
-  mutations: {
-    onError: (error: any) => {
-      console.error('Mutation error:', error);
-    },
-  },
-});
-
 function App() {
   return (
     <ErrorBoundary>
