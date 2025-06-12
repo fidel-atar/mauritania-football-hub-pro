@@ -58,7 +58,6 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
         throw error;
       }
 
-      // In production, integrate with SMS service (Twilio, AWS SNS, etc.)
       toast.success(`Code OTP envoyé au ${phone}`, {
         description: `[Développement] Code: ${otp}`,
         duration: 10000,
@@ -140,7 +139,8 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
           options: {
             data: {
               phone_number: phoneNumber,
-              full_name: phoneNumber
+              full_name: phoneNumber,
+              is_phone_verified: true
             }
           }
         });
@@ -150,27 +150,13 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
           throw signUpError;
         }
 
-        // Update profile
-        if (signUpData.user) {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: signUpData.user.id,
-              phone_number: phoneNumber,
-              is_phone_verified: true,
-              email: emailFromPhone,
-              full_name: phoneNumber
-            });
-
-          if (profileError) {
-            console.error('Profile update error:', profileError);
-          }
-        }
+        // Profile will be created automatically by the trigger
+        console.log('New user created with phone authentication');
       } else if (authError) {
         console.error('Auth error:', authError);
         throw authError;
       } else if (authData.user) {
-        // Update existing profile
+        // Update existing profile with phone verification
         const { error: profileError } = await supabase
           .from('profiles')
           .update({
