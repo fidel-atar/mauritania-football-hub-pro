@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Phone, Shield } from 'lucide-react';
+import { Phone, Shield, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { validatePhoneNumber } from '@/utils/inputValidation';
@@ -19,7 +19,7 @@ interface PhoneAuthProps {
 const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otpCode, setOtpCode] = useState('');
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
+  const [step, setStep] = useState<'phone' | 'otp' | 'success'>('phone');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
@@ -53,11 +53,15 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
           is_verified: false
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error storing OTP:', error);
+        throw error;
+      }
 
       // In production, integrate with SMS service (Twilio, AWS SNS, etc.)
       toast.success(`Code OTP envoyé au ${phone}`, {
-        description: `Code de développement: ${otp}`
+        description: `[Développement] Code: ${otp}`,
+        duration: 10000,
       });
       setResendTimer(60);
       
@@ -86,7 +90,8 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
       await sendOTP(phoneNumber);
       setStep('otp');
     } catch (error) {
-      setError('Erreur lors de l\'envoi du code OTP');
+      console.error('Phone submit error:', error);
+      setError('Erreur lors de l\'envoi du code OTP. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -109,7 +114,10 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
         p_otp_code: otpCode
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('OTP verification error:', error);
+        throw error;
+      }
 
       if (!data) {
         setError('Code OTP invalide ou expiré');
@@ -121,7 +129,7 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
       
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: emailFromPhone,
-        password: phoneNumber // Use phone as password for simplicity
+        password: phoneNumber
       });
 
       if (authError && authError.message.includes('Invalid login credentials')) {
@@ -137,7 +145,10 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
           }
         });
 
-        if (signUpError) throw signUpError;
+        if (signUpError) {
+          console.error('Sign up error:', signUpError);
+          throw signUpError;
+        }
 
         // Update profile
         if (signUpData.user) {
@@ -156,6 +167,7 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
           }
         }
       } else if (authError) {
+        console.error('Auth error:', authError);
         throw authError;
       } else if (authData.user) {
         // Update existing profile
@@ -172,15 +184,21 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
         }
       }
 
-      toast.success('Connexion réussie');
+      setStep('success');
       
-      if (onAuthSuccess) {
-        onAuthSuccess();
-      }
+      setTimeout(() => {
+        toast.success('Connexion réussie', {
+          description: 'Vous êtes maintenant connecté'
+        });
+        
+        if (onAuthSuccess) {
+          onAuthSuccess();
+        }
+      }, 1500);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error verifying OTP:', error);
-      setError('Erreur lors de la vérification du code');
+      setError(error.message || 'Erreur lors de la vérification du code');
     } finally {
       setLoading(false);
     }
@@ -192,7 +210,9 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
     setLoading(true);
     try {
       await sendOTP(phoneNumber);
+      toast.success('Code OTP renvoyé');
     } catch (error) {
+      console.error('Resend error:', error);
       setError('Erreur lors du renvoi du code');
     } finally {
       setLoading(false);
@@ -204,6 +224,26 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
     setOtpCode('');
     setError('');
   };
+
+  if (step === 'success') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-3 md:px-4">
+        <Card className="w-full max-w-sm md:max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle className="w-8 h-8 text-white" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-gray-900">
+              Connexion réussie !
+            </CardTitle>
+            <p className="text-gray-600">
+              Vous allez être redirigé automatiquement...
+            </p>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-3 md:px-4">
@@ -220,7 +260,7 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
           </CardTitle>
           <p className="text-gray-600">
             {step === 'phone' 
-              ? 'Entrez votre numéro de téléphone'
+              ? 'Entrez votre numéro de téléphone mauritanien'
               : `Code envoyé au ${phoneNumber}`
             }
           </p>
@@ -251,7 +291,7 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
                   />
                 </div>
                 <p className="text-xs text-gray-500">
-                  Format: +222XXXXXXXX (numéro mauritanien)
+                  Format mauritanien: +222XXXXXXXX
                 </p>
               </div>
               
@@ -291,6 +331,7 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
                   variant="ghost"
                   onClick={handleBackToPhone}
                   disabled={loading}
+                  className="text-xs"
                 >
                   ← Changer le numéro
                 </Button>
@@ -300,6 +341,7 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
                   variant="ghost"
                   onClick={handleResendOTP}
                   disabled={loading || resendTimer > 0}
+                  className="text-xs"
                 >
                   {resendTimer > 0 ? `Renvoyer (${resendTimer}s)` : 'Renvoyer'}
                 </Button>

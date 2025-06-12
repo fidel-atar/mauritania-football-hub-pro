@@ -13,8 +13,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const HomePage = () => {
   const isMobile = useIsMobile();
 
-  // Fetch matches from Supabase with improved performance
-  const { data: matches = [], isLoading } = useQuery({
+  // Fetch matches from Supabase with improved error handling
+  const { data: matches = [], isLoading, error } = useQuery({
     queryKey: ['home-matches'],
     queryFn: async (): Promise<MatchProps[]> => {
       console.log('Fetching matches from Supabase...');
@@ -30,7 +30,7 @@ const HomePage = () => {
 
       if (error) {
         console.error('Error fetching matches:', error);
-        return [];
+        throw error;
       }
 
       console.log('Raw matches data:', data);
@@ -66,7 +66,7 @@ const HomePage = () => {
             logo: match.away_team?.logo || '/placeholder.svg'
           },
           date: match.match_date,
-          stadium: match.stadium,
+          stadium: match.stadium || 'Stade à confirmer',
           homeScore: match.home_score,
           awayScore: match.away_score,
           status: status
@@ -80,20 +80,27 @@ const HomePage = () => {
       });
     },
     staleTime: 1000 * 60 * 2, // 2 minutes
-    refetchInterval: 1000 * 30, // 30 seconds instead of constant refetching
+    refetchInterval: 1000 * 30, // 30 seconds
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
+
+  // Show error state
+  if (error) {
+    console.error('HomePage: Error loading matches:', error);
+  }
 
   return (
     <div className="px-3 md:px-4 py-3 md:py-6 pb-20 max-w-7xl mx-auto">
       {/* Bannière promotionnelle - Mobile optimized */}
       <Card className="mb-4 md:mb-6 bg-gradient-to-r from-fmf-green to-fmf-yellow text-white overflow-hidden">
         <CardContent className="p-4 md:p-6">
-          <h2 className="text-lg md:text-xl font-bold mb-2">Finale de la Coupe Super D1</h2>
+          <h2 className="text-lg md:text-xl font-bold mb-2">Championnat Super D1 Mauritanie</h2>
           <p className="mb-3 md:mb-4 text-sm md:text-base">
-            Ne manquez pas la grande finale ce 30 mai au Stade Olympique de Nouakchott!
+            Suivez tous les matchs, résultats et actualités du championnat mauritanien!
           </p>
           <div className="text-xs md:text-sm bg-white text-fmf-dark py-2 px-3 rounded-full inline-block font-medium">
-            Achetez vos billets maintenant
+            Application officielle FMF
           </div>
         </CardContent>
       </Card>
@@ -130,6 +137,23 @@ const HomePage = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fmf-green mx-auto mb-2"></div>
           <p className="text-sm text-gray-600">Chargement des matchs...</p>
         </div>
+      ) : error ? (
+        <div className="text-center py-8 md:py-12">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 md:p-6 mx-4">
+            <h2 className="text-lg md:text-xl font-semibold text-red-800 mb-2">
+              Erreur de chargement
+            </h2>
+            <p className="text-sm md:text-base text-red-600 mb-4">
+              Impossible de charger les matchs. Vérifiez votre connexion internet.
+            </p>
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Réessayer
+            </Button>
+          </div>
+        </div>
       ) : matches.length === 0 ? (
         <div className="text-center py-8 md:py-12">
           <h2 className="text-lg md:text-xl font-semibold text-gray-600 mb-3 md:mb-4">
@@ -150,6 +174,23 @@ const HomePage = () => {
       ) : (
         <MatchList matches={matches} />
       )}
+
+      {/* Section Actualités récentes */}
+      <div className="mt-8 md:mt-12">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg md:text-xl font-bold text-fmf-dark border-l-4 border-fmf-green pl-3">
+            Actualités récentes
+          </h2>
+          <Link to="/actualites">
+            <Button variant="outline" size="sm">
+              Voir tout
+            </Button>
+          </Link>
+        </div>
+        <div className="bg-gray-50 p-4 md:p-6 rounded-lg text-center">
+          <p className="text-gray-600">Les dernières actualités du championnat seront affichées ici.</p>
+        </div>
+      </div>
     </div>
   );
 };

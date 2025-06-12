@@ -33,8 +33,32 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
       refetchOnWindowFocus: false,
-      retry: 3,
+      retry: (failureCount, error: any) => {
+        // Don't retry on 4xx errors
+        if (error?.status >= 400 && error?.status < 500) {
+          return false;
+        }
+        return failureCount < 3;
+      },
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    },
+    mutations: {
+      retry: 1,
+      retryDelay: 1000,
+    },
+  },
+});
+
+// Handle query errors globally
+queryClient.setDefaultOptions({
+  queries: {
+    onError: (error: any) => {
+      console.error('Query error:', error);
+    },
+  },
+  mutations: {
+    onError: (error: any) => {
+      console.error('Mutation error:', error);
     },
   },
 });
@@ -99,13 +123,25 @@ function App() {
                 
                 {/* Legal pages */}
                 <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
+                <Route path="politique-confidentialite" element={<PrivacyPolicyPage />} />
                 <Route path="terms-of-service" element={<TermsOfServicePage />} />
+                <Route path="conditions-utilisation" element={<TermsOfServicePage />} />
                 
                 {/* 404 route */}
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
-            <Toaster />
+            <Toaster 
+              position="top-center"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#ffffff',
+                  color: '#1f2937',
+                  border: '1px solid #e5e7eb',
+                },
+              }}
+            />
           </Router>
         </QueryClientProvider>
       </AuthProvider>
