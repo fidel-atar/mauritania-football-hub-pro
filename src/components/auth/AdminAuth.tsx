@@ -1,44 +1,62 @@
 
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield } from 'lucide-react';
-import { useAdminEmailAuthFlow } from '@/hooks/useAdminEmailAuthFlow';
-import AdminEmailStep from './AdminEmailStep';
-import AdminCodeStep from './AdminCodeStep';
-import AuthSuccessStep from './AuthSuccessStep';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Shield, Mail } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AdminAuthProps {
   onAuthSuccess?: () => void;
 }
 
 const AdminAuth = ({ onAuthSuccess }: AdminAuthProps) => {
-  const {
-    email,
-    setEmail,
-    code,
-    setCode,
-    step,
-    loading,
-    error,
-    resendTimer,
-    setResendTimer,
-    handleEmailSubmit,
-    handleCodeSubmit,
-    handleResendCode,
-    handleBackToEmail
-  } = useAdminEmailAuthFlow(onAuthSuccess);
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { checkAdminStatus } = useAuth();
 
-  useEffect(() => {
-    if (resendTimer > 0) {
-      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
-      return () => clearTimeout(timer);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      console.log('AdminAuth: Attempting admin login with email:', email);
+      
+      // Verify the OTP code
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        email,
+        token: code,
+        type: 'email'
+      });
+
+      if (verifyError) {
+        console.error('AdminAuth: OTP verification failed:', verifyError);
+        setError('Code de vérification invalide ou expiré');
+        return;
+      }
+
+      if (data.user) {
+        console.log('AdminAuth: OTP verified successfully, user:', data.user.email);
+        
+        // Check admin status after successful authentication
+        await checkAdminStatus();
+        
+        console.log('AdminAuth: Admin login successful');
+        onAuthSuccess?.();
+      }
+    } catch (error: any) {
+      console.error('AdminAuth: Login error:', error);
+      setError('Erreur lors de la connexion');
+    } finally {
+      setLoading(false);
     }
-  }, [resendTimer, setResendTimer]);
-
-  if (step === 'success') {
-    return <AuthSuccessStep />;
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-3 md:px-4">
@@ -48,16 +66,10 @@ const AdminAuth = ({ onAuthSuccess }: AdminAuthProps) => {
             <Shield className="w-6 h-6 text-white" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            {step === 'email' 
-              ? 'Connexion Admin' 
-              : 'Vérification du Code'
-            }
+            Connexion Admin
           </CardTitle>
           <p className="text-gray-600">
-            {step === 'email' 
-              ? 'Entrez votre email administrateur'
-              : `Code envoyé à ${email}`
-            }
+            Entrez votre email et code d'accès
           </p>
         </CardHeader>
         
@@ -68,24 +80,49 @@ const AdminAuth = ({ onAuthSuccess }: AdminAuthProps) => {
             </Alert>
           )}
 
-          {step === 'email' ? (
-            <AdminEmailStep
-              email={email}
-              setEmail={setEmail}
-              onSubmit={handleEmailSubmit}
-              loading={loading}
-            />
-          ) : (
-            <AdminCodeStep
-              code={code}
-              setCode={setCode}
-              onSubmit={handleCodeSubmit}
-              onBackToEmail={handleBackToEmail}
-              onResendCode={handleResendCode}
-              loading={loading}
-              resendTimer={resendTimer}
-            />
-          )}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Administrateur</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  className="pl-10"
+                  required
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="code">Code d'accès</Label>
+              <Input
+                id="code"
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="123456"
+                maxLength={6}
+                disabled={loading}
+                className="text-center text-lg tracking-widest"
+              />
+              <p className="text-xs text-gray-500">
+                Code à 6 chiffres d'accès administrateur
+              </p>
+            </div>
+            
+            <Button 
+              type="submit" 
+              className="w-full bg-red-600 hover:bg-red-700"
+              disabled={loading}
+            >
+              {loading ? 'Connexion...' : 'Se connecter'}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>
