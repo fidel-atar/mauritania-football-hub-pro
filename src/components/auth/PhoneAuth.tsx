@@ -47,7 +47,7 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'user' }: PhoneAuthProps) => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-3 md:px-4">
       <Card className="w-full max-w-sm md:max-w-md">
         <CardHeader className="text-center">
-          <div className={`mx-auto w-12 h-12 ${isAdminLogin ? 'bg-red-600' : 'bg-blue-600'} rounded-full flex items-center justify-center mb-4`}>
+          <div className={`mx-auto w-12 h-12 ${isAdminLogin ? 'bg-red-600' : 'bg-blue-600'} rounded-full flex items-center justify-center mb-2`}>
             {isAdminLogin ? <Shield className="w-6 h-6 text-white" /> : <Phone className="w-6 h-6 text-white" />}
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
