@@ -4,40 +4,36 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const useAdminEmailAuthFlow = (onAuthSuccess?: () => void) => {
   const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = async (email: string, code: string) => {
+  const handleLogin = async (email: string, password: string) => {
     setLoading(true);
     setError('');
 
     try {
       console.log('useAdminEmailAuthFlow: Attempting admin login with email:', email);
       
-      // Check if email exists in admin_roles table
-      const { data: adminData, error: adminError } = await supabase
-        .from('admin_roles')
-        .select('user_id, role')
-        .eq('user_id', email)
-        .single();
+      // Sign in with email and password
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      if (adminError || !adminData) {
-        console.error('useAdminEmailAuthFlow: Admin not found:', adminError);
-        setError('Email ou code d\'accès invalide');
+      if (signInError) {
+        console.error('useAdminEmailAuthFlow: Sign in failed:', signInError);
+        setError('Email ou mot de passe invalide');
         return false;
       }
 
-      // Check fixed code
-      if (code !== '123456') {
-        console.error('useAdminEmailAuthFlow: Invalid code');
-        setError('Code d\'accès invalide');
-        return false;
+      if (data.user) {
+        console.log('useAdminEmailAuthFlow: Admin login successful');
+        onAuthSuccess?.();
+        return true;
       }
 
-      console.log('useAdminEmailAuthFlow: Admin login successful');
-      onAuthSuccess?.();
-      return true;
+      return false;
 
     } catch (error: any) {
       console.error('useAdminEmailAuthFlow: Login error:', error);
@@ -51,8 +47,8 @@ export const useAdminEmailAuthFlow = (onAuthSuccess?: () => void) => {
   return {
     email,
     setEmail,
-    code,
-    setCode,
+    password,
+    setPassword,
     loading,
     error,
     handleLogin
