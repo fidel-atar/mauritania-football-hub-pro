@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import OTPInput from './OTPInput';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 interface AdminCodeStepProps {
   code: string;
@@ -32,11 +32,21 @@ const AdminCodeStep = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="code">Code de vérification</Label>
-        <OTPInput
+        <InputOTP
+          maxLength={6}
           value={code}
           onChange={setCode}
           disabled={loading}
-        />
+        >
+          <InputOTPGroup>
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+            <InputOTPSlot index={2} />
+            <InputOTPSlot index={3} />
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+          </InputOTPGroup>
+        </InputOTP>
         <p className="text-xs text-gray-500">
           Code à 6 chiffres envoyé par email
         </p>
