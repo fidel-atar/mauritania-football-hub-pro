@@ -118,8 +118,8 @@ export const usePhoneAuthFlow = (onAuthSuccess?: () => void) => {
         return;
       }
 
-      // Create a valid email format for Supabase Auth using a proper domain
-      const emailFromPhone = `${phoneNumber.replace(/\+/g, '').replace(/\s/g, '')}@phoneauth.example.com`;
+      // Create a valid email format for Supabase Auth using gmail.com domain
+      const emailFromPhone = `phone${phoneNumber.replace(/\+/g, '').replace(/\s/g, '')}@gmail.com`;
       
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: emailFromPhone,
