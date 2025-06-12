@@ -20,7 +20,7 @@ export const useAdminStatus = (user: User | null) => {
     try {
       console.log('useAdminStatus: Checking admin status for user:', user.id, user.email);
       
-      // First check the admin_roles table
+      // Check the admin_roles table
       const { data: adminData, error: adminError } = await supabase
         .from('admin_roles')
         .select('role')
@@ -36,35 +36,7 @@ export const useAdminStatus = (user: User | null) => {
         return;
       }
 
-      // If no admin role found, check if user has admin phone number in profiles
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('phone_number, is_phone_verified')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      console.log('useAdminStatus: Profile data:', { profileData, profileError });
-
-      // Check if this is one of the admin phone numbers
-      const adminPhones = ['+22242740882', '+22234330002'];
-      if (profileData && profileData.phone_number && adminPhones.includes(profileData.phone_number)) {
-        console.log('useAdminStatus: User has admin phone number, setting as admin');
-        setIsAdmin(true);
-        setAdminRole('super_admin');
-        
-        // Auto-assign admin role in database if missing
-        const { error: insertError } = await supabase
-          .from('admin_roles')
-          .insert({ user_id: user.id, role: 'super_admin' })
-          .on('conflict', (conflict) => conflict.ignore());
-          
-        if (insertError) {
-          console.warn('Failed to auto-assign admin role:', insertError);
-        }
-        return;
-      }
-
-      // If authenticated but no admin privileges found
+      // If no admin role found, user is not admin
       console.log('useAdminStatus: User authenticated but not admin');
       setIsAdmin(false);
       setAdminRole(null);

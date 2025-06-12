@@ -13,7 +13,6 @@ import AdminButton from "./AdminButton";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [showUserAuth, setShowUserAuth] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   
   let authData;
@@ -24,19 +23,18 @@ const Header = () => {
     authData = {
       isAdmin: false,
       user: null,
-      isVerified: false,
       signOut: async () => {}
     };
   }
 
-  const { isAdmin, user, isVerified, signOut } = authData;
+  const { isAdmin, user, signOut } = authData;
   const { getTotalItems, isLoading } = useCart();
   const totalItems = getTotalItems();
 
   // Debug logging for admin button visibility
   React.useEffect(() => {
-    console.log('Header: Auth state debug - user:', user?.id, 'isVerified:', isVerified, 'isAdmin:', isAdmin);
-  }, [user, isVerified, isAdmin]);
+    console.log('Header: Auth state debug - user:', user?.id, 'isAdmin:', isAdmin);
+  }, [user, isAdmin]);
 
   React.useEffect(() => {
     const handleOpenAdminLogin = (event: CustomEvent) => {
@@ -70,18 +68,12 @@ const Header = () => {
     setShowAdminLogin(false);
   };
 
-  const handleUserAuthSuccess = () => {
-    console.log('Header: User auth successful, closing modal');
-    setShowUserAuth(false);
-  };
-
-  // Show admin button if user exists and is admin (remove isVerified requirement for testing)
+  // Show admin button if user exists and is admin
   const showAdminButton = user && isAdmin;
 
   console.log('Header: Admin button visibility - showAdminButton:', showAdminButton, 'conditions:', {
     hasUser: !!user,
-    isAdmin,
-    isVerified
+    isAdmin
   });
 
   return (
@@ -113,7 +105,6 @@ const Header = () => {
                 totalItems={totalItems}
                 isLoading={isLoading}
                 onSignOut={handleSignOut}
-                onShowAuth={() => setShowUserAuth(true)}
                 onShowProfile={handleShowProfile}
               />
             </div>
@@ -128,7 +119,6 @@ const Header = () => {
                 totalItems={totalItems}
                 isLoading={isLoading}
                 onSignOut={handleSignOut}
-                onShowAuth={() => setShowUserAuth(true)}
                 onShowProfile={handleShowProfile}
               />
               
@@ -152,13 +142,10 @@ const Header = () => {
 
       <ModalManager
         showAdminLogin={showAdminLogin}
-        showUserAuth={showUserAuth}
         showUserProfile={showUserProfile}
         onCloseAdminLogin={() => setShowAdminLogin(false)}
-        onCloseUserAuth={() => setShowUserAuth(false)}
         onCloseUserProfile={() => setShowUserProfile(false)}
         onAdminLoginSuccess={handleAdminLoginSuccess}
-        onUserAuthSuccess={handleUserAuthSuccess}
       />
     </>
   );

@@ -17,7 +17,6 @@ interface UserMenuProps {
   totalItems: number;
   isLoading: boolean;
   onSignOut: () => void;
-  onShowAuth: () => void;
   onShowProfile: () => void;
 }
 
@@ -26,12 +25,11 @@ const UserMenu = ({
   totalItems, 
   isLoading, 
   onSignOut, 
-  onShowAuth, 
   onShowProfile 
 }: UserMenuProps) => {
   const handleAdminLogin = () => {
     console.log('UserMenu: Dispatching openAdminLogin event');
-    window.dispatchEvent(new CustomEvent('openAdminLogin', { detail: 'super_admin' }));
+    window.dispatchEvent(new CustomEvent('openAdminLogin', { detail: 'admin' }));
   };
 
   return (
@@ -68,7 +66,7 @@ const UserMenu = ({
         
         <DropdownMenuSeparator />
         
-        {/* Admin Login Section */}
+        {/* Auth Section */}
         {user ? (
           <DropdownMenuItem 
             onClick={onSignOut}
@@ -83,19 +81,19 @@ const UserMenu = ({
             className="cursor-pointer hover:bg-gray-100 text-red-600"
           >
             <Shield className="w-4 h-4 mr-2" />
-            Connexion Super Admin
+            Connexion Admin
           </DropdownMenuItem>
         )}
         
         <DropdownMenuSeparator />
         
-        {/* Account Section */}
+        {/* Profile Section */}
         <DropdownMenuItem 
           onClick={onShowProfile}
           className="cursor-pointer hover:bg-gray-100"
         >
           <User className="w-4 h-4 mr-2" />
-          Compte
+          Profil
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

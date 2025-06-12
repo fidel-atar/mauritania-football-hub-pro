@@ -8,12 +8,11 @@ import AdminEmailStep from './AdminEmailStep';
 import AdminCodeStep from './AdminCodeStep';
 import AuthSuccessStep from './AuthSuccessStep';
 
-interface PhoneAuthProps {
+interface AdminAuthProps {
   onAuthSuccess?: () => void;
-  userType?: 'admin' | 'user';
 }
 
-const PhoneAuth = ({ onAuthSuccess, userType = 'admin' }: PhoneAuthProps) => {
+const AdminAuth = ({ onAuthSuccess }: AdminAuthProps) => {
   const {
     email,
     setEmail,
@@ -50,7 +49,7 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'admin' }: PhoneAuthProps) => {
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
             {step === 'email' 
-              ? 'Connexion Super Admin' 
+              ? 'Connexion Admin' 
               : 'Vérification du Code'
             }
           </CardTitle>
@@ -93,4 +92,4 @@ const PhoneAuth = ({ onAuthSuccess, userType = 'admin' }: PhoneAuthProps) => {
   );
 };
 
-export default PhoneAuth;
+export default AdminAuth;
