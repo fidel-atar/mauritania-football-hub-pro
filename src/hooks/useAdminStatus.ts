@@ -33,6 +33,11 @@ export const useAdminStatus = (user: User | null) => {
         console.log('useAdminStatus: User found in admin_roles with role:', adminData.role);
         setIsAdmin(true);
         setAdminRole(adminData.role);
+        
+        // Force a small delay to ensure UI updates
+        setTimeout(() => {
+          console.log('useAdminStatus: Admin status updated - isAdmin:', true, 'role:', adminData.role);
+        }, 100);
         return;
       }
 

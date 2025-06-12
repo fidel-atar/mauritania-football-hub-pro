@@ -44,8 +44,14 @@ const AdminAuth = ({ onAuthSuccess }: AdminAuthProps) => {
       if (data.user) {
         console.log('AdminAuth: Authentication successful, checking admin status');
         
+        // Wait a moment to ensure user session is fully established
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         // Check admin status after successful authentication
         await checkAdminStatus();
+        
+        // Wait another moment to ensure admin status is updated
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         console.log('AdminAuth: Admin login successful');
         onAuthSuccess?.();

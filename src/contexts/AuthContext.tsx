@@ -26,20 +26,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('AuthProvider: Initial session check:', session?.user?.email);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        console.log('AuthProvider: Auth state changed:', event, session?.user?.email);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // If user just signed in, check admin status after a short delay
+        if (event === 'SIGNED_IN' && session?.user) {
+          setTimeout(async () => {
+            console.log('AuthProvider: Triggering admin status check after sign in');
+            await checkAdminStatus();
+          }, 1000);
+        }
       }
     );
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [checkAdminStatus]);
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -58,6 +68,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut,
     checkAdminStatus
   };
+
+  console.log('AuthProvider: Current state - user:', user?.email, 'isAdmin:', isAdmin, 'adminRole:', adminRole);
 
   return (
     <AuthContext.Provider value={value}>
