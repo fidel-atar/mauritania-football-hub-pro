@@ -1,4 +1,3 @@
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
@@ -20,6 +19,7 @@ import CupPage from "@/pages/CupPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import DocumentationPage from "@/pages/DocumentationPage";
 import ArabicDocumentationPage from "@/pages/ArabicDocumentationPage";
+import ComprehensiveDocumentationPage from "@/pages/ComprehensiveDocumentationPage";
 import NotFound from "@/pages/NotFound";
 import PrivacyPolicyPage from "@/components/layout/PrivacyPolicyPage";
 import TermsOfServicePage from "@/components/layout/TermsOfServicePage";
@@ -109,6 +109,8 @@ function App() {
                 <Route path="documentation" element={<DocumentationPage />} />
                 <Route path="documentation-ar" element={<ArabicDocumentationPage />} />
                 <Route path="التوثيق" element={<ArabicDocumentationPage />} />
+                <Route path="comprehensive-docs" element={<ComprehensiveDocumentationPage />} />
+                <Route path="docs-complete" element={<ComprehensiveDocumentationPage />} />
                 
                 {/* Legal pages */}
                 <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
