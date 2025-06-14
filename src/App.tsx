@@ -18,6 +18,8 @@ import CheckoutPage from "@/pages/CheckoutPage";
 import OrderSuccessPage from "@/pages/OrderSuccessPage";
 import CupPage from "@/pages/CupPage";
 import AdminDashboard from "@/pages/AdminDashboard";
+import DocumentationPage from "@/pages/DocumentationPage";
+import ArabicDocumentationPage from "@/pages/ArabicDocumentationPage";
 import NotFound from "@/pages/NotFound";
 import PrivacyPolicyPage from "@/components/layout/PrivacyPolicyPage";
 import TermsOfServicePage from "@/components/layout/TermsOfServicePage";
@@ -102,6 +104,11 @@ function App() {
                 
                 {/* Admin routes */}
                 <Route path="admin-dashboard" element={<AdminDashboard />} />
+                
+                {/* Documentation routes */}
+                <Route path="documentation" element={<DocumentationPage />} />
+                <Route path="documentation-ar" element={<ArabicDocumentationPage />} />
+                <Route path="التوثيق" element={<ArabicDocumentationPage />} />
                 
                 {/* Legal pages */}
                 <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
